@@ -5,6 +5,7 @@ type SystemState = 'idle' | 'loading' | 'online' | 'offline'
 
 function App() {
   const [systemState, setSystemState] = useState<SystemState>('idle')
+  const [errorDetail, setErrorDetail] = useState<string | null>(null)
 
   async function handleCheckSystem() {
     setSystemState('loading')
@@ -14,6 +15,7 @@ function App() {
       setSystemState('online')
     } catch (error) {
       console.error('Health check failed:', error)
+      setErrorDetail(error instanceof Error ? error.message : 'Unknown error')
       setSystemState('offline')
     }
   }
@@ -51,6 +53,9 @@ function App() {
               <p className="text-danger mb-0">
                 Unable to connect to TokTickIT API
               </p>
+              {errorDetail && (
+                <p className="text-muted small mb-0">Details: {errorDetail}</p>
+              )}
             </div>
           )}
         </div>

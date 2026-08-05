@@ -52,4 +52,22 @@ describe('UI-03: health check failure', () => {
     })
     consoleError.mockRestore()
   })
+
+  it('shows a fragment of the real error alongside the required offline message', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new Error('Failed to fetch')),
+    )
+
+    render(<App />)
+    await userEvent.click(screen.getByRole('button', { name: /check system/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/Failed to fetch/i)).toBeInTheDocument()
+    })
+    // the required exact phrase must still be present alongside the detail
+    expect(
+      screen.getByText(/Unable to connect to TokTickIT API/i),
+    ).toBeInTheDocument()
+  })
 })
