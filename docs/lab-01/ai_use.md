@@ -28,14 +28,14 @@ orchestration, evidence storage — before any code was written.
 
 | Prompt Name | Actual Prompt Text | My Reflection |
 |---|---|---|
-| Kick off the engineering contract | "Please help me follow the Master Prompt in detail. Also — don't commit this file to either repo." | _(your reflection)_ |
-| Decide how to get grill-with-docs | "Go ahead and actually try installing it." | _(your reflection)_ |
-| Lock in the DB/UI design decisions | "Separate dev/test databases (recommended)." / "Fire them sequentially." | _(your reflection)_ |
-| Approve scope and defer the peer reviewer | "Let's do this — I'll find a peer reviewer later, not needed now, but do all the other work correctly and in detail." | _(your reflection)_ |
-| Verify local Postgres access | "Does 1234 work?" | _(your reflection)_ |
-| Catch a Git workflow mistake | "Check something for me — there seem to be 2 pull requests, what should we do?" | _(your reflection)_ |
-| Draft a real review response | "What comment should we write for this?" | _(your reflection)_ |
-| Evaluate an external reference against approved work | "The TA just attached a Lab 1 Starter Scaffold — do we need to fix ours to match? Would it even affect the Issues our friend already reviewed?" | _(your reflection)_ |
+| Kick off the engineering contract | "Please help me follow the Master Prompt in detail. Also — don't commit this file to either repo." | Saying "in detail" up front meant the agent front-loaded a lot of read-only investigation (repo state, tool versions, source PDFs) before touching anything, instead of jumping straight to code. The one specific constraint I added ("don't commit this file") turned out to matter later — it shaped the `.gitignore` design from the very first commit. |
+| Decide how to get grill-with-docs | "Go ahead and actually try installing it." | I could have let the agent fake the grill process without the real skill installed. Insisting on the real install surfaced a real limitation (the session couldn't see the newly installed skill) that a simulated answer would have hidden — the agent had to read the skill's own source files to actually follow it. |
+| Lock in the DB/UI design decisions | "Separate dev/test databases (recommended)." / "Fire them sequentially." | These were fast decisions because the agent had already framed each one as a short trade-off with a recommendation, not an open question. I didn't have to design anything — just pick a side once the trade-off was laid out. |
+| Approve scope and defer the peer reviewer | "Let's do this — I'll find a peer reviewer later, not needed now, but do all the other work correctly and in detail." | This let implementation start immediately without blocking on something outside my control, but it also meant the agent had to track a real dependency (Issue 2/3 can't branch until Issue 1 merges, which needs a real peer) instead of faking review evidence just to keep moving. |
+| Verify local Postgres access | "Does 1234 work?" | Shortest prompt I sent all session, and it still worked — by that point enough shared context existed (which database, which user) that a four-character message was unambiguous. Not every prompt needs to be long to be clear. |
+| Catch a Git workflow mistake | "Check something for me — there seem to be 2 pull requests, what should we do?" | I noticed the accidental `lab1-staging → main` PR before the agent did — it came from clicking GitHub's own "Compare & pull request" banner, not from anything the agent did. Flagging it early meant it got closed instead of accidentally merged. |
+| Draft a real review response | "What comment should we write for this?" | The agent explained why the reviewer's specific concern (error swallowing) was valid — tying it back to an actual line in the lab sheet — before writing a fix or a reply, rather than just agreeing and patching something. |
+| Evaluate an external reference against approved work | "The TA just attached a Lab 1 Starter Scaffold — do we need to fix ours to match? Would it even affect the Issues our friend already reviewed?" | The agent diffed every file in the scaffold against what we'd already built instead of guessing from the folder names, and the answer was no — reworking merged, reviewed code to match someone else's naming choices would have cost real re-review effort for zero rubric benefit. |
 
 ## What I remain responsible for
 
@@ -53,15 +53,17 @@ the other way:
 | Peer reviewer | Palapluem-side repo Collaborator invited with **Read** access | Write access, which N0TAW00D didn't need just to review and approve PRs |
 
 ## Reflection
-_(2–3 sentences from you. Some real things from this session you could write
-about — only use what's actually true for you:)_
-- _The agent caught itself mid-way that `feature/2-health-check` couldn't
-  legally be created until Issue 1 was merged, and stopped rather than
-  branching from a stale `lab1-staging`. Was that the right call, or annoying?_
-- _You caught the accidental `lab1-staging → main` pull request (#8) before
-  the agent did — what tipped you off?_
-- _Two PRs (#6, #7) needed a real Fixing round after review (error swallowing,
-  a missing UI detail, an inconsistent seed command). Did the fixes match what
-  was actually asked, or go further than needed?_
-- _What in the final app can you explain to someone else without looking
-  anything up, and what would you have to go check first?_
+
+My prompts got better mainly by getting shorter, not longer — once the agent
+had built up real context (the alignment report, the grill answers, the
+running acceptance-criteria checklist per Issue), a few words was enough to
+move things forward correctly. The one place I had to actively correct the
+process rather than just approve it was Git workflow discipline: I stopped an
+accidental `lab1-staging → main` pull request from a GitHub UI banner before
+it could be merged out of order. I also had my own understanding corrected
+once — I initially thought my partner would open PRs directly in my repo,
+when the actual model is that they only review the ones I open, in their own
+separate repo. Both moments were about process, not code — the actual
+implementation only needed real fixes twice,
+both from genuine review feedback (error swallowing, a missing UI detail),
+and both fixes stayed scoped to exactly what was asked.
