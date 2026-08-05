@@ -70,4 +70,72 @@ describe('UI-03: health check failure', () => {
       screen.getByText(/Unable to connect to TokTickIT API/i),
     ).toBeInTheDocument()
   })
+
+  it('shows the offline error state when categories fail even though health succeeded', async () => {
+    const mockFetch = vi.fn((url: string) => {
+      if (url.includes('/api/health')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ status: 'ok', service: 'TokTickIT API' }),
+        })
+      }
+      return Promise.reject(new Error('categories down'))
+    })
+    vi.stubGlobal('fetch', mockFetch)
+
+    render(<App />)
+    await userEvent.click(screen.getByRole('button', { name: /check system/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Offline')).toBeInTheDocument()
+    })
+    expect(
+      screen.getByText(/Unable to connect to TokTickIT API/i),
+    ).toBeInTheDocument()
+  })
+})
+
+describe('UI-02: category list', () => {
+  it('shows a loading state, then the category list, after successful mocked API responses', async () => {
+    let resolveHealth: (value: unknown) => void = () => {}
+    const healthGate = new Promise((resolve) => {
+      resolveHealth = resolve
+    })
+
+    const mockFetch = vi.fn((url: string) => {
+      if (url.includes('/api/health')) {
+        return healthGate.then(() => ({
+          ok: true,
+          json: async () => ({ status: 'ok', service: 'TokTickIT API' }),
+        }))
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => [
+          { id: 1, name: 'Account and Access' },
+          { id: 2, name: 'Hardware' },
+          { id: 3, name: 'Software' },
+          { id: 4, name: 'Network' },
+        ],
+      })
+    })
+    vi.stubGlobal('fetch', mockFetch)
+
+    render(<App />)
+    await userEvent.click(screen.getByRole('button', { name: /check system/i }))
+
+    expect(
+      screen.getByRole('button', { name: /checking/i }),
+    ).toBeInTheDocument()
+
+    resolveHealth(undefined)
+
+    await waitFor(() => {
+      expect(screen.getByText('Account and Access')).toBeInTheDocument()
+    })
+    expect(screen.getByText('Hardware')).toBeInTheDocument()
+    expect(screen.getByText('Software')).toBeInTheDocument()
+    expect(screen.getByText('Network')).toBeInTheDocument()
+    expect(screen.getByText('Online')).toBeInTheDocument()
+  })
 })
