@@ -14,3 +14,18 @@ export async function fetchHealth(): Promise<HealthResponse> {
 
   return response.json()
 }
+
+export interface Category {
+  id: number
+  name: string
+}
+
+export async function fetchCategories(): Promise<Category[]> {
+  const response = await fetch(`${API_BASE_URL}/api/categories`)
+
+  if (!response.ok) {
+    throw new Error(`Categories request failed with status ${response.status}`)
+  }
+
+  return response.json()
+}

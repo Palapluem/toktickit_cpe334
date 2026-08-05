@@ -1,17 +1,20 @@
 import { useState } from 'react'
-import { fetchHealth } from './api.js'
+import { fetchHealth, fetchCategories, type Category } from './api.js'
 
 type SystemState = 'idle' | 'loading' | 'online' | 'offline'
 
 function App() {
   const [systemState, setSystemState] = useState<SystemState>('idle')
   const [errorDetail, setErrorDetail] = useState<string | null>(null)
+  const [categories, setCategories] = useState<Category[]>([])
 
   async function handleCheckSystem() {
     setSystemState('loading')
 
     try {
       await fetchHealth()
+      const fetchedCategories = await fetchCategories()
+      setCategories(fetchedCategories)
       setSystemState('online')
     } catch (error) {
       console.error('Health check failed:', error)
@@ -40,9 +43,17 @@ function App() {
           </button>
 
           {systemState === 'online' && (
-            <p className="mt-3 mb-0">
-              System Status: <strong className="text-success">Online</strong>
-            </p>
+            <div className="mt-3">
+              <p className="mb-2">
+                System Status: <strong className="text-success">Online</strong>
+              </p>
+              <p className="mb-1 fw-semibold">Supported Request Categories</p>
+              <ol className="mb-0">
+                {categories.map((category) => (
+                  <li key={category.id}>{category.name}</li>
+                ))}
+              </ol>
+            </div>
           )}
 
           {systemState === 'offline' && (
