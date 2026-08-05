@@ -12,7 +12,8 @@ function App() {
     try {
       await fetchHealth()
       setSystemState('online')
-    } catch {
+    } catch (error) {
+      console.error('Health check failed:', error)
       setSystemState('offline')
     }
   }

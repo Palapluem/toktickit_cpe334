@@ -35,4 +35,21 @@ describe('UI-03: health check failure', () => {
       screen.getByText(/Unable to connect to TokTickIT API/i),
     ).toBeInTheDocument()
   })
+
+  it('logs the real error to the console for diagnostics instead of swallowing it', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const thrown = new Error('network error')
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(thrown))
+
+    render(<App />)
+    await userEvent.click(screen.getByRole('button', { name: /check system/i }))
+
+    await waitFor(() => {
+      expect(consoleError).toHaveBeenCalledWith(
+        'Health check failed:',
+        thrown,
+      )
+    })
+    consoleError.mockRestore()
+  })
 })
