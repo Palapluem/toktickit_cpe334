@@ -9,6 +9,7 @@
 | PR | Reviewer | Decision | Review comment | My response | Evidence link |
 |---|---|---|---|---|---|
 | #5 — Set up the TokTickIT project foundation | N0TAW00D | Approved | "lgtm, your structure has been following the technical specs from SA docs (lab01-cheatsheet)." / "Ready to Merge!" | "Thanks for the review! Merged into lab1-staging with a merge commit." | https://github.com/Palapluem/toktickit_cpe334/pull/5 |
+| #6 — Implement the API health check | N0TAW00D | Commented (changes requested informally) | "Most part was great, still have an issues on error swallowing pls review it." | "Good catch — fixed in 990af85: the catch block now does `console.error('Health check failed:', error)` before setting the Offline state, instead of discarding the error. Added a test asserting the console.error call so it doesn't regress. UI message is unchanged. Ready for another look." | https://github.com/Palapluem/toktickit_cpe334/pull/6 |
 
 ## My Reviews of Partner Pull Requests
 | Partner PR | My decision | My review comment | Partner response | Evidence link |
