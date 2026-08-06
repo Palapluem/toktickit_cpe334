@@ -18,7 +18,8 @@
 ## My Reviews of Partner Pull Requests
 | Partner PR | My decision | My review comment | Partner response | Evidence link |
 |---|---|---|---|---|
-| _pending — will be added once N0TAW00D opens a PR to review_ | | | | |
+| N0TAW00D/TokTickIT #5 — Project foundation: React+Vite client, Express+Prisma server, Postgres, tests | Approved | "Well done Natthawat!, That's look good so far." | Merged, no further reply needed | https://github.com/N0TAW00D/TokTickIT/pull/5 |
+| N0TAW00D/TokTickIT — remaining Issues | Pending | Partner's Issues 2-4 are not open for review yet | | |
 
 ## Review Outcome
-All four feature PRs (#5, #6, #7, #9) received real reviews from N0TAW00D and were merged into `lab1-staging` via merge commits. Two PRs (#6, #7) went through a real Fixing cycle first — genuine defects (error swallowing, a missing error detail in the UI, an inconsistent seed command) were flagged, fixed on the same branch, and re-reviewed before approval. PRs #5 and #9 were approved cleanly on the first pass. Reciprocal review of the partner's repository is still outstanding.
+All four feature PRs (#5, #6, #7, #9) received real reviews from N0TAW00D and were merged into `lab1-staging` via merge commits. Two PRs (#6, #7) went through a real Fixing cycle first — genuine defects (error swallowing, a missing error detail in the UI, an inconsistent seed command) were flagged, fixed on the same branch, and re-reviewed before approval. PRs #5 and #9 were approved cleanly on the first pass. In the other direction, N0TAW00D's PR #5 (project foundation) has been reviewed and approved; the remaining three of the partner's Issues are still in progress on their side.
