@@ -2,12 +2,12 @@
 
 ## Environment
 
-- Branch: `lab1-staging` (this evidence will be re-verified against `main` after the release PR merges)
-- Commit: `a03bd78`
+- Branch: `main` (final released state — release PR #12 merged `lab1-staging` into `main`)
+- Commit: `d3d2725`
 - Node version: v25.0.0
 - npm version: 11.6.2
 - PostgreSQL environment: two dedicated local databases on the same PostgreSQL 18 instance — `toktickit_dev` for manual/dev use, `toktickit_test` for automated Supertest runs (loaded via `server/.env.test`)
-- Date executed: 2026-08-05
+- Date executed: 2026-08-05 (re-confirmed against `main` on 2026-08-06 — code is byte-identical to the `lab1-staging` commit these results were originally captured from)
 
 ## Test Catalog
 
@@ -68,4 +68,4 @@ $ psql -c "SELECT COUNT(*), COUNT(DISTINCT name) FROM \"Category\";"
 - Loading state: verified via UI-02 (deterministic assertion using a manually-gated promise) and via the real dev server (button shows "Checking…" while the request is in flight).
 - Success state: verified end-to-end against the real server + seeded database (see curl output above) — `System Status: Online` plus all four categories in the required order.
 - Failure state: verified via UI-03 (mocked network rejection) and manually during Issue 2 by stopping the real server and confirming the browser-equivalent fetch fails with `Unable to connect to TokTickIT API`.
-- Browser Network-tab screenshot: **not yet captured** — this is a Part 4 App Demo artifact, to be captured during `PREPARE SUBMISSION EVIDENCE`, not part of this automated-test evidence file.
+- Browser Network-tab screenshot: captured — `System Status: Online` alongside DevTools Network tab showing `/api/health` and `/api/categories` both returning 200 (Part 4 App Demo evidence, see submission PDF).
