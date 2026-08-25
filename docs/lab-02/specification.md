@@ -88,6 +88,16 @@ Because authentication is a sprint away, they accepted a temporary Requester sel
 - **FR-32** The system shall preserve entered form values when a submission fails for a recoverable reason.
 - **FR-33** The system shall present a usable layout at desktop, tablet, and mobile viewport widths.
 
+### Workflow and state transitions
+
+Recorded as a named subsection because Lecture 4 (slide 100) lists workflow and state transitions among the required Feature-Level SDS contents. Two lifecycles exist in this sprint, and both are deliberately narrow.
+
+**Ticket status.** The enum in §7 declares seven values because it models the whole product, but this sprint drives exactly one transition: *(none)* → `NEW`, at creation. No requester-facing action in scope changes a Ticket's status afterwards. The remaining six values are reachable only by IT Staff actions that Lab 3 introduces. A Ticket therefore has no editable state in Lab 2 — a fact that Issues implementing the detail screen must respect rather than anticipate, since a control that changes status would be outside scope and unenforced on the server.
+
+**Attachment lifecycle.** `active` → `soft-removed`, one direction only. The transition sets `removedAt`, `removedReason`, and `removedById`, and it is not reversible in this sprint. A soft-removed attachment keeps its metadata and remains visible as a removed row; requests for its content are refused with 410 rather than 404, because the record demonstrably existed. Removal of an already-removed attachment is not an error state to model but a no-op the handler must recognise. TC-014 proves both the legal transition and the refusal that follows it.
+
+**Requester context** is session state rather than entity state, and is not modelled here. Its behaviour is fixed by BR-12 and BR-14.
+
 ## 5. Business Rules
 
 ### System-generated values and defaults
@@ -145,6 +155,22 @@ Because authentication is a sprint away, they accepted a temporary Requester sel
 
 ### Transition to Lab 3
 - **BR-42** `RequesterUser` is a temporary Lab 2 model. In Lab 3 it is superseded by the authenticated `User` model with roles; the requester identifier carried by the API is replaced by the session-derived identity, and no client-supplied requester identifier is accepted thereafter.
+
+### Permissions
+
+Recorded as a named subsection for the same reason as the previous one — Lecture 4 slide 100 lists permissions among the required Feature-Level SDS contents. The rules themselves are not new; they are gathered here from BR-12, BR-14, BR-16, and FR-30 so that a reviewer can find the whole authorization story in one place.
+
+This sprint has **no authentication and exactly one role.** Every actor is a Development Requester, selected rather than logged in. That makes the permission model small, and it makes stating its limits more important than stating its rules.
+
+| Actor | May | May not |
+|---|---|---|
+| Development Requester | Create a Ticket; list, search, filter, sort, and page their own Tickets; open their own Ticket; add, download, and soft-remove attachments on their own Tickets | Read or modify another requester's Ticket or its attachments; change any Ticket's status, IT priority, or owner; act as an inactive requester |
+
+**Enforcement.** Every rule above is enforced in the request handler against the requester context carried by `X-Requester-Id`, never by the presence or absence of a control in the UI. TC-003 proves this by calling each endpoint directly with a mismatched requester and no UI involved.
+
+**Failure shape.** A cross-requester access returns 404 rather than 403 (BR-16, §11.3). A 403 would confirm that the record exists while refusing it; with UUID identifiers that are not guessable, 404 keeps existence undisclosed.
+
+**Known limitation, stated deliberately.** `X-Requester-Id` is client-supplied and therefore trivially forged. This is not an oversight but the accepted consequence of a sprint scoped without authentication: the labsheet defers login to Lab 3, and BR-42 records the replacement. The header is treated as an identity *claim* that the server resolves and validates against an active `RequesterUser` — it is never trusted as an authorization *decision*. The ownership check runs on every request regardless. When Lab 3 introduces sessions, the claim's source changes and every check downstream of it stays as written; that is why the requester context enters through a single middleware rather than through each endpoint's body (§11.4).
 
 ## 6. UI Specification Summary
 
@@ -265,7 +291,7 @@ Full request and response shapes are in `api-spec.md`. Capability summary:
 
 ## 10. Definition of Done
 
-> **Provisional.** The items below are derived from the labsheet's own Definition of Done requirements (§13.1 Product Completion, §13.2 Course Delivery). Lecture 4 (Test Design, TDD, Verification, and Definition of Done, 25 Aug) covers this topic directly; its guidance will be folded in as an amendment to this section. Everything else in this specification is settled and implementation may proceed against it.
+> **Settled, 25 August 2026.** This section was previously marked provisional pending Lecture 4. Lecture 4 (*UML, SDS Features, STS Features*) does not address the Definition of Done — the term appears nowhere in its 161 slides — so no external guidance is outstanding. The items below stand on the labsheet's own requirements (§13.1 Product Completion, §13.2 Course Delivery), extended with the completion gate in `testing-contract.md` §6. Implementation proceeds against this section as written.
 
 ### Part 1 — Product completion
 - All approved scope in §3 is implemented; nothing from the excluded list was added
@@ -280,6 +306,7 @@ Full request and response shapes are in `api-spec.md`. Capability summary:
 - Seed remains idempotent
 - No secret, `.env`, credential, uploaded file, or `node_modules` is tracked
 - README setup, run, and test instructions are current
+- Every Issue satisfies the completion gate in `testing-contract.md` §6, including red-phase evidence
 
 ### Part 2 — Course delivery
 - Work decomposed into GitHub Issues on the Kanban board, each moved through the six statuses truthfully
@@ -289,6 +316,7 @@ Full request and response shapes are in `api-spec.md`. Capability summary:
 - One release Pull Request from `lab2-staging` to `main`
 - `docs/lab-02/` contains `specification.md`, `tests.md`, `ui-spec.md`, `api-spec.md`, `reviewer.md`, `ai-use.md`
 - Submission PDF prepared in the required "Answer Part 1–9" order
+- Every UI Issue audited against `style-contract.md` §9 before review was requested
 
 ## 11. Assumptions and Decisions
 
@@ -323,3 +351,23 @@ A Ticket carries the requester's problem description and is the valuable record;
 
 **11.10 Event/audit records are out of scope for this sprint.**
 The SDS requires a `TicketEvent` written in the same transaction as material changes. This sprint's only material change is ticket creation and attachment addition/removal, and the labsheet excludes the event log from Lab 2 scope. The transaction boundaries are structured so that adding event writes later does not require reshaping the services.
+
+**11.11 Section numbering follows the labsheet, not Lecture 4 slide 100.**
+Lecture 4 lists eleven Feature-Level SDS contents that differ in name and order from the labsheet's eleven required sections. The labsheet governs grading, so its numbering is kept and the lecture's contents are mapped onto it. Two of the lecture's items had no home and are now named subsections — *workflow and state transitions* under §4 and *permissions* under §5 — so that nothing the lecture requires is merely implied.
+
+| Lecture 4 slide 100 | Where it lives here |
+|---|---|
+| Feature purpose and scope | §1, §3 |
+| Related SRS requirements | §4 |
+| Workflow and state transitions | §4 — *Workflow and state transitions* |
+| Business rules | §5 |
+| Data model changes | §7, `diagrams.md` §1 |
+| API endpoints | §8, `api-spec.md` |
+| UI behaviour | §6, `ui-spec.md` |
+| Permissions | §5 — *Permissions* |
+| Validation and error handling | §5, `api-spec.md` |
+| Acceptance criteria | §9 |
+| Test considerations | `tests.md`, `testing-contract.md` |
+
+**11.12 Two UML diagrams are produced, not four.**
+Lecture 4 teaches use-case, sequence, activity, and class diagrams; the labsheet requires none. Class and activity diagrams are produced because each settles a decision the implementation Issues consume — the entity structure and the transaction boundary around ticket-number allocation. A use-case diagram covering one actor performing four operations, and a sequence diagram restating the activity diagram's flow, would add pages without deciding anything, and a diagram that decides nothing drifts from the code unnoticed. Recorded here so the omission reads as a choice rather than an oversight.
