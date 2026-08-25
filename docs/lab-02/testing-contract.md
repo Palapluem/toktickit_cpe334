@@ -58,12 +58,17 @@ Every feature satisfies these regardless of which Issue delivers it. Each has on
 - **TC-010** Ticket Number is unique under concurrent creation. The test issues genuinely parallel requests; a sequential loop does not prove this.
 - **TC-011** A multi-row write either completes entirely or leaves nothing behind.
 - **TC-012** Server-owned values — identifier, ticket number, timestamps, status — are assigned by the server and ignored when supplied by the client.
+- **TC-024** The Ticket Number year follows the `Asia/Bangkok` calendar (BR-04, §11.13). Tested with an injected fixed clock at 31 December 16:59 UTC and 17:00 UTC — the two sides of the Bangkok year boundary — never by waiting for a real date. `createdAt` remains UTC in the same assertion.
 
 ### D. Attachments
 
 - **TC-013** Rejected file types and oversized files are refused with the specified status, and nothing is written to disk.
 - **TC-014** Soft removal retains metadata and refuses content on subsequent requests (TDT-04).
 - **TC-015** The attachment count limit is enforced at the boundary.
+- **TC-022** A **rule violation** during Ticket creation — a file over the size limit or of a disallowed type — rejects the whole request and creates **no Ticket**. Verified by reading back and finding nothing, not by the status code alone.
+- **TC-023** A **storage failure** during Ticket creation keeps the Ticket and reports the file in `attachmentFailures`. The stored-file adapter is stubbed to fail; a test that cannot induce this case is not testing it.
+
+TC-022 and TC-023 are a matched pair (`specification.md` §11.14). An implementation that collapses the two classes passes whichever one is written alone, so neither may be omitted.
 
 ### E. List Behaviour
 

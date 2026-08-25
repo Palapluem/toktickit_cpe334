@@ -146,7 +146,7 @@ Create one validated Ticket for the current Requester.
 | `summary` | required, trimmed, 5–150 characters |
 | `description` | required, trimmed, 10–5000 characters |
 | `requestedPriority` | required, one of `LOW`, `MEDIUM`, `HIGH`, `URGENT` |
-| `attachments` | optional, at most 5 files, each ≤5 MB, MIME and extension in {jpg, jpeg, png, webp, pdf} |
+| `attachments` | optional, at most 5 files, each ≤5 MB, MIME and extension in {jpg, jpeg, png, webp, pdf}. Checked **before** the Ticket is created — a violation rejects the whole request (`specification.md` BR-34) |
 
 **201**
 ```json
@@ -180,7 +180,7 @@ Create one validated Ticket for the current Requester.
 }
 ```
 
-`attachmentFailures` reports per-file problems when the Ticket was created but a file could not be stored (`specification.md` BR-34). It is an empty array on a fully clean create:
+`attachmentFailures` reports per-file problems when the Ticket **was** created but a file could not be **stored**. It never carries a rule violation: an oversized or disallowed file is rejected before the Ticket exists (see the two failure classes below). It is an empty array on a fully clean create:
 
 ```json
 "attachmentFailures": [
@@ -190,7 +190,36 @@ Create one validated Ticket for the current Requester.
 
 **Failures:** `400 VALIDATION_FAILED` (any field rule, or an unknown/server-controlled property supplied) · `400 REQUESTER_CONTEXT_REQUIRED` · `400 REQUESTER_INACTIVE` · `413 FILE_TOO_LARGE` · `415 UNSUPPORTED_FILE_TYPE` · `500 INTERNAL_ERROR`
 
-The Ticket Number is allocated inside the same transaction as the insert, so two concurrent creates cannot collide (`specification.md` BR-05).
+#### The two attachment failure classes
+
+An attachment can fail this endpoint in two ways, and they do **not** behave alike (`specification.md` BR-34, §11.14). Implementing one and assuming the other follows is the mistake this section exists to prevent.
+
+| | Rule violation | Storage failure |
+|---|---|---|
+| Example | 6 MB file; `.exe`; MIME/extension mismatch | disk full, permission denied, adapter error |
+| Detected | before any write | after the Ticket row exists |
+| Ticket | **not created** | **kept** |
+| Response | `413 FILE_TOO_LARGE` / `415 UNSUPPORTED_FILE_TYPE` | `201` with `attachmentFailures` populated |
+| Requester can fix by resubmitting? | no — same file fails again | possibly — retry may succeed |
+
+All files are validated **before** the transaction opens. If any one violates BR-26 or BR-27, the request is rejected whole: no Ticket, no partial upload, no stored file. The error names the offending file so the requester knows which to replace.
+
+```json
+{
+  "error": {
+    "code": "FILE_TOO_LARGE",
+    "message": "One or more files exceed the 5 MB limit.",
+    "fieldErrors": [
+      { "field": "attachments[1]", "message": "screenshot.png is 6.2 MB; the limit is 5 MB." }
+    ],
+    "correlationId": "0f2c9e18-..."
+  }
+}
+```
+
+Once validation has passed and the transaction has committed, a file that then fails to store does **not** undo the Ticket. It is reported in `attachmentFailures` and the requester re-adds it from Ticket Detail.
+
+The Ticket Number is allocated inside the same transaction as the insert, so two concurrent creates cannot collide (`specification.md` BR-05). The year in that number is the `Asia/Bangkok` calendar year, not the UTC one (`specification.md` BR-04, §11.13); `createdAt` in the response remains UTC.
 
 ---
 
