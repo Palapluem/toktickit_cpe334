@@ -71,12 +71,14 @@ Active Ticket Categories for the Create Ticket form. Not requester-scoped.
   "data": [
     { "id": "3f1a...", "name": "Account and Access" },
     { "id": "8c22...", "name": "Hardware" },
-    { "id": "b0d7...", "name": "Software" },
-    { "id": "e5f9...", "name": "Network" }
+    { "id": "b0d7...", "name": "Network" },
+    { "id": "e5f9...", "name": "Software" }
   ]
 }
 ```
 Ordered by `name` ascending. Inactive categories are excluded.
+
+> The example previously listed Software before Network, matching the order the labsheet writes the four names in rather than the ordering rule stated here. Corrected during the Issue #18 contract review: the rule is authoritative and the example now obeys it. Presentation order is not a property of the data (`specification.md` §11.15).
 
 ### `GET /api/related-systems`
 Active Related Systems. Not requester-scoped. Same shape and ordering as categories.

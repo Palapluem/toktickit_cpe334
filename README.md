@@ -1,11 +1,18 @@
-# TokTickIT — CPE334 Lab 1
+# TokTickIT — CPE334 Labs 1–2
 
 ## Purpose
 
-A tiny full-stack vertical slice — **React UI → Express REST API → Prisma ORM → PostgreSQL** —
-proving the required technology stack works together end-to-end. The app shows a
-`[Check System]` button that reports backend health and the four IT request
-categories stored in the database.
+A full-stack IT service-desk application — **React UI → Express REST API →
+Prisma ORM → PostgreSQL**.
+
+**Lab 1** proved the stack works end to end: a `[Check System]` button reporting
+backend health and the four IT request categories stored in the database.
+
+**Lab 2** builds the Requester-facing ticketing MVP on that foundation — Create
+Ticket, My Tickets, Ticket Detail, and attachments — against the engineering
+contract in [`docs/lab-02/`](docs/lab-02/). Start with
+[`AGENTS.md`](AGENTS.md), which names each contract document and the order to
+read them in.
 
 ## Prerequisites
 
@@ -48,21 +55,47 @@ npm run build    # production build
 
 ## Database / Prisma Setup
 
+Two databases: one for development, one for automated tests. They are separate
+on purpose — the test setup rewrites whatever it is pointed at, and that must
+never be the database holding demonstration data
+(`docs/lab-02/specification.md` §11.16).
+
 ```bash
+createdb toktickit_dev
+createdb toktickit_test
+
 cd server
-npx prisma generate       # generate the Prisma Client
-npx prisma migrate dev    # apply migrations (added starting Issue 3)
+cp .env.example .env         # DATABASE_URL → toktickit_dev
+cp .env.example .env.test    # DATABASE_URL → toktickit_test
+
+npx prisma generate          # generate the Prisma Client
+npx prisma migrate deploy    # apply migrations to the development database
+npm run db:seed              # reference data — idempotent, safe to repeat
 ```
 
 `DATABASE_URL` must point at a local, disposable PostgreSQL database. Credentials
 are never committed — only `.env.example` is tracked.
 
+The seed loads the reference data every screen depends on: four Categories,
+seven Related Systems, and five Development Requesters, one of which is
+deliberately inactive so the filtering rules (BR-10, BR-11) can be demonstrated
+rather than assumed.
+
 ## Test Commands
 
 ```bash
-cd server && npm test     # Vitest + Supertest — server/tests/lab-01/
-cd client && npm test     # Vitest + Testing Library — client/tests/lab-01/
+cd server && npm test     # migrates + seeds toktickit_test, then runs the suite
+cd client && npm test     # Vitest + Testing Library
 ```
+
+`npm test` on the server prepares the test database first, so the suite is
+reproducible from a clean clone rather than depending on a database somebody
+prepared by hand. Use `npm run test:only` to skip that step when the test
+database is already current.
+
+Server tests live in `server/tests/lab-01/` and `server/tests/lab-02/`; every
+test cites the `FR`/`BR`/`AC`/`TC`/`STY` identifier it proves
+(`docs/lab-02/testing-contract.md` TCS-01).
 
 ## Branch and Pull Request Rules
 

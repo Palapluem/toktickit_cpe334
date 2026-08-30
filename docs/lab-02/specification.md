@@ -201,7 +201,9 @@ All identifiers are UUID (§11.1). Timestamps are `timestamptz` in UTC.
 
 **Enums:** `Priority { LOW, MEDIUM, HIGH, URGENT }`, `TicketStatus { NEW, ASSIGNED, IN_PROGRESS, PENDING_REQUESTER, RESOLVED, CLOSED, CANCELLED }`.
 
-**Relationships:** one `RequesterUser` has many `Ticket`; one `Ticket` belongs to one `RequesterUser`; one `Ticket` has many `Attachment`; one `Category` is used by many `Ticket`; one `RelatedSystem` is used by many `Ticket`; one `RequesterUser` uploads many `Attachment`.
+**Relationships:** one `RequesterUser` has many `Ticket`; one `Ticket` belongs to one `RequesterUser`; one `Ticket` has many `Attachment`; one `Category` is used by many `Ticket`; one `RelatedSystem` is used by many `Ticket`; one `RequesterUser` uploads many `Attachment`; one `RequesterUser` removes many `Attachment`.
+
+`Attachment` holds **two** references to `RequesterUser` — `uploadedById` (required) and `removedById` (nullable) — so the two relations are named explicitly, `AttachmentUploader` and `AttachmentRemover`. Prisma cannot infer which back-reference belongs to which field when a model is referenced twice, and refuses to generate a client without the names. Recorded because the relationship list above reads as though there were one.
 
 **Constraints and indexes:**
 - Unique: `RequesterUser.email`, `Category.name`, `RelatedSystem.name`, `Ticket.ticketNo`, `Attachment.storedFilename`
@@ -219,10 +221,23 @@ All identifiers are UUID (§11.1). Timestamps are `timestamptz` in UTC.
 
 **Implementation order.** The schema Issue precedes the ticket-service Issue. `Ticket`, `Attachment`, `RequesterUser`, `TicketNumberSequence`, and both enums do not exist yet, so no ticket endpoint can be written, and no API test for one can fail *for the intended reason* — it would fail at the Prisma client instead, which `testing-contract.md` §5 rejects as red-phase evidence. The theme Issue touches no database and runs in parallel with either.
 
-**Seed data (idempotent, safe to run repeatedly):**
-- 4 Categories: Account and Access, Hardware, Software, Network
-- 7 Related Systems: Email, Campus Wi-Fi, VPN, LEB2 App, Grade Submission App, Printer, Corporate Laptop
-- 4 active Development Requesters and 1 inactive Development Requester
+**Seed data (idempotent, safe to run repeatedly).** Identities are fixed here rather than left to the implementation, because they appear in the Part 5–8 screenshots: changing a name later means retaking them.
+
+- **4 Categories** — Account and Access, Hardware, Network, Software
+- **7 Related Systems** — Campus Wi-Fi, Corporate Laptop, Email, Grade Submission App, LEB2 App, Printer, VPN
+- **5 Development Requesters**
+
+| Display name | Email | Active |
+|---|---|---|
+| Jennifer Anderson | `jennifer.anderson@example.ac.th` | yes |
+| Michael Brown | `michael.brown@example.ac.th` | yes |
+| Sarah Johnson | `sarah.johnson@example.ac.th` | yes |
+| David Lee | `david.lee@example.ac.th` | yes |
+| Robert Wilson | `robert.wilson@example.ac.th` | **no** |
+
+Robert Wilson exists solely to prove BR-10 and BR-11 — he must never appear in the selector, and must never become a Ticket's requester. A seed with only active rows cannot demonstrate either rule.
+
+Both reference lists are seeded and returned in `name` order (§11.15). Seeding is idempotent by `name` for reference data and by `email` for Requesters, so a repeated run updates nothing and inserts nothing.
 
 ## 8. API Contract
 
@@ -398,6 +413,23 @@ The line is drawn on **whether the requester can act on the failure**, not on wh
 This extends SDS §11.9 rather than contradicting it. §11.9 established that an attachment failure does not roll back Ticket creation; that reasoning holds for faults outside the requester's control and was never meant to shield an input the requester supplied and can fix. BR-43 states the test to apply when a new failure mode appears.
 
 *Consequence for `api-spec.md`:* `413 FILE_TOO_LARGE` and `415 UNSUPPORTED_FILE_TYPE` on `POST /api/tickets` reject the entire request, and `attachmentFailures` carries only post-creation storage faults. Both paths are separately tested; a suite that exercises only one of them would pass against an implementation that collapses the two.
+
+**11.15 Presentation order is a rule, not a property of the data.**
+`api-spec.md` stated that reference lists are ordered by `name`, while its own Categories example listed *Software* before *Network* — the order the labsheet happens to write the four names in. The Related Systems example, by contrast, was alphabetical. The rule is authoritative and the example was corrected.
+
+The alternative was to preserve the labsheet's sequence, which would require either a `sortOrder` column that §7 does not have, or an implicit dependence on insertion order. Insertion order is not a guarantee any database makes without an `ORDER BY`, so a list that looked right in development would reorder itself the first time a row was updated or the seed ran differently — a defect that appears late, intermittently, and in a screenshot.
+
+Ordering by `name` is also what the rewritten Lab 1 test can assert without asserting identifiers, which §11.1 requires.
+
+**11.16 Automated tests run against a dedicated database, reset and seeded once per run.**
+Lab 1 left this undefined: `tests/lab-01/setup.ts` points at `.env.test`, but nothing documented how that database came to exist, and the Categories test simply assumed a pre-seeded one. That assumption does not survive this sprint — `testing-contract.md` TCS-03 requires each test to seed what it needs, and Lab 2 adds cases needing two distinct requesters, removed attachments, and specific ticket counts.
+
+The strategy is split by what the data is for:
+
+- **Reference data** — Categories, Related Systems, Requesters — is migrated and seeded **once** before the suite. It is read-only to every test, and re-seeding it per test would cost time to restore something nothing mutates.
+- **Transactional data** — Tickets and Attachments — is created by the test that needs it and removed afterwards. No test may depend on a Ticket another test created, and none may assume an empty Ticket table it did not empty itself.
+
+`.env.test` stays untracked, and `.env.example` documents the variable so the database is reproducible from a clean clone. Test and development databases are separate: a suite that truncates tables must never be one command away from the database holding the screenshots.
 
 **11.17 Priority badges get their own colour tokens.**
 `ui-spec.md` §10 described priority as "grey, amber, orange-red, dark red" while §1 defined no token for any of them. Every way of implementing it as written broke a rule: reusing `--zen-error` for `URGENT` violates STY-004, which reserves semantic tokens for their semantics, and writing the hex values inline violates STY-001.

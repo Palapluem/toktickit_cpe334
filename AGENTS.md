@@ -86,4 +86,6 @@ The human is the **Orchestrator**: reviews and approves, and owns the blueprint.
 
 **Never commit** secrets, `.env`, credentials, uploaded files, `node_modules`, build output, or course material. Database passwords must not appear in committed files or in submitted screenshots.
 
+**Comments are one or two lines.** Never a paragraph, never a multi-paragraph block, JSDoc included. Keep the identifier a construct traces to (`BR-04`, `§11.13`, `TDT-02`) and the non-obvious reason where there is one; drop anything that restates the code or re-argues a decision `docs/lab-02/` already records. Rationale in a document is read once, deliberately; in code it is read every time, and a paragraph above a three-line function makes that function harder to find. The same applies to Pull Request descriptions: a list first, long reasoning collapsed underneath.
+
 **Scope discipline.** Implement the Issue in front of you. Improvements noticed along the way are recorded, not performed — an unrelated change in a diff costs the reviewer more than it saves.
