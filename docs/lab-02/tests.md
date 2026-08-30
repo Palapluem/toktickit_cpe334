@@ -186,13 +186,16 @@ cd client && npm test
 npx playwright test
 ```
 
-Database preparation for API integration tests:
+Database preparation for API integration tests is no longer a manual step. `npm test` runs it, so the suite is reproducible from a clean clone rather than depending on a database somebody prepared by hand (`specification.md` §11.16):
 
 ```bash
 cd server
-DATABASE_URL="postgresql://postgres:***@localhost:5432/toktickit_test?schema=public" npx prisma migrate deploy
-DATABASE_URL="postgresql://postgres:***@localhost:5432/toktickit_test?schema=public" npx tsx prisma/seed.ts
+cp .env.example .env.test   # point DATABASE_URL at a database whose name ends in _test
+npm test                    # migrates, seeds, then runs the suite
+npm run test:only           # skip preparation when the test database is current
 ```
+
+Connection strings are never written into a command or a document. They live in `.env.test`, which is untracked; only `.env.example` is committed. The preparation script refuses any `DATABASE_URL` whose database name does not end in `_test`, because `migrate deploy` rewrites whatever it is pointed at.
 
 ## 6. Final Results
 
