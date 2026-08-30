@@ -50,8 +50,8 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 
 | Test ID | Requirement / AC | What it tests | Expected result | Automated test file | Final |
 |---|---|---|---|---|---|
-| UNIT-01 | BR-04, AC-14 | Ticket number formatting | Returns `TKT-<year>-000001` zero-padded to six digits | `server/tests/lab-02/ticket-number.unit.test.ts` | ☐ |
-| UNIT-02 | BR-04 | Annual sequence reset | First ticket of a new year restarts at `000001` | `server/tests/lab-02/ticket-number.unit.test.ts` | ☐ |
+| UNIT-01 | BR-04, AC-14 | Ticket number formatting | Returns `TKT-<year>-000001` zero-padded to six digits | `server/tests/lab-02/ticket-number.unit.test.ts` | ✅ |
+| UNIT-02 | BR-04 | Annual sequence reset | First ticket of a new year restarts at `000001`; the year follows the `Asia/Bangkok` calendar (§11.13) | `server/tests/lab-02/ticket-number.unit.test.ts` | ✅ |
 | UNIT-03 | BR-19, BR-20, BR-21 | Create-ticket validation schema | Trims input; rejects short/long Summary and Description; whitespace-only is empty | `server/tests/lab-02/validation.unit.test.ts` | ☐ |
 | UNIT-04 | BR-26, BR-27 | Attachment rule checks | Accepts jpg/jpeg/png/webp/pdf ≤5 MB; rejects other types and oversized files | `server/tests/lab-02/attachment-rules.unit.test.ts` | ☐ |
 | UNIT-05 | BR-38, BR-39 | Query-parameter parsing | Applies defaults; rejects non-whitelisted `sort`, `pageSize` >50, non-numeric `page` | `server/tests/lab-02/ticket-query.unit.test.ts` | ☐ |
@@ -186,13 +186,16 @@ cd client && npm test
 npx playwright test
 ```
 
-Database preparation for API integration tests:
+Database preparation for API integration tests is no longer a manual step. `npm test` runs it, so the suite is reproducible from a clean clone rather than depending on a database somebody prepared by hand (`specification.md` §11.16):
 
 ```bash
 cd server
-DATABASE_URL="postgresql://postgres:***@localhost:5432/toktickit_test?schema=public" npx prisma migrate deploy
-DATABASE_URL="postgresql://postgres:***@localhost:5432/toktickit_test?schema=public" npx tsx prisma/seed.ts
+cp .env.example .env.test   # point DATABASE_URL at a database whose name ends in _test
+npm test                    # migrates, seeds, then runs the suite
+npm run test:only           # skip preparation when the test database is current
 ```
+
+Connection strings are never written into a command or a document. They live in `.env.test`, which is untracked; only `.env.example` is committed. The preparation script refuses any `DATABASE_URL` whose database name does not end in `_test`, because `migrate deploy` rewrites whatever it is pointed at.
 
 ## 6. Final Results
 

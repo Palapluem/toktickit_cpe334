@@ -3,8 +3,10 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     environment: 'node',
-    include: ['tests/lab-01/**/*.test.ts'],
-    setupFiles: ['./tests/lab-01/setup.ts'],
-    passWithNoTests: true,
+    include: ['tests/**/*.test.ts'],
+    setupFiles: ['./tests/setup.ts'],
+    // Seeded reference data is shared, so files run sequentially.
+    fileParallelism: false,
+    hookTimeout: 60_000,
   },
 })
