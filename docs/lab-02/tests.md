@@ -2,7 +2,15 @@
 
 **Version:** 1.0 — approved for implementation, 24 August 2026
 **Status:** planned-test table derived from `specification.md` §9 acceptance criteria. Strategy in §1 is grounded in the testing taxonomy taught in Lecture 3.
-**Open pending Lecture 4** (Test Design, TDD, Verification, and Definition of Done — 25 Aug): whether a test-design technique should be named per test group (equivalence partitioning, boundary-value analysis, decision tables), the convention for evidencing the red phase, and any additional test level the lecture requires.
+**Open items closed, 25 August 2026.** All three questions this plan left pending Lecture 4 are now resolved in `testing-contract.md`:
+
+| Question left open | Resolution |
+|---|---|
+| Should a test-design technique be named per test group? | Yes. Five techniques are defined as `TDT-01`…`TDT-05` in `testing-contract.md` §2, each with the groups it applies to. Name the technique in the group's header comment. |
+| What is the convention for evidencing the red phase? | `testing-contract.md` §5 — a `test:` commit with the failing test alone, a capture of the assertion failure, a separate `feat:`/`fix:` commit, and a capture of the pass. |
+| Does the lecture require an additional test level? | No. Lecture 4 slides 136–138 confirm the taxonomy already used here. Slide 137 adds a per-feature versus per-sprint distinction, now recorded in the level table of `testing-contract.md` §1. |
+
+Lecture 4 does not address the Definition of Done; `specification.md` §10 is settled independently.
 
 > This plan is written **before** implementation. It is not to be reconstructed afterwards from whatever tests the coding agent happened to generate.
 
