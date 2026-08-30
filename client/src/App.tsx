@@ -4,6 +4,7 @@ import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/AppShell.js'
 import { EmptyState } from './components/States.js'
 import { SystemCheck } from './screens/SystemCheck.js'
+import { StyleGuide } from './screens/StyleGuide.js'
 
 function Placeholder({ title, issue }: { title: string; issue: string }) {
   return (
@@ -41,6 +42,7 @@ function App() {
           element={<Placeholder title="Ticket Detail" issue="#22" />}
         />
         <Route path="/system-check" element={<SystemCheck />} />
+        <Route path="/style-guide" element={<StyleGuide />} />
       </Route>
     </Routes>
   )

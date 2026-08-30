@@ -272,6 +272,12 @@ Completed against real screenshots, not memory, and compared with this document 
 | 15 | Attachment controls usable; removed attachments show no download link | ☐ | ☐ | ☐ |
 | 16 | Keyboard focus visible throughout; dialog focus trapped | ☐ | ☐ | ☐ |
 
+## 13a. Component state gallery
+
+`/style-guide` renders every control state this document requires on one page: editable, read-only, invalid, and disabled fields; all four button variants plus disabled and busy; all four priority and all seven status badges; and the loading, empty, and error states.
+
+It exists so the visual checklist in §13 can be walked, and the three viewport captures taken, without waiting for the screens that consume these components. A state absent from this page is a state that never gets photographed, so `client/tests/lab-02/style/style-guide.test.tsx` asserts each one is present.
+
 ## 14. Screenshot paths
 
 Captured by Playwright at desktop 1280×900, tablet 834×1112, mobile 390×844.
