@@ -50,8 +50,8 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 
 | Test ID | Requirement / AC | What it tests | Expected result | Automated test file | Final |
 |---|---|---|---|---|---|
-| UNIT-01 | BR-04, AC-14 | Ticket number formatting | Returns `TKT-<year>-000001` zero-padded to six digits | `server/tests/lab-02/ticket-number.unit.test.ts` | ☐ |
-| UNIT-02 | BR-04 | Annual sequence reset | First ticket of a new year restarts at `000001` | `server/tests/lab-02/ticket-number.unit.test.ts` | ☐ |
+| UNIT-01 | BR-04, AC-14 | Ticket number formatting | Returns `TKT-<year>-000001` zero-padded to six digits | `server/tests/lab-02/ticket-number.unit.test.ts` | ✅ |
+| UNIT-02 | BR-04 | Annual sequence reset | First ticket of a new year restarts at `000001`; the year follows the `Asia/Bangkok` calendar (§11.13) | `server/tests/lab-02/ticket-number.unit.test.ts` | ✅ |
 | UNIT-03 | BR-19, BR-20, BR-21 | Create-ticket validation schema | Trims input; rejects short/long Summary and Description; whitespace-only is empty | `server/tests/lab-02/validation.unit.test.ts` | ☐ |
 | UNIT-04 | BR-26, BR-27 | Attachment rule checks | Accepts jpg/jpeg/png/webp/pdf ≤5 MB; rejects other types and oversized files | `server/tests/lab-02/attachment-rules.unit.test.ts` | ☐ |
 | UNIT-05 | BR-38, BR-39 | Query-parameter parsing | Applies defaults; rejects non-whitelisted `sort`, `pageSize` >50, non-numeric `page` | `server/tests/lab-02/ticket-query.unit.test.ts` | ☐ |
