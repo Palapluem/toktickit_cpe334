@@ -1,17 +1,7 @@
-/**
- * Seed idempotency — Issue #18.
- *
- * Proves: the Definition of Done item "Seed remains idempotent"
- * (`specification.md` §10) and the seeding rule in §7.
- *
- * Test design technique: TDT-05 error guessing. The failure this guards against
- * is a seed written with `create` rather than `upsert`, which works perfectly on
- * a clean database and duplicates every row on the second run. Nothing else in
- * the suite would notice, because every other test reads the list once.
- *
- * The seed is invoked as a child process rather than imported, so what is tested
- * is the command a person actually runs.
- */
+// Seed idempotency (#18). Definition of Done, §7.
+// TDT-05: guards a seed written with create instead of upsert, which works on a
+// clean database and duplicates everything on the second run.
+// Invoked as a child process, so what is tested is the command people run.
 import { execFileSync } from 'node:child_process'
 import { describe, expect, it, beforeAll } from 'vitest'
 import request from 'supertest'
@@ -28,7 +18,7 @@ function runSeed(): void {
 
 describe('Definition of Done · the seed is idempotent', () => {
   beforeAll(() => {
-    // The suite has already seeded once; this is the second and third run.
+    // The suite seeded once already; these are runs two and three.
     runSeed()
     runSeed()
   }, 120_000)

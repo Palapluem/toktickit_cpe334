@@ -1,20 +1,6 @@
-/**
- * Lab 1 regression — GET /api/categories still serves the Create Ticket form.
- *
- * Rewritten in Issue #18. The original asserted a bare array with literal
- * identifiers 1–4. Lab 2 migrates Category to UUID (`specification.md` §11.1)
- * and adopts the `{ data: [...] }` envelope for every endpoint, so both halves
- * of that assertion had to change.
- *
- * It is rewritten rather than deleted: this endpoint is Lab 1's deliverable and
- * the point of a regression test is to notice when a migration breaks it. The
- * assertions now name the categories and their order, which survive a change of
- * identifier type — assertions on identifiers would not.
- *
- * Behaviour specific to the Lab 2 contract — the envelope shape, UUID format,
- * field exposure, and ordering rule — is covered in
- * `tests/lab-02/reference-data.test.ts`.
- */
+// Lab 1 regression. Rewritten in #18: the original asserted a bare array and
+// literal ids 1–4, both changed by the UUID migration (§11.1). Asserts names and
+// order, which survive it. Envelope and UUID shape: tests/lab-02/reference-data.
 import { describe, expect, it } from 'vitest'
 import request from 'supertest'
 import app from '../../src/app.js'

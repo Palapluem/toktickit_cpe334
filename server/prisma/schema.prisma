@@ -1,11 +1,5 @@
-// TokTickIT data model — Lab 2 sprint scope.
-//
-// Authority: `docs/lab-02/specification.md` §7, drawn as a class diagram in
-// `docs/lab-02/diagrams.md` §1. Where this file and the specification disagree,
-// the specification wins and this file is corrected (AGENTS.md §4).
-//
-// Identifiers are UUID throughout (§11.1). Timestamps are stored in UTC; the
-// Bangkok calendar governs only the year label inside a Ticket Number (§11.13).
+// TokTickIT data model. Authority: docs/lab-02/specification.md §7.
+// UUID identifiers (§11.1). Timestamps UTC.
 
 generator client {
   provider = "prisma-client"
@@ -34,8 +28,6 @@ enum TicketStatus {
 }
 
 /// Temporary Lab 2 stand-in for the authenticated user (BR-03, BR-42).
-/// Lab 3 replaces this with a User model carrying roles; the requester
-/// identifier then comes from the session rather than from a request header.
 model RequesterUser {
   id          String   @id @default(uuid()) @db.Uuid
   displayName String
@@ -82,8 +74,7 @@ model Ticket {
   itPriority        Priority
   status            TicketStatus @default(NEW)
 
-  /// Stays null for the whole of Lab 2 (BR-07). Modelled now so that Lab 3 adds
-  /// a foreign key rather than a column.
+  /// Null throughout Lab 2 (BR-07); modelled now so Lab 3 adds a key, not a column.
   ownerId String? @db.Uuid
 
   createdAt DateTime @default(now()) @db.Timestamptz(3)
@@ -94,10 +85,8 @@ model Ticket {
   relatedSystem RelatedSystem @relation(fields: [relatedSystemId], references: [id], onDelete: Restrict)
   attachments   Attachment[]
 
-  // Every list query is requester-scoped and default-sorted newest first (BR-37).
-  @@index([requesterId, createdAt(sort: Desc)])
-  // The filters exposed by FR-18.
-  @@index([requesterId, status])
+  @@index([requesterId, createdAt(sort: Desc)]) // default list query (BR-37)
+  @@index([requesterId, status]) // FR-18 filters
   @@index([requesterId, categoryId])
 }
 
@@ -114,26 +103,21 @@ model Attachment {
   uploadedById String   @db.Uuid
   createdAt    DateTime @default(now()) @db.Timestamptz(3)
 
-  /// Soft removal (BR-31). `removedAt` is the single source of truth for whether
-  /// an attachment is active; a separate boolean could disagree with it.
+  /// Soft removal (BR-31). removedAt is the only source of truth for active state.
   removedAt     DateTime? @db.Timestamptz(3)
   removedReason String?
   removedById   String?   @db.Uuid
 
   ticket     Ticket         @relation(fields: [ticketId], references: [id], onDelete: Restrict)
-  // Two references to the same model, so both relations are named (§7).
+  // Two references to one model, so both are named (§7).
   uploadedBy RequesterUser  @relation("AttachmentUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
   removedBy  RequesterUser? @relation("AttachmentRemover", fields: [removedById], references: [id], onDelete: Restrict)
 
-  // The active-attachment count in BR-28.
-  @@index([ticketId, removedAt])
+  @@index([ticketId, removedAt]) // active-attachment count (BR-28)
 }
 
-/// One row per calendar year, updated inside the ticket-creation transaction.
-/// Exists instead of MAX(ticketNo)+1 or a Postgres sequence: MAX is not safe
-/// under concurrent creation without locking the table, and a plain sequence
-/// cannot restart per year without an out-of-band job (§7). The year is the
-/// Asia/Bangkok year, matching the label it feeds (§11.13).
+/// One row per Bangkok calendar year (§11.13), locked inside the creation
+/// transaction. Chosen over MAX(ticketNo)+1 and Postgres sequences — see §7.
 model TicketNumberSequence {
   year      Int      @id
   lastValue Int      @default(0)

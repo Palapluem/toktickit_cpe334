@@ -1,20 +1,5 @@
-/**
- * Bring the dedicated test database up to date, then seed its reference data.
- *
- * `specification.md` §11.16 makes reference data a once-per-run fixture: it is
- * read-only to every test, so restoring it per test would cost time to rebuild
- * something nothing mutates. Transactional data is each test's own.
- *
- * Lab 1 left this undefined — `tests/setup.ts` pointed at `.env.test` and the
- * Categories test simply assumed a database that somebody had prepared by hand.
- * That assumption is not reproducible from a clean clone, and TCS-03 does not
- * permit it.
- *
- * The guard below is the point of this file: it refuses to run against any
- * database whose name does not end in `_test`. `prisma migrate deploy` will
- * happily rewrite whatever DATABASE_URL points at, and a mistyped variable
- * would otherwise reach the development database holding the screenshots.
- */
+// Migrate and seed the dedicated test database (§11.16).
+// The name guard matters: migrate deploy rewrites whatever DATABASE_URL points at.
 import { execFileSync } from 'node:child_process'
 import { config } from 'dotenv'
 

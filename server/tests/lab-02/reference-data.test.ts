@@ -1,24 +1,6 @@
-/**
- * Reference-data endpoints — Issue #18.
- *
- * Proves: FR-01, FR-08, FR-09, BR-10, BR-22, and the ordering rule in
- * `specification.md` §11.15.
- *
- * Test design techniques (`testing-contract.md` §2):
- *   TDT-01 equivalence partitioning — active versus inactive rows are the two
- *          classes that behave differently; one representative of each suffices.
- *   TDT-05 error guessing — the inactive Requester is seeded precisely because
- *          a list of only active rows cannot prove it is being filtered out.
- *
- * Every test reads its rows through `expectDataArray`, which asserts the status
- * and the envelope first. Without it a missing or wrongly-shaped endpoint fails
- * with `undefined.map` — a TypeError describing the test's own shape rather than
- * the absent behaviour, which `testing-contract.md` §5 rejects as red-phase
- * evidence.
- *
- * These assert names and ordering, never identifiers. Identifiers are UUID and
- * regenerate on every migration (`specification.md` §11.1).
- */
+// Reference-data endpoints (#18). FR-01, FR-08, FR-09, BR-10, BR-22, §11.15.
+// TDT-01 active/inactive partition; TDT-05 the unfiltered-list failure.
+// Asserts names and order, never identifiers — UUIDs regenerate per migration.
 import { describe, expect, it } from 'vitest'
 import request from 'supertest'
 import app from '../../src/app.js'
@@ -103,11 +85,7 @@ describe('FR-01 · GET /api/requesters', () => {
     ).toEqual(ACTIVE_REQUESTER_NAMES)
   })
 
-  /**
-   * BR-10 is the reason the seed carries an inactive row at all. Asserting only
-   * that four names come back would pass against an endpoint with no filter
-   * whatsoever, so this names the row that must be absent.
-   */
+  // Naming the absent row: asserting four names would pass with no filter at all.
   it('BR-10 · never returns the inactive requester', async () => {
     const requesters = expectDataArray(await request(app).get('/api/requesters'))
 

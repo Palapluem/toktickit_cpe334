@@ -1,16 +1,6 @@
-/**
- * Reference-data seed — idempotent by design.
- *
- * Authority: `specification.md` §7. The identities below are fixed in the
- * specification rather than chosen here, because they appear in the submission
- * screenshots and renaming one later means retaking them.
- *
- * Every write is an upsert keyed on the natural unique column — `name` for
- * reference data, `email` for Requesters — so running this repeatedly inserts
- * nothing and updates nothing. `create` would work perfectly on a clean database
- * and duplicate every row on the second run; `tests/lab-02/seed-idempotency.test.ts`
- * is what stops that reaching a merge.
- */
+// Reference-data seed. Identities are fixed in specification.md §7 because they
+// appear in the submission screenshots. Upsert, not create — see the idempotency
+// test in tests/lab-02/seed-idempotency.test.ts.
 import prisma from '../src/prisma.js'
 
 const CATEGORY_NAMES = [
@@ -30,12 +20,7 @@ const RELATED_SYSTEM_NAMES = [
   'VPN',
 ]
 
-/**
- * Robert Wilson is inactive on purpose. He must never appear in the selector
- * (BR-10) and must never be a Ticket's requester (BR-11); a seed with only
- * active rows cannot demonstrate either rule, so the tests for them would pass
- * against an endpoint with no filter at all.
- */
+// Robert Wilson is inactive so BR-10 and BR-11 can be proved, not assumed.
 const REQUESTERS = [
   {
     displayName: 'Jennifer Anderson',
@@ -66,11 +51,7 @@ const REQUESTERS = [
 
 async function main() {
   for (const name of CATEGORY_NAMES) {
-    await prisma.category.upsert({
-      where: { name },
-      update: {},
-      create: { name },
-    })
+    await prisma.category.upsert({ where: { name }, update: {}, create: { name } })
   }
 
   for (const name of RELATED_SYSTEM_NAMES) {
@@ -84,8 +65,7 @@ async function main() {
   for (const requester of REQUESTERS) {
     await prisma.requesterUser.upsert({
       where: { email: requester.email },
-      // `isActive` is restated on update so that a row flipped by hand during
-      // testing returns to its specified state; the rest is left untouched.
+      // Restated so a row flipped by hand during testing returns to spec.
       update: { isActive: requester.isActive },
       create: requester,
     })

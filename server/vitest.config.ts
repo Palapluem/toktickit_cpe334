@@ -5,9 +5,7 @@ export default defineConfig({
     environment: 'node',
     include: ['tests/**/*.test.ts'],
     setupFiles: ['./tests/setup.ts'],
-    // Reference data is seeded once per run and read by many suites; running
-    // files in parallel against one database makes that seed a shared mutable
-    // resource. Sequential execution is the cheaper correctness guarantee here.
+    // Seeded reference data is shared, so files run sequentially.
     fileParallelism: false,
     hookTimeout: 60_000,
   },
