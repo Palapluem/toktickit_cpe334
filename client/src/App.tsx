@@ -1,77 +1,50 @@
-import { useState } from 'react'
-import { fetchHealth, fetchCategories, type Category } from './api.js'
+// Routes for the four Lab 2 screens plus the Lab 1 demonstration (§11.18, §11.19).
+// Screens are placeholders until their own Issues: #17, #20, #21, #22.
+import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
+import { AppShell } from './components/AppShell.js'
+import { EmptyState } from './components/States.js'
+import { SystemCheck } from './screens/SystemCheck.js'
+import { StyleGuide } from './screens/StyleGuide.js'
 
-type SystemState = 'idle' | 'loading' | 'online' | 'offline'
+function Placeholder({ title, issue }: { title: string; issue: string }) {
+  return (
+    <EmptyState title={title} detail={`Implemented in Issue ${issue}.`} />
+  )
+}
 
 function App() {
-  const [systemState, setSystemState] = useState<SystemState>('idle')
-  const [errorDetail, setErrorDetail] = useState<string | null>(null)
-  const [categories, setCategories] = useState<Category[]>([])
-
-  async function handleCheckSystem() {
-    setSystemState('loading')
-
-    try {
-      await fetchHealth()
-      const fetchedCategories = await fetchCategories()
-      setCategories(fetchedCategories)
-      setSystemState('online')
-    } catch (error) {
-      console.error('Health check failed:', error)
-      setErrorDetail(error instanceof Error ? error.message : 'Unknown error')
-      setSystemState('offline')
-    }
-  }
-
   return (
-    <div className="container py-5">
-      <nav className="navbar navbar-dark bg-dark rounded px-3 mb-4">
-        <span className="navbar-brand mb-0 h1">TokTickIT</span>
-      </nav>
+    <Routes>
+      <Route path="/" element={<Navigate to="/tickets" replace />} />
 
-      <div className="card shadow-sm">
-        <div className="card-body">
-          <h1 className="card-title">TokTickIT IT Service Desk</h1>
+      <Route
+        path="/select-requester"
+        element={<Placeholder title="Select Development Requester" issue="#17" />}
+      />
 
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={handleCheckSystem}
-            disabled={systemState === 'loading'}
-          >
-            {systemState === 'loading' ? 'Checking…' : 'Check System'}
-          </button>
-
-          {systemState === 'online' && (
-            <div className="mt-3">
-              <p className="mb-2">
-                System Status: <strong className="text-success">Online</strong>
-              </p>
-              <p className="mb-1 fw-semibold">Supported Request Categories</p>
-              <ol className="mb-0">
-                {categories.map((category) => (
-                  <li key={category.id}>{category.name}</li>
-                ))}
-              </ol>
-            </div>
-          )}
-
-          {systemState === 'offline' && (
-            <div className="mt-3">
-              <p className="mb-1">
-                System Status: <strong className="text-danger">Offline</strong>
-              </p>
-              <p className="text-danger mb-0">
-                Unable to connect to TokTickIT API
-              </p>
-              {errorDetail && (
-                <p className="text-muted small mb-0">Details: {errorDetail}</p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+      <Route
+        element={
+          <AppShell requesterName={undefined}>
+            <Outlet />
+          </AppShell>
+        }
+      >
+        <Route
+          path="/tickets"
+          element={<Placeholder title="My Tickets" issue="#21" />}
+        />
+        <Route
+          path="/tickets/new"
+          element={<Placeholder title="Create Ticket" issue="#20" />}
+        />
+        <Route
+          path="/tickets/:id"
+          element={<Placeholder title="Ticket Detail" issue="#22" />}
+        />
+        <Route path="/system-check" element={<SystemCheck />} />
+        <Route path="/style-guide" element={<StyleGuide />} />
+      </Route>
+    </Routes>
   )
 }
 

@@ -37,10 +37,24 @@ Declared once as CSS custom properties on `:root` and referenced by name everywh
 | `--zen-disabled-text` | `#8A968F` | Disabled control text |
 | `--zen-focus-ring` | `0 0 0 3px rgba(11,122,70,.35)` | Keyboard focus ring |
 
+### Priority tokens
+
+Priority has its own scale. It is neither an error nor a warning, so it does not borrow those tokens (§11.17).
+
+| Token | Value | Text on it | Priority |
+|---|---|---|---|
+| `--zen-priority-low-bg` | `#EEF1EF` | `--zen-priority-low-text` `#4A554E` | `LOW` |
+| `--zen-priority-medium-bg` | `#FFF4E0` | `--zen-priority-medium-text` `#8A5A00` | `MEDIUM` |
+| `--zen-priority-high-bg` | `#FDE8E3` | `--zen-priority-high-text` `#9A3412` | `HIGH` |
+| `--zen-priority-urgent-bg` | `#B3261E` | `--zen-priority-urgent-text` `#FFFFFF` | `URGENT` |
+
+The scale reads as escalating: two quiet tints, one warmer, then a filled block for `URGENT` — the only value that reverses foreground and background, so it stands out by weight rather than by hue alone. Every badge still carries its text label (§10), so a reader who cannot separate the four hues loses nothing.
+
 **Rules**
 - Warning colour is never used as ordinary decoration — only for a genuine warning.
 - Success is never conveyed by colour alone; it always carries text and, where useful, an icon.
 - Read-only shading must be clearly distinct from editable fields yet remain readable.
+- Priority tokens are used only for priority badges, and semantic tokens are never used for priority.
 
 ## 2. Typography and spacing
 
@@ -210,7 +224,7 @@ Row 5 — Description (full width, preserves line breaks)
 
 | Kind | Values and presentation |
 |---|---|
-| Priority | `LOW` grey · `MEDIUM` amber · `HIGH` orange-red · `URGENT` dark red. Requested and IT Priority use identical styling so they are visually comparable |
+| Priority | `LOW` `--zen-priority-low-*` · `MEDIUM` `--zen-priority-medium-*` · `HIGH` `--zen-priority-high-*` · `URGENT` `--zen-priority-urgent-*` (§1). Requested and IT Priority use identical styling so they are visually comparable |
 | Status | `NEW` `--zen-pale` with `--zen-primary` text (the only reachable value this sprint); remaining values styled for later labs |
 
 Every badge shows its **text label**; colour is supporting information only. Badge shape, padding, and font size are identical across every screen.
@@ -257,6 +271,12 @@ Completed against real screenshots, not memory, and compared with this document 
 | 14 | Empty and no-results states distinct and correctly worded | ☐ | ☐ | ☐ |
 | 15 | Attachment controls usable; removed attachments show no download link | ☐ | ☐ | ☐ |
 | 16 | Keyboard focus visible throughout; dialog focus trapped | ☐ | ☐ | ☐ |
+
+## 13a. Component state gallery
+
+`/style-guide` renders every control state this document requires on one page: editable, read-only, invalid, and disabled fields; all four button variants plus disabled and busy; all four priority and all seven status badges; and the loading, empty, and error states.
+
+It exists so the visual checklist in §13 can be walked, and the three viewport captures taken, without waiting for the screens that consume these components. A state absent from this page is a state that never gets photographed, so `client/tests/lab-02/style/style-guide.test.tsx` asserts each one is present.
 
 ## 14. Screenshot paths
 

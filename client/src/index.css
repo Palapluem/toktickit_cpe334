@@ -1,3 +1,292 @@
+@import './theme.css';
+
 body {
   margin: 0;
+  background: var(--zen-page-bg);
+  color: var(--zen-text);
+}
+
+/* ---- Shell ---- */
+
+.zen-shell__header {
+  background: var(--zen-primary);
+  color: var(--zen-surface);
+  padding: var(--zen-space-3) var(--zen-space-6);
+}
+
+.zen-shell__brand {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--zen-surface);
+  text-decoration: none;
+}
+
+.zen-shell__nav-link {
+  color: var(--zen-surface);
+  text-decoration: none;
+  padding: var(--zen-space-2) 0;
+  border-bottom: 3px solid transparent;
+}
+
+.zen-shell__nav-link:focus-visible {
+  outline: none;
+  box-shadow: var(--zen-focus-ring);
+}
+
+/* Active page carries an underline as well as aria-current (STY-007). */
+.zen-shell__nav-link--active {
+  border-bottom-color: var(--zen-pale);
+  font-weight: 600;
+}
+
+.zen-shell__breadcrumb {
+  background: var(--zen-surface);
+  border-bottom: 1px solid var(--zen-border);
+  color: var(--zen-text-muted);
+  font-size: 0.8125rem;
+  padding: var(--zen-space-2) var(--zen-space-6);
+}
+
+.zen-shell__main {
+  padding: var(--zen-space-6);
+}
+
+/* Responsive rules (ui-spec §11). Bootstrap breakpoints: md = 768px, lg = 992px.
+   Layout below is what the three viewports actually change. */
+
+/* Desktop >=992px: centre the content rather than letting lines run the full
+   width of a wide monitor. */
+.zen-shell__main {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Mobile <768px */
+@media (max-width: 767.98px) {
+  .zen-shell__header,
+  .zen-shell__breadcrumb,
+  .zen-shell__main {
+    padding-left: var(--zen-space-4);
+    padding-right: var(--zen-space-4);
+  }
+
+  /* The nav becomes a stacked column under the header once the toggle opens. */
+  .zen-shell__nav {
+    flex-direction: column;
+    width: 100%;
+    gap: var(--zen-space-2);
+  }
+
+  .zen-shell__nav-link {
+    border-bottom: none;
+    border-left: 3px solid transparent;
+    padding: var(--zen-space-2);
+  }
+
+  .zen-shell__nav-link--active {
+    border-left-color: var(--zen-pale);
+  }
+
+  /* Buttons go full width so the 44px touch target is easy to hit. */
+  .zen-button {
+    width: 100%;
+  }
+
+  .zen-shell__header .zen-button {
+    width: auto;
+  }
+}
+
+/* No page-level horizontal scroll at any width (ui-spec §11). Wide content
+   scrolls inside its own container instead. */
+html,
+body {
+  overflow-x: hidden;
+}
+
+.zen-scroll-x {
+  overflow-x: auto;
+}
+
+/* ---- Fields ---- */
+
+.zen-field {
+  margin-bottom: var(--zen-space-4);
+}
+
+.zen-field__label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--zen-text);
+  margin-bottom: var(--zen-space-1);
+}
+
+.zen-field__required {
+  color: var(--zen-error);
+  margin-left: var(--zen-space-1);
+}
+
+.zen-field__control,
+.zen-field__control:focus {
+  width: 100%;
+  min-height: var(--zen-control-height);
+  background: var(--zen-field-bg);
+  border: 1px solid var(--zen-border);
+  border-radius: var(--zen-radius);
+  color: var(--zen-text);
+  padding: 0 var(--zen-space-3);
+}
+
+.zen-field__control:focus {
+  outline: none;
+  border-color: var(--zen-secondary);
+  box-shadow: var(--zen-focus-ring);
+}
+
+.zen-field__control--readonly {
+  background: var(--zen-readonly-bg);
+  color: var(--zen-readonly-text);
+}
+
+.zen-field__control--invalid {
+  border-color: var(--zen-error);
+}
+
+.zen-field__control:disabled {
+  background: var(--zen-disabled-bg);
+  color: var(--zen-disabled-text);
+}
+
+.zen-field__hint {
+  font-size: 0.8125rem;
+  color: var(--zen-text-muted);
+  margin-top: var(--zen-space-1);
+}
+
+.zen-field__error {
+  font-size: 0.8125rem;
+  color: var(--zen-error);
+  margin-top: var(--zen-space-1);
+}
+
+/* ---- Buttons ---- */
+
+.zen-button {
+  min-height: 44px;
+  border-radius: var(--zen-radius);
+  padding: 0 var(--zen-space-4);
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.zen-button:focus-visible {
+  outline: none;
+  box-shadow: var(--zen-focus-ring);
+}
+
+.zen-button--primary {
+  background: var(--zen-primary);
+  color: var(--zen-surface);
+}
+
+.zen-button--secondary {
+  background: var(--zen-surface);
+  border-color: var(--zen-primary);
+  color: var(--zen-primary);
+}
+
+.zen-button--tertiary {
+  background: transparent;
+  color: var(--zen-secondary);
+}
+
+.zen-button--destructive {
+  background: var(--zen-surface);
+  border-color: var(--zen-error);
+  color: var(--zen-error);
+}
+
+.zen-button:disabled {
+  background: var(--zen-disabled-bg);
+  border-color: var(--zen-disabled-bg);
+  color: var(--zen-disabled-text);
+  cursor: not-allowed;
+}
+
+/* ---- Badges ---- */
+
+.zen-badge {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: var(--zen-radius);
+  padding: var(--zen-space-1) var(--zen-space-2);
+}
+
+.zen-badge--priority-low {
+  background: var(--zen-priority-low-bg);
+  color: var(--zen-priority-low-text);
+}
+
+.zen-badge--priority-medium {
+  background: var(--zen-priority-medium-bg);
+  color: var(--zen-priority-medium-text);
+}
+
+.zen-badge--priority-high {
+  background: var(--zen-priority-high-bg);
+  color: var(--zen-priority-high-text);
+}
+
+.zen-badge--priority-urgent {
+  background: var(--zen-priority-urgent-bg);
+  color: var(--zen-priority-urgent-text);
+}
+
+.zen-badge--status {
+  background: var(--zen-pale);
+  color: var(--zen-primary);
+}
+
+/* ---- States ---- */
+
+.zen-state {
+  background: var(--zen-surface);
+  border: 1px solid var(--zen-border);
+  border-radius: var(--zen-radius);
+  box-shadow: var(--zen-shadow);
+  padding: var(--zen-space-6);
+  text-align: center;
+}
+
+.zen-state__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0 0 var(--zen-space-2);
+}
+
+.zen-state__detail {
+  color: var(--zen-text-muted);
+  margin: 0 0 var(--zen-space-4);
+}
+
+.zen-state--error {
+  background: var(--zen-error-bg);
+  border-color: var(--zen-error);
+}
+
+.zen-card {
+  background: var(--zen-surface);
+  border: 1px solid var(--zen-border);
+  border-radius: var(--zen-radius);
+  box-shadow: var(--zen-shadow);
+  padding: var(--zen-space-6);
+}
+
+@media (max-width: 767.98px) {
+  .zen-card {
+    padding: var(--zen-space-4);
+  }
 }

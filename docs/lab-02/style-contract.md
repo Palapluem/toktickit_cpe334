@@ -16,6 +16,7 @@ Each rule carries an identifier. Cite it in review comments and in the Part 9 co
 - **STY-002** The tokens are defined once, in the global stylesheet, on `:root`. A component never redefines a token.
 - **STY-003** No default Bootstrap colour utility (`bg-primary`, `text-success`, `btn-primary`, `border-danger`, …) is used on a themed surface. Bootstrap supplies layout and spacing; Zen Green supplies colour.
 - **STY-004** Semantic tokens are used semantically: `--zen-error` only for errors, `--zen-warning` only for warnings, `--zen-success` only for success. Never chosen because the colour looks right.
+- **STY-030** Priority badges use the `--zen-priority-*` tokens and nothing else. A priority is a domain value, not a severity signal about the application (§11.17).
 
 ## 2. Surfaces and Structure
 

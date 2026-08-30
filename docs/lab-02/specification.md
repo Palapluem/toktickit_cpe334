@@ -430,3 +430,18 @@ The strategy is split by what the data is for:
 - **Transactional data** — Tickets and Attachments — is created by the test that needs it and removed afterwards. No test may depend on a Ticket another test created, and none may assume an empty Ticket table it did not empty itself.
 
 `.env.test` stays untracked, and `.env.example` documents the variable so the database is reproducible from a clean clone. Test and development databases are separate: a suite that truncates tables must never be one command away from the database holding the screenshots.
+
+**11.17 Priority badges get their own colour tokens.**
+`ui-spec.md` §10 described priority as "grey, amber, orange-red, dark red" while §1 defined no token for any of them. Every way of implementing it as written broke a rule: reusing `--zen-error` for `URGENT` violates STY-004, which reserves semantic tokens for their semantics, and writing the hex values inline violates STY-001.
+
+Four token pairs are added instead. Priority is a domain vocabulary with its own ordering, not a severity signal about the application's state — a ticket marked `URGENT` is not an error. Borrowing the error token would also couple them: changing the error colour later would silently restyle every badge.
+
+`URGENT` is the only value that fills its background and reverses its text. It separates by weight as well as hue, so the scale stays legible when the four tints are hard to tell apart — and every badge carries its text label regardless (AC-36).
+
+**11.18 The Lab 1 demonstration screen becomes a route rather than being deleted.**
+Issue #19 replaces `App.tsx` with the application shell, and the Lab 1 screen it contained uses `navbar-dark`, `bg-dark`, and `btn-primary` — Bootstrap colour utilities that STY-003 forbids on themed surfaces. Its six tests assert that screen's behaviour.
+
+The screen moves to `/system-check` under the new shell. Deleting it would discard passing Lab 1 evidence to satisfy a Lab 2 style rule, and rewriting the six tests to assert nothing would be worse. Keeping it as a route restyles it into the theme while every test stays meaningful — the same treatment §11.1 gave the Lab 1 categories test.
+
+**11.19 Routing uses `react-router-dom`.**
+No document named a router and the client had none. `react-router-dom` is the default for a React single-page application, and its `NavLink` supplies the active-page state that STY-007 requires as `aria-current="page"` rather than leaving it to be hand-rolled and forgotten.

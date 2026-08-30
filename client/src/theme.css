@@ -1,0 +1,47 @@
+/* Zen Green tokens. Authority: docs/lab-02/ui-spec.md §1. The only place in the
+   client where a colour literal is allowed (STY-001, STY-002). */
+
+:root {
+  --zen-primary: #006b3c;
+  --zen-secondary: #0b7a46;
+  --zen-pale: #eaf6ef;
+  --zen-page-bg: #f5f7f6;
+  --zen-surface: #ffffff;
+  --zen-border: #d8e0db;
+  --zen-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --zen-text: #1c2b24;
+  --zen-text-muted: #5b6b62;
+  --zen-field-bg: #ffffff;
+  --zen-readonly-bg: #edf1ee;
+  --zen-readonly-text: #3c4a43;
+  --zen-error: #b3261e;
+  --zen-error-bg: #fcedec;
+  --zen-warning: #8a5a00;
+  --zen-warning-bg: #fff4e0;
+  --zen-success: #1e6b3a;
+  --zen-success-bg: #eaf6ef;
+  --zen-disabled-bg: #eef1ef;
+  --zen-disabled-text: #8a968f;
+  --zen-focus-ring: 0 0 0 3px rgba(11, 122, 70, 0.35);
+
+  /* Priority is a domain vocabulary, not a severity signal (§11.17, STY-030). */
+  --zen-priority-low-bg: #eef1ef;
+  --zen-priority-low-text: #4a554e;
+  --zen-priority-medium-bg: #fff4e0;
+  --zen-priority-medium-text: #8a5a00;
+  --zen-priority-high-bg: #fde8e3;
+  --zen-priority-high-text: #9a3412;
+  --zen-priority-urgent-bg: #b3261e;
+  --zen-priority-urgent-text: #ffffff;
+
+  /* Spacing scale — no arbitrary values (§2). */
+  --zen-space-1: 4px;
+  --zen-space-2: 8px;
+  --zen-space-3: 12px;
+  --zen-space-4: 16px;
+  --zen-space-6: 24px;
+  --zen-space-8: 32px;
+
+  --zen-radius: 8px;
+  --zen-control-height: 40px;
+}
