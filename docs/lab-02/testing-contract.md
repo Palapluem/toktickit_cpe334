@@ -103,6 +103,16 @@ The convention for demonstrating Test-Driven Development in Part 3 of the submis
 
 Those two commits in that order, plus the two captures, are the red-green evidence. The commit history carries the proof; the captures make it legible to the reader.
 
+### When the module does not exist yet
+
+A test importing a module that has not been written fails with `Cannot find module`. That is an import error, and step 2 rejects it: it proves the test could not run, not that the behaviour is missing.
+
+The seam is therefore created in the **same commit as the tests**, as a stub whose functions return a neutral value — an empty string, a zero, an empty array — and implement nothing. The tests then fail on assertions that name the missing behaviour (`expected '' to be 'TKT-2026-000001'`), which is what the evidence has to show.
+
+A stub is not implementation. It fixes the module's *shape* — its path, its exported names, its signatures — which is a design decision worth making before the behaviour and worth reviewing separately from it. What it must not do is contain any logic the tests are meant to drive out. If a stub returns something a test accepts, the stub is too clever and the test is too weak.
+
+The `feat:` commit then replaces the stub body, and the diff shows exactly the behaviour the tests demanded.
+
 ## 6. Completion Gate
 
 An Issue is complete only when:
