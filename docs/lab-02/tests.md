@@ -130,6 +130,17 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 | STYLE-07 | ui-spec §5 | Active navigation | Active page marked with `aria-current="page"`, not colour alone | `client/tests/lab-02/style/app-shell.test.tsx` | ✅ |
 | STYLE-08 | AC-37, ui-spec §12 | Accessible labelling | Every control has a programmatic label; icon-only controls have accessible names | `client/tests/lab-02/style/a11y.test.tsx` | ✅ |
 
+### Mobile navigation (component level)
+
+Viewport rendering is verified with Playwright in Issue #23. These cover the behaviour *behind* the breakpoint, which a component test can prove and a screenshot cannot.
+
+| Test ID | Requirement / AC | What it tests | Expected result | Automated test file | Final |
+|---|---|---|---|---|---|
+| NAV-01 | ui-spec §5 | Toggle contract | Starts collapsed; `aria-expanded` tracks state; `aria-controls` names a real element | `client/tests/lab-02/style/mobile-nav.test.tsx` | ✅ |
+| NAV-02 | ui-spec §5, AC-37 | Keyboard operation | Menu opens from the keyboard alone and closes on Escape, including when focus is on a nav link | `client/tests/lab-02/style/mobile-nav.test.tsx` | ✅ |
+| NAV-03 | ui-spec §12 | Focus restoration | Escape returns focus to the toggle rather than leaving it on a hidden link | `client/tests/lab-02/style/mobile-nav.test.tsx` | ✅ |
+| NAV-04 | ui-spec §5 | Requester stays visible | The current requester renders on mobile without opening the menu | `client/tests/lab-02/style/mobile-nav.test.tsx` | ✅ |
+
 ### Responsive and E2E
 
 | Test ID | Requirement / AC | What it tests | Expected result | Automated test file | Final |

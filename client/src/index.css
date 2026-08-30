@@ -51,6 +51,17 @@ body {
   padding: var(--zen-space-6);
 }
 
+/* Responsive rules (ui-spec §11). Bootstrap breakpoints: md = 768px, lg = 992px.
+   Layout below is what the three viewports actually change. */
+
+/* Desktop >=992px: centre the content rather than letting lines run the full
+   width of a wide monitor. */
+.zen-shell__main {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Mobile <768px */
 @media (max-width: 767.98px) {
   .zen-shell__header,
   .zen-shell__breadcrumb,
@@ -58,6 +69,43 @@ body {
     padding-left: var(--zen-space-4);
     padding-right: var(--zen-space-4);
   }
+
+  /* The nav becomes a stacked column under the header once the toggle opens. */
+  .zen-shell__nav {
+    flex-direction: column;
+    width: 100%;
+    gap: var(--zen-space-2);
+  }
+
+  .zen-shell__nav-link {
+    border-bottom: none;
+    border-left: 3px solid transparent;
+    padding: var(--zen-space-2);
+  }
+
+  .zen-shell__nav-link--active {
+    border-left-color: var(--zen-pale);
+  }
+
+  /* Buttons go full width so the 44px touch target is easy to hit. */
+  .zen-button {
+    width: 100%;
+  }
+
+  .zen-shell__header .zen-button {
+    width: auto;
+  }
+}
+
+/* No page-level horizontal scroll at any width (ui-spec §11). Wide content
+   scrolls inside its own container instead. */
+html,
+body {
+  overflow-x: hidden;
+}
+
+.zen-scroll-x {
+  overflow-x: auto;
 }
 
 /* ---- Fields ---- */
