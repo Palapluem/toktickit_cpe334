@@ -1,4 +1,5 @@
-// STUB — seam only (testing-contract.md §5). Implemented in the feat: commit.
+// Every badge carries its text; colour is supporting only (AC-36, STY-019).
+// Priority uses its own tokens, never the semantic ones (STY-030).
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 
 export type TicketStatus =
@@ -10,10 +11,17 @@ export type TicketStatus =
   | 'CLOSED'
   | 'CANCELLED'
 
-export function PriorityBadge(_props: { value: Priority }) {
-  return null
+const PRIORITY_CLASS: Record<Priority, string> = {
+  LOW: 'zen-badge--priority-low',
+  MEDIUM: 'zen-badge--priority-medium',
+  HIGH: 'zen-badge--priority-high',
+  URGENT: 'zen-badge--priority-urgent',
 }
 
-export function StatusBadge(_props: { value: TicketStatus }) {
-  return null
+export function PriorityBadge({ value }: { value: Priority }) {
+  return <span className={`zen-badge ${PRIORITY_CLASS[value]}`}>{value}</span>
+}
+
+export function StatusBadge({ value }: { value: TicketStatus }) {
+  return <span className="zen-badge zen-badge--status">{value}</span>
 }

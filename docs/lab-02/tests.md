@@ -121,14 +121,14 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 
 | Test ID | Requirement / AC | What it tests | Expected result | Automated test file | Final |
 |---|---|---|---|---|---|
-| STYLE-01 | ui-spec §3 | Required-field marker | Every required field renders an asterisk **and** can still show a message | `client/tests/lab-02/style/form-fields.test.tsx` | ☐ |
-| STYLE-02 | ui-spec §3 | Read-only distinction | System-generated fields carry the read-only class and the `readonly` attribute | `client/tests/lab-02/style/form-fields.test.tsx` | ☐ |
-| STYLE-03 | ui-spec §3 | Message placement | Validation message is associated with its field via `aria-describedby`, not only a page-level banner | `client/tests/lab-02/style/form-fields.test.tsx` | ☐ |
-| STYLE-04 | ui-spec §4 | Button hierarchy | One primary per screen; disabled controls are non-activatable | `client/tests/lab-02/style/buttons.test.tsx` | ☐ |
-| STYLE-05 | ui-spec §3 | Busy state | Submit shows the busy indicator and is disabled during submission | `client/tests/lab-02/style/buttons.test.tsx` | ☐ |
-| STYLE-06 | ui-spec §10, AC-36 | Badges not colour-alone | Every priority and status badge renders its text label | `client/tests/lab-02/style/badges.test.tsx` | ☐ |
-| STYLE-07 | ui-spec §5 | Active navigation | Active page marked with `aria-current="page"`, not colour alone | `client/tests/lab-02/style/app-shell.test.tsx` | ☐ |
-| STYLE-08 | AC-37, ui-spec §12 | Accessible labelling | Every control has a programmatic label; icon-only controls have accessible names | `client/tests/lab-02/style/a11y.test.tsx` | ☐ |
+| STYLE-01 | ui-spec §3 | Required-field marker | Every required field renders an asterisk **and** can still show a message | `client/tests/lab-02/style/form-fields.test.tsx` | ✅ |
+| STYLE-02 | ui-spec §3 | Read-only distinction | System-generated fields carry the read-only class and the `readonly` attribute | `client/tests/lab-02/style/form-fields.test.tsx` | ✅ |
+| STYLE-03 | ui-spec §3 | Message placement | Validation message is associated with its field via `aria-describedby`, not only a page-level banner | `client/tests/lab-02/style/form-fields.test.tsx` | ✅ |
+| STYLE-04 | ui-spec §4 | Button hierarchy | One primary per screen; disabled controls are non-activatable | `client/tests/lab-02/style/buttons.test.tsx` | ✅ |
+| STYLE-05 | ui-spec §3 | Busy state | Submit shows the busy indicator and is disabled during submission | `client/tests/lab-02/style/buttons.test.tsx` | ✅ |
+| STYLE-06 | ui-spec §10, AC-36 | Badges not colour-alone | Every priority and status badge renders its text label | `client/tests/lab-02/style/badges.test.tsx` | ✅ |
+| STYLE-07 | ui-spec §5 | Active navigation | Active page marked with `aria-current="page"`, not colour alone | `client/tests/lab-02/style/app-shell.test.tsx` | ✅ |
+| STYLE-08 | AC-37, ui-spec §12 | Accessible labelling | Every control has a programmatic label; icon-only controls have accessible names | `client/tests/lab-02/style/a11y.test.tsx` | ✅ |
 
 ### Responsive and E2E
 

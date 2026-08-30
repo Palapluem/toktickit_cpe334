@@ -1,7 +1,18 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render as rtlRender, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import App from '../../src/App.js'
+
+// The Lab 1 screen is now the /system-check route inside the shell (§11.18).
+// Only the wrapper changed; every assertion below is the one Lab 1 shipped.
+function render(_: unknown = null) {
+  return rtlRender(
+    <MemoryRouter initialEntries={['/system-check']}>
+      <App />
+    </MemoryRouter>,
+  )
+}
 
 afterEach(() => {
   vi.unstubAllGlobals()
