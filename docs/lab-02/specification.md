@@ -398,3 +398,18 @@ The line is drawn on **whether the requester can act on the failure**, not on wh
 This extends SDS §11.9 rather than contradicting it. §11.9 established that an attachment failure does not roll back Ticket creation; that reasoning holds for faults outside the requester's control and was never meant to shield an input the requester supplied and can fix. BR-43 states the test to apply when a new failure mode appears.
 
 *Consequence for `api-spec.md`:* `413 FILE_TOO_LARGE` and `415 UNSUPPORTED_FILE_TYPE` on `POST /api/tickets` reject the entire request, and `attachmentFailures` carries only post-creation storage faults. Both paths are separately tested; a suite that exercises only one of them would pass against an implementation that collapses the two.
+
+**11.17 Priority badges get their own colour tokens.**
+`ui-spec.md` §10 described priority as "grey, amber, orange-red, dark red" while §1 defined no token for any of them. Every way of implementing it as written broke a rule: reusing `--zen-error` for `URGENT` violates STY-004, which reserves semantic tokens for their semantics, and writing the hex values inline violates STY-001.
+
+Four token pairs are added instead. Priority is a domain vocabulary with its own ordering, not a severity signal about the application's state — a ticket marked `URGENT` is not an error. Borrowing the error token would also couple them: changing the error colour later would silently restyle every badge.
+
+`URGENT` is the only value that fills its background and reverses its text. It separates by weight as well as hue, so the scale stays legible when the four tints are hard to tell apart — and every badge carries its text label regardless (AC-36).
+
+**11.18 The Lab 1 demonstration screen becomes a route rather than being deleted.**
+Issue #19 replaces `App.tsx` with the application shell, and the Lab 1 screen it contained uses `navbar-dark`, `bg-dark`, and `btn-primary` — Bootstrap colour utilities that STY-003 forbids on themed surfaces. Its six tests assert that screen's behaviour.
+
+The screen moves to `/system-check` under the new shell. Deleting it would discard passing Lab 1 evidence to satisfy a Lab 2 style rule, and rewriting the six tests to assert nothing would be worse. Keeping it as a route restyles it into the theme while every test stays meaningful — the same treatment §11.1 gave the Lab 1 categories test.
+
+**11.19 Routing uses `react-router-dom`.**
+No document named a router and the client had none. `react-router-dom` is the default for a React single-page application, and its `NavLink` supplies the active-page state that STY-007 requires as `aria-current="page"` rather than leaving it to be hand-rolled and forgotten.
