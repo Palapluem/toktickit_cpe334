@@ -2,6 +2,7 @@ import { Prisma, type PrismaClient } from '../generated/prisma/client.js'
 import { FieldError, sendError } from '../http/errors.js'
 import prisma from '../prisma.js'
 import { bangkokYear, formatTicketNumber } from './ticketNumber.js'
+import type { AttachmentStorage } from './storage.js'
 
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -23,6 +24,7 @@ export type CreateTicketInput = {
 export type CreateTicketOptions = {
   db?: PrismaClient
   now?: () => Date
+  storage?: AttachmentStorage
 }
 
 export class TicketCreationError extends Error {

@@ -2,7 +2,7 @@
 // TC-007/009/010/012/024: exercise the HTTP boundary and read PostgreSQL back.
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import request from 'supertest'
-import app from '../../src/app.js'
+import app, { createApp } from '../../src/app.js'
 import prisma from '../../src/prisma.js'
 
 const REQUEST = {
@@ -194,5 +194,32 @@ describe('API-07 · AC-14/BR-05 · concurrent Ticket Number allocation', () => {
       expect.arrayContaining([expect.stringMatching(/^TKT-\d{4}-\d{6}$/)]),
     )
     expect(await prisma.ticket.count()).toBe(8)
+  })
+})
+
+describe('API-07 · TC-024 · the API uses the Bangkok calendar year', () => {
+  it('keeps the UTC timestamp while changing the number year at 17:00 UTC', async () => {
+    const beforeBoundary = new Date('2026-12-31T16:59:00.000Z')
+    const afterBoundary = new Date('2026-12-31T17:00:00.000Z')
+
+    const beforeResponse = await request(
+      createApp({ now: () => beforeBoundary }),
+    )
+      .post('/api/tickets')
+      .set('X-Requester-Id', requesterId)
+      .send(validPayload({ summary: 'Before Bangkok boundary' }))
+
+    const afterResponse = await request(
+      createApp({ now: () => afterBoundary }),
+    )
+      .post('/api/tickets')
+      .set('X-Requester-Id', requesterId)
+      .send(validPayload({ summary: 'After Bangkok boundary' }))
+
+    expect(beforeResponse.status).toBe(201)
+    expect(afterResponse.status).toBe(201)
+    expect(beforeResponse.body.data.ticketNo).toBe('TKT-2026-000001')
+    expect(afterResponse.body.data.ticketNo).toBe('TKT-2027-000001')
+    expect(afterResponse.body.data.createdAt).toBe(afterBoundary.toISOString())
   })
 })
