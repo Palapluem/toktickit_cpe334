@@ -120,14 +120,19 @@ describe('UI-02: category list', () => {
           json: async () => ({ status: 'ok', service: 'TokTickIT API' }),
         }))
       }
+      // Updated in #17 to the real contract: UUID ids inside a data envelope.
+      // The old bare array with integer ids kept this test green against a shape
+      // the server had stopped returning since #18.
       return Promise.resolve({
         ok: true,
-        json: async () => [
-          { id: 1, name: 'Account and Access' },
-          { id: 2, name: 'Hardware' },
-          { id: 3, name: 'Software' },
-          { id: 4, name: 'Network' },
-        ],
+        json: async () => ({
+          data: [
+            { id: '3f1a0000-0000-4000-8000-000000000001', name: 'Account and Access' },
+            { id: '8c220000-0000-4000-8000-000000000002', name: 'Hardware' },
+            { id: 'b0d70000-0000-4000-8000-000000000003', name: 'Network' },
+            { id: 'e5f90000-0000-4000-8000-000000000004', name: 'Software' },
+          ],
+        }),
       })
     })
     vi.stubGlobal('fetch', mockFetch)

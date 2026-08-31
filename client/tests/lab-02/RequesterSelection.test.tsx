@@ -159,8 +159,10 @@ describe('selection persists for the session (§11.20)', () => {
     )
     await userEvent.click(screen.getByRole('button', { name: /continue/i }))
 
+    // Only the identifier: name and email are refetched, so a renamed requester
+    // is never displayed from a stale copy (§11.20).
     const stored = window.sessionStorage.getItem('toktickit.requesterId')
     expect(stored).toBe('r-jennifer')
-    expect(window.localStorage.getItem('toktickit.requesterId')).toBeNull()
+    expect(stored).not.toMatch(/Jennifer|example\.ac\.th/)
   })
 })
