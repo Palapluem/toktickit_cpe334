@@ -445,3 +445,19 @@ The screen moves to `/system-check` under the new shell. Deleting it would disca
 
 **11.19 Routing uses `react-router-dom`.**
 No document named a router and the client had none. `react-router-dom` is the default for a React single-page application, and its `NavLink` supplies the active-page state that STY-007 requires as `aria-current="page"` rather than leaving it to be hand-rolled and forgotten.
+
+**11.20 The requester context lives in `sessionStorage`, and is revalidated on load.**
+FR-03 requires the selection to persist "across navigation within the session" without saying how. Three options were weighed.
+
+React state alone loses the selection on every refresh, which makes the screen unusable for the repeated reloading that screenshot capture involves. `localStorage` survives browser restarts, which reads as "remember me" — precisely the impression BR-03 forbids, since this is a testing mechanism and not a login. `sessionStorage` lasts for the life of the tab and is discarded when it closes, which is what "within the session" describes.
+
+Only the requester's identifier is stored. Display name and email are refetched, so a renamed requester is never shown from a stale copy.
+
+**The stored identifier is validated against `GET /api/requesters` when the application loads.** Re-seeding the database regenerates every UUID, so an identifier held from before a reseed refers to nothing. Without the check, every request returns `400 REQUESTER_INACTIVE` and the route guard bounces the user out of each screen in turn, with no way to reach the selection screen and fix it. This is not a hypothetical: the database is reset frequently while preparing evidence. If the stored identifier is not among the active requesters, it is cleared and the user is returned to selection.
+
+**11.21 `X-Requester-Id` is validated by one middleware, not by each handler.**
+The header is checked once, before any requester-scoped handler runs: present, well-formed UUID, resolves to a row, and that row is active. Failure returns 400 with the shared error envelope, never a fallback to some default requester.
+
+Concentrating it in one place is what makes BR-42 cheap. Lab 3 replaces the claim's source with a session and deletes this middleware; every ownership check downstream keeps reading the same resolved requester and needs no edit. Spreading the same four checks through each handler would mean four opportunities per endpoint to forget one, and the one most easily forgotten — the active check — is the one BR-11 depends on.
+
+The middleware resolves the requester and attaches it to the request. Handlers read the resolved row rather than the raw header, so a handler cannot accidentally trust an unvalidated value.

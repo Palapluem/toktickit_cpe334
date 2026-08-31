@@ -5,6 +5,8 @@ import { AppShell } from './components/AppShell.js'
 import { EmptyState } from './components/States.js'
 import { SystemCheck } from './screens/SystemCheck.js'
 import { StyleGuide } from './screens/StyleGuide.js'
+import { SelectRequester } from './screens/SelectRequester.js'
+import { RequireRequester } from './components/RequireRequester.js'
 
 function Placeholder({ title, issue }: { title: string; issue: string }) {
   return (
@@ -17,29 +19,38 @@ function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/tickets" replace />} />
 
-      <Route
-        path="/select-requester"
-        element={<Placeholder title="Select Development Requester" issue="#17" />}
-      />
+      <Route path="/select-requester" element={<SelectRequester />} />
 
       <Route
         element={
-          <AppShell requesterName={undefined}>
+          <AppShell>
             <Outlet />
           </AppShell>
         }
       >
         <Route
           path="/tickets"
-          element={<Placeholder title="My Tickets" issue="#21" />}
+          element={
+            <RequireRequester>
+              <Placeholder title="My Tickets" issue="#21" />
+            </RequireRequester>
+          }
         />
         <Route
           path="/tickets/new"
-          element={<Placeholder title="Create Ticket" issue="#20" />}
+          element={
+            <RequireRequester>
+              <Placeholder title="Create Ticket" issue="#20" />
+            </RequireRequester>
+          }
         />
         <Route
           path="/tickets/:id"
-          element={<Placeholder title="Ticket Detail" issue="#22" />}
+          element={
+            <RequireRequester>
+              <Placeholder title="Ticket Detail" issue="#22" />
+            </RequireRequester>
+          }
         />
         <Route path="/system-check" element={<SystemCheck />} />
         <Route path="/style-guide" element={<StyleGuide />} />

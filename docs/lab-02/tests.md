@@ -77,7 +77,7 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 | API-15 | AC-22, BR-37 | Sorting | Whitelisted fields sort both directions; ties broken deterministically | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
 | API-16 | AC-23, BR-40 | Pagination | Correct page slices and metadata; a page past the end returns empty data, not an error | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
 | API-17 | AC-24, BR-38, BR-39 | Invalid query parameters | 400 for `pageSize` >50, `page` 0, unknown `sort`, unknown parameter | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
-| API-18 | BR-14 | Requester context required | 400 when `X-Requester-Id` is missing, malformed, unknown, or inactive | `server/tests/lab-02/requester-context.api.test.ts` | ☐ |
+| API-18 | BR-14 | Requester context required | 400 when `X-Requester-Id` is missing, malformed, unknown, or inactive; shared error envelope also covers framework failures (TC-008) | `server/tests/lab-02/requester-context.api.test.ts`; `server/tests/lab-02/error-handler.api.test.ts` | ✅ |
 | API-19 | AC-27 | Owned ticket detail | 200 with full ticket and attachment metadata | `server/tests/lab-02/ticket-detail.api.test.ts` | ☐ |
 | API-20 | AC-28, BR-16 | Cross-requester detail | **404** (not 403) so existence is not disclosed | `server/tests/lab-02/ticket-detail.api.test.ts` | ☐ |
 | API-21 | AC-29 | Add attachment | 201; active count increments | `server/tests/lab-02/attachments.api.test.ts` | ☐ |
@@ -94,11 +94,11 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 
 | Test ID | Requirement / AC | What it tests | Expected result | Automated test file | Final |
 |---|---|---|---|---|---|
-| UI-01 | AC-01, BR-12 | Route guard | Opening My Tickets with no requester shows the selection screen | `client/tests/lab-02/RequesterGuard.test.tsx` | ☐ |
-| UI-02 | AC-02 | Selector list | Only active requesters render | `client/tests/lab-02/RequesterSelection.test.tsx` | ☐ |
-| UI-03 | AC-04 | Selector API failure | Safe failure state; Continue stays disabled | `client/tests/lab-02/RequesterSelection.test.tsx` | ☐ |
-| UI-04 | AC-05 | Selector empty | Empty state explains none are available | `client/tests/lab-02/RequesterSelection.test.tsx` | ☐ |
-| UI-05 | AC-03 | Shell requester display | Selected requester's name and Change Requester render | `client/tests/lab-02/AppShell.test.tsx` | ☐ |
+| UI-01 | AC-01, BR-12 | Route guard | Opening My Tickets with no requester shows the selection screen | `client/tests/lab-02/RequesterGuard.test.tsx` | ✅ |
+| UI-02 | AC-02 | Selector list | Only active requesters render | `client/tests/lab-02/RequesterSelection.test.tsx` | ✅ |
+| UI-03 | AC-04 | Selector API failure | Safe failure state; Continue stays disabled | `client/tests/lab-02/RequesterSelection.test.tsx` | ✅ |
+| UI-04 | AC-05 | Selector empty | Empty state explains none are available | `client/tests/lab-02/RequesterSelection.test.tsx` | ✅ |
+| UI-05 | AC-03 | Shell requester display | Selected requester's name and Change Requester render | `client/tests/lab-02/AppShell.test.tsx` | ✅ |
 | UI-06 | AC-09 | Submit without Summary | Field-level message shown; **the create API is not called** | `client/tests/lab-02/CreateTicket.test.tsx` | ☐ |
 | UI-07 | AC-11 | Reference data in form | Category and Related System options come from the API response | `client/tests/lab-02/CreateTicket.test.tsx` | ☐ |
 | UI-08 | AC-12 | Double-submit prevention | Submit disabled while in flight; one request sent | `client/tests/lab-02/CreateTicket.test.tsx` | ☐ |

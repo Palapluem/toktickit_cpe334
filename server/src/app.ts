@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import prisma from './prisma.js'
+import { errorHandler } from './http/errors.js'
 
 const app = express()
 
@@ -47,5 +48,9 @@ app.get('/api/requesters', async (_req, res) => {
   })
   res.json({ data })
 })
+
+// Must be registered after all routes so Express 5 async failures reach the
+// contract-preserving handler instead of its stack/HTML default response.
+app.use(errorHandler)
 
 export default app
