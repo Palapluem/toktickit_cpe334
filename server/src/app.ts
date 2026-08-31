@@ -1,7 +1,8 @@
-import express from 'express'
+import express, { type NextFunction, type Request, type Response } from 'express'
 import cors from 'cors'
+import multer from 'multer'
 import prisma from './prisma.js'
-import { errorHandler } from './http/errors.js'
+import { errorHandler, sendError } from './http/errors.js'
 import { requireRequesterContext } from './middleware/requesterContext.js'
 import {
   createTicket,
@@ -9,6 +10,52 @@ import {
   TicketCreationError,
   type CreateTicketOptions,
 } from './tickets/createTicket.js'
+import {
+  MAX_ATTACHMENT_SIZE_BYTES,
+  MAX_ATTACHMENTS,
+} from './tickets/attachmentRules.js'
+
+const attachmentUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: MAX_ATTACHMENT_SIZE_BYTES + 2,
+    files: MAX_ATTACHMENTS + 1,
+  },
+})
+
+function parseAttachments(req: Request, res: Response, next: NextFunction) {
+  attachmentUpload.array('attachments', MAX_ATTACHMENTS + 1)(
+    req,
+    res,
+    (error: unknown) => {
+      if (!error) {
+        next()
+        return
+      }
+      if (error instanceof multer.MulterError) {
+        if (error.code === 'LIMIT_FILE_SIZE') {
+          sendError(
+            res,
+            413,
+            'FILE_TOO_LARGE',
+            'Each attachment must be 5 MB or smaller.',
+            [{ field: 'attachments', message: 'The file exceeds the 5 MB limit.' }],
+          )
+          return
+        }
+        sendError(
+          res,
+          400,
+          'VALIDATION_FAILED',
+          'The attachment fields are invalid.',
+          [{ field: 'attachments', message: 'Too many attachments were supplied.' }],
+        )
+        return
+      }
+      next(error)
+    },
+  )
+}
 
 export function createApp(options: CreateTicketOptions = {}) {
   const app = express()
@@ -57,10 +104,22 @@ export function createApp(options: CreateTicketOptions = {}) {
     res.json({ data })
   })
 
-  app.post('/api/tickets', requireRequesterContext, async (req, res, next) => {
+  app.post(
+    '/api/tickets',
+    requireRequesterContext,
+    parseAttachments,
+    async (req, res, next) => {
     try {
+      const files = Array.isArray(req.files)
+        ? req.files.map((file) => ({
+            originalFilename: file.originalname,
+            mimeType: file.mimetype,
+            sizeBytes: file.size,
+            buffer: file.buffer,
+          }))
+        : []
       const ticket = await createTicket(
-        { requesterId: req.requester!.id, body: req.body },
+        { requesterId: req.requester!.id, body: req.body, attachments: files },
         options,
       )
       const stored = await (options.db ?? prisma).ticket.findUniqueOrThrow({
@@ -86,7 +145,7 @@ export function createApp(options: CreateTicketOptions = {}) {
         data: {
           ...stored,
           owner: null,
-          attachmentFailures: [],
+          attachmentFailures: ticket.attachmentFailures,
         },
       })
     } catch (error) {
@@ -96,7 +155,8 @@ export function createApp(options: CreateTicketOptions = {}) {
       }
       next(error)
     }
-  })
+    },
+  )
 
   // Must be registered after all routes so Express 5 async failures reach the
   // contract-preserving handler instead of its stack/HTML default response.

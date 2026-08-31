@@ -1,8 +1,16 @@
 import { Prisma, type PrismaClient } from '../generated/prisma/client.js'
 import { FieldError, sendError } from '../http/errors.js'
 import prisma from '../prisma.js'
+import {
+  MAX_ATTACHMENTS,
+  validateAttachment,
+} from './attachmentRules.js'
 import { bangkokYear, formatTicketNumber } from './ticketNumber.js'
-import type { AttachmentStorage } from './storage.js'
+import {
+  localAttachmentStorage,
+  type AttachmentFile,
+  type AttachmentStorage,
+} from './storage.js'
 
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -19,6 +27,7 @@ const ACCEPTED_FIELDS = new Set([
 export type CreateTicketInput = {
   requesterId: string
   body: unknown
+  attachments?: AttachmentFile[]
 }
 
 export type CreateTicketOptions = {
@@ -45,6 +54,11 @@ type ValidatedInput = {
   summary: string
   description: string
   requestedPriority: (typeof PRIORITIES)[number]
+}
+
+type AttachmentFailure = {
+  originalFilename: string
+  reason: 'STORAGE_WRITE_FAILED'
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -126,7 +140,7 @@ function validateBody(body: unknown): {
 export async function createTicket(
   input: CreateTicketInput,
   options: CreateTicketOptions = {},
-): Promise<{ id: string }> {
+): Promise<{ id: string; attachmentFailures: AttachmentFailure[] }> {
   const { value, errors } = validateBody(input.body)
   if (!value) {
     throw new TicketCreationError(
@@ -134,6 +148,24 @@ export async function createTicket(
       'VALIDATION_FAILED',
       'One or more fields are invalid.',
       errors,
+    )
+  }
+
+  const attachments = input.attachments ?? []
+  if (attachments.length > MAX_ATTACHMENTS) {
+    errors.push({
+      field: 'attachments',
+      message: `A Ticket can have at most ${MAX_ATTACHMENTS} attachments.`,
+    })
+  }
+  const ruleFailures = attachments
+    .slice(0, MAX_ATTACHMENTS)
+    .map((file, index) => validateAttachment(file, index))
+    .filter((failure) => failure !== null)
+
+  if (ruleFailures.length > 0) {
+    errors.push(
+      ...ruleFailures.map(({ field, message }) => ({ field, message })),
     )
   }
 
@@ -169,10 +201,17 @@ export async function createTicket(
     })
   }
   if (errors.length > 0 || referenceErrors.length > 0) {
+    const firstRuleFailure = ruleFailures[0]
     throw new TicketCreationError(
-      400,
-      'VALIDATION_FAILED',
-      'One or more fields are invalid.',
+      firstRuleFailure && errors.length === ruleFailures.length
+        ? firstRuleFailure.status
+        : 400,
+      firstRuleFailure && errors.length === ruleFailures.length
+        ? firstRuleFailure.code
+        : 'VALIDATION_FAILED',
+      firstRuleFailure && errors.length === ruleFailures.length
+        ? firstRuleFailure.message
+        : 'One or more fields are invalid.',
       [...errors, ...referenceErrors],
     )
   }
@@ -207,7 +246,31 @@ export async function createTicket(
     })
   })
 
-  return ticket
+  const storage = options.storage ?? localAttachmentStorage
+  const attachmentFailures: AttachmentFailure[] = []
+  for (const file of attachments) {
+    try {
+      const { storedFilename } = await storage.save(file)
+      await db.attachment.create({
+        data: {
+          ticketId: ticket.id,
+          originalFilename: file.originalFilename,
+          storedFilename,
+          mimeType: file.mimeType,
+          sizeBytes: file.sizeBytes,
+          uploadedById: input.requesterId,
+          createdAt,
+        },
+      })
+    } catch {
+      attachmentFailures.push({
+        originalFilename: file.originalFilename,
+        reason: 'STORAGE_WRITE_FAILED',
+      })
+    }
+  }
+
+  return { id: ticket.id, attachmentFailures }
 }
 
 export function sendTicketCreationError(
