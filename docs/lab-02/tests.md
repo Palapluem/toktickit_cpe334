@@ -52,8 +52,8 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 |---|---|---|---|---|---|
 | UNIT-01 | BR-04, AC-14 | Ticket number formatting | Returns `TKT-<year>-000001` zero-padded to six digits | `server/tests/lab-02/ticket-number.unit.test.ts` | ✅ |
 | UNIT-02 | BR-04 | Annual sequence reset | First ticket of a new year restarts at `000001`; the year follows the `Asia/Bangkok` calendar (§11.13) | `server/tests/lab-02/ticket-number.unit.test.ts` | ✅ |
-| UNIT-03 | BR-19, BR-20, BR-21 | Create-ticket validation schema | Trims input; rejects short/long Summary and Description; whitespace-only is empty | `server/tests/lab-02/validation.unit.test.ts` | ☐ |
-| UNIT-04 | BR-26, BR-27 | Attachment rule checks | Accepts jpg/jpeg/png/webp/pdf ≤5 MB; rejects other types and oversized files | `server/tests/lab-02/attachment-rules.unit.test.ts` | ☐ |
+| UNIT-03 | BR-19, BR-20, BR-21 | Create-ticket validation schema | Trims input; rejects short/long Summary and Description; whitespace-only is empty | `server/tests/lab-02/validation.unit.test.ts` | ✅ |
+| UNIT-04 | BR-26, BR-27 | Attachment rule checks | Accepts jpg/jpeg/png/webp/pdf ≤5 MB; rejects other types and oversized files | `server/tests/lab-02/attachment-rules.unit.test.ts` | ✅ |
 | UNIT-05 | BR-38, BR-39 | Query-parameter parsing | Applies defaults; rejects non-whitelisted `sort`, `pageSize` >50, non-numeric `page` | `server/tests/lab-02/ticket-query.unit.test.ts` | ☐ |
 
 ### API integration
@@ -62,14 +62,14 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 |---|---|---|---|---|---|
 | API-01 | AC-02 | Active requesters only | 200; the inactive seeded requester is absent | `server/tests/lab-02/requesters.api.test.ts` | ☐ |
 | API-02 | AC-11 | Reference data | 200; four categories and seven related systems from the database | `server/tests/lab-02/reference-data.api.test.ts` | ☐ |
-| API-03 | AC-06, AC-08 | Valid ticket creation | 201; one ticket saved; `ticketNo` returned; status `NEW`; no owner | `server/tests/lab-02/create-ticket.api.test.ts` | ☐ |
-| API-04 | AC-07 | Requester binding | Saved row's `requesterId` equals the `X-Requester-Id` used | `server/tests/lab-02/create-ticket.api.test.ts` | ☐ |
-| API-05 | AC-10, BR-18 | Creation validation | 400 with field errors for each missing/invalid field; no ticket created | `server/tests/lab-02/create-ticket.api.test.ts` | ☐ |
-| API-06 | BR-18 | Server-controlled fields rejected | 400 when `ticketNo`, `status`, or `requesterId` is supplied in the body | `server/tests/lab-02/create-ticket.api.test.ts` | ☐ |
-| API-07 | AC-14, BR-05, BR-04 | Ticket-number uniqueness and calendar | Concurrent creates produce distinct numbers matching the format; a fixed-clock Bangkok-year boundary proves the year label and UTC `createdAt` (TC-024) | `server/tests/lab-02/ticket-number.api.test.ts` | ☐ |
-| API-08 | AC-15 | Create with attachment | 201; attachment listed active with correct metadata; a storage-adapter failure keeps the Ticket and returns `attachmentFailures` (TC-023) | `server/tests/lab-02/create-ticket.api.test.ts` | ☐ |
-| API-09 | AC-16 | Disallowed file type | 415; read-back proves no Ticket and no attachment were stored (TC-022) | `server/tests/lab-02/attachments.api.test.ts` | ☐ |
-| API-10 | AC-17 | Oversized file | 413; read-back proves no Ticket and no attachment were stored (TC-022) | `server/tests/lab-02/attachments.api.test.ts` | ☐ |
+| API-03 | AC-06, AC-08 | Valid ticket creation | 201; one ticket saved; `ticketNo` returned; status `NEW`; no owner | `server/tests/lab-02/create-ticket.api.test.ts` | ✅ |
+| API-04 | AC-07 | Requester binding | Saved row's `requesterId` equals the `X-Requester-Id` used | `server/tests/lab-02/create-ticket.api.test.ts` | ✅ |
+| API-05 | AC-10, BR-18 | Creation validation | 400 with field errors for each missing/invalid field; no ticket created | `server/tests/lab-02/create-ticket.api.test.ts` | ✅ |
+| API-06 | BR-18 | Server-controlled fields rejected | 400 when `ticketNo`, `status`, or `requesterId` is supplied in the body | `server/tests/lab-02/create-ticket.api.test.ts` | ✅ |
+| API-07 | AC-14, BR-05, BR-04 | Ticket-number uniqueness and calendar | Concurrent creates produce distinct numbers matching the format; a fixed-clock Bangkok-year boundary proves the year label and UTC `createdAt` (TC-024) | `server/tests/lab-02/create-ticket.api.test.ts` | ✅ |
+| API-08 | AC-15 | Create with attachment | 201; attachment listed active with correct metadata; a storage-adapter failure keeps the Ticket and returns `attachmentFailures` (TC-023) | `server/tests/lab-02/attachments.api.test.ts` | ✅ |
+| API-09 | AC-16 | Disallowed file type | 415; read-back proves no Ticket and no attachment were stored (TC-022) | `server/tests/lab-02/attachments.api.test.ts` | ✅ |
+| API-10 | AC-17 | Oversized file | 413; read-back proves no Ticket and no attachment were stored (TC-022) | `server/tests/lab-02/attachments.api.test.ts` | ✅ |
 | API-11 | AC-18 | List ownership isolation | Requester A's list contains only A's tickets | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
 | API-12 | AC-19 | Cross-requester list | Requester B's list contains none of A's tickets | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
 | API-13 | AC-20, BR-36 | Search | Matches partial, case-insensitive, on ticket number and summary | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
@@ -99,12 +99,12 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 | UI-03 | AC-04 | Selector API failure | Safe failure state; Continue stays disabled | `client/tests/lab-02/RequesterSelection.test.tsx` | ✅ |
 | UI-04 | AC-05 | Selector empty | Empty state explains none are available | `client/tests/lab-02/RequesterSelection.test.tsx` | ✅ |
 | UI-05 | AC-03 | Shell requester display | Selected requester's name and Change Requester render | `client/tests/lab-02/AppShell.test.tsx` | ✅ |
-| UI-06 | AC-09 | Submit without Summary | Field-level message shown; **the create API is not called** | `client/tests/lab-02/CreateTicket.test.tsx` | ☐ |
-| UI-07 | AC-11 | Reference data states in form | Category and Related System options come from the API response; loading disables the selects and reference failure shows a callout with Submit disabled | `client/tests/lab-02/CreateTicket.test.tsx` | ☐ |
-| UI-08 | AC-12 | Double-submit prevention | Submit disabled while in flight; one request sent | `client/tests/lab-02/CreateTicket.test.tsx` | ☐ |
-| UI-09 | AC-06 | Success state | Generated Ticket Number displayed with next actions | `client/tests/lab-02/CreateTicket.test.tsx` | ☐ |
-| UI-10 | AC-13, BR-25 | Create failure preserves input | Safe error shown; entered values still present | `client/tests/lab-02/CreateTicket.test.tsx` | ☐ |
-| UI-11 | AC-16, AC-17 | Invalid attachment feedback | Rejected file shown with its reason; form remains usable | `client/tests/lab-02/CreateTicket.test.tsx` | ☐ |
+| UI-06 | AC-09 | Submit without Summary | Field-level message shown; **the create API is not called** | `client/tests/lab-02/CreateTicket.test.tsx` | ✅ |
+| UI-07 | AC-11 | Reference data states in form | Category and Related System options come from the API response; loading disables the selects and reference failure shows a callout with Submit disabled | `client/tests/lab-02/CreateTicket.test.tsx` | ✅ |
+| UI-08 | AC-12 | Double-submit prevention | Submit disabled while in flight; one request sent | `client/tests/lab-02/CreateTicket.test.tsx` | ✅ |
+| UI-09 | AC-06 | Success state | Generated Ticket Number displayed with next actions | `client/tests/lab-02/CreateTicket.test.tsx` | ✅ |
+| UI-10 | AC-13, BR-25 | Create failure preserves input | Safe error shown; entered values still present | `client/tests/lab-02/CreateTicket.test.tsx` | ✅ |
+| UI-11 | AC-16, AC-17 | Invalid attachment feedback | Rejected file shown with its reason; form remains usable | `client/tests/lab-02/CreateTicket.test.tsx` | ✅ |
 | UI-12 | AC-18 | List renders | Loading state resolves into the requester's rows | `client/tests/lab-02/MyTickets.test.tsx` | ☐ |
 | UI-13 | AC-19 | Requester switch clears list | Switching context refetches and drops the previous list | `client/tests/lab-02/MyTickets.test.tsx` | ☐ |
 | UI-14 | AC-25 | Empty state | "No tickets yet" with a Create Ticket action | `client/tests/lab-02/MyTickets.test.tsx` | ☐ |
