@@ -1,11 +1,33 @@
 // UI-06/UI-07 (#20). AC-06, AC-11; ui-spec §5.
 // TDT-01 equivalence partition: the Create Ticket route must render inside the
 // application shell with its route-specific breadcrumb.
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from '../../src/App.js'
 import { RequesterProvider, STORAGE_KEY } from '../../src/context/RequesterContext.js'
+
+vi.mock('../../src/api.js', async () => {
+  const actual = await vi.importActual<typeof import('../../src/api.js')>(
+    '../../src/api.js',
+  )
+  return {
+    ...actual,
+    fetchRequesters: vi.fn(async () => [
+      {
+        id: 'r-jennifer',
+        displayName: 'Jennifer Anderson',
+        email: 'jennifer.anderson@example.ac.th',
+      },
+    ]),
+    fetchCategories: vi.fn(async () => [
+      { id: 'category-hardware', name: 'Hardware' },
+    ]),
+    fetchRelatedSystems: vi.fn(async () => [
+      { id: 'system-email', name: 'Email' },
+    ]),
+  }
+})
 
 const REQUESTER = {
   id: 'r-jennifer',
@@ -13,37 +35,9 @@ const REQUESTER = {
   email: 'jennifer.anderson@example.ac.th',
 }
 
-const fetchMock = vi.fn((input: unknown) => {
-  const url = String(input)
-  if (url.endsWith('/api/requesters')) {
-    return Promise.resolve({ ok: true, status: 200, json: async () => ({ data: [REQUESTER] }) })
-  }
-  if (url.endsWith('/api/categories')) {
-    return Promise.resolve({
-      ok: true,
-      status: 200,
-      json: async () => ({ data: [{ id: 'category-hardware', name: 'Hardware' }] }),
-    })
-  }
-  if (url.endsWith('/api/related-systems')) {
-    return Promise.resolve({
-      ok: true,
-      status: 200,
-      json: async () => ({ data: [{ id: 'system-email', name: 'Email' }] }),
-    })
-  }
-  return Promise.reject(new Error(`Unexpected request: ${url}`))
-})
-
 beforeEach(() => {
   window.sessionStorage.clear()
   window.sessionStorage.setItem(STORAGE_KEY, REQUESTER.id)
-  vi.stubGlobal('fetch', fetchMock)
-})
-
-afterEach(() => {
-  vi.clearAllMocks()
-  vi.unstubAllGlobals()
 })
 
 describe('Create Ticket route shell contract', () => {
