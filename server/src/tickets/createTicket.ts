@@ -1,5 +1,5 @@
 import { Prisma, type PrismaClient } from '../generated/prisma/client.js'
-import { FieldError, sendError } from '../http/errors.js'
+import { ApiError, type FieldError } from '../http/errors.js'
 import prisma from '../prisma.js'
 import {
   MAX_ATTACHMENTS,
@@ -28,14 +28,14 @@ export type CreateTicketOptions = {
   storage?: AttachmentStorage
 }
 
-export class TicketCreationError extends Error {
+export class TicketCreationError extends ApiError {
   constructor(
     public readonly status: number,
     public readonly code: string,
     message: string,
     public readonly fieldErrors: FieldError[] = [],
   ) {
-    super(message)
+    super(status, code, message, fieldErrors)
     this.name = 'TicketCreationError'
   }
 }
@@ -184,11 +184,4 @@ export async function createTicket(
   }
 
   return { id: ticket.id, attachmentFailures }
-}
-
-export function sendTicketCreationError(
-  error: TicketCreationError,
-  res: Parameters<typeof sendError>[0],
-): void {
-  sendError(res, error.status, error.code, error.message, error.fieldErrors)
 }

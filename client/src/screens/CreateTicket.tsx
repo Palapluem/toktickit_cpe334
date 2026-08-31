@@ -434,7 +434,12 @@ export function CreateTicket() {
         </section>
 
         <div className="create-ticket-form__actions">
-          <Button variant="secondary" type="button" onClick={() => navigate('/tickets')}>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => navigate('/tickets')}
+            disabled={submitting}
+          >
             Cancel
           </Button>
           <Button

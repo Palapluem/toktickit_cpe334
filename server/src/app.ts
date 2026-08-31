@@ -6,8 +6,6 @@ import { errorHandler, sendError } from './http/errors.js'
 import { requireRequesterContext } from './middleware/requesterContext.js'
 import {
   createTicket,
-  sendTicketCreationError,
-  TicketCreationError,
   type CreateTicketOptions,
 } from './tickets/createTicket.js'
 import {
@@ -21,6 +19,7 @@ type AttachmentRequest = Request & {
 }
 
 const attachmentUpload = multer({
+  // Keep bytes in memory through validation; the adapter writes only after commit (BR-34).
   storage: multer.memoryStorage(),
   limits: {
     fileSize: MAX_ATTACHMENT_SIZE_BYTES,
@@ -130,8 +129,8 @@ export function createApp(options: CreateTicketOptions = {}) {
     '/api/tickets',
     requireRequesterContext,
     parseAttachments,
-    async (req, res, next) => {
-    try {
+    // Express 5 forwards rejected async handlers to the final error middleware.
+    async (req, res) => {
       const files = Array.isArray(req.files)
         ? req.files.map((file) => ({
             originalFilename: file.originalname,
@@ -170,13 +169,6 @@ export function createApp(options: CreateTicketOptions = {}) {
           attachmentFailures: ticket.attachmentFailures,
         },
       })
-    } catch (error) {
-      if (error instanceof TicketCreationError) {
-        sendTicketCreationError(error, res)
-        return
-      }
-      next(error)
-    }
     },
   )
 
