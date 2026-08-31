@@ -92,14 +92,18 @@ async function waitForReferences() {
 
 async function fillValidForm() {
   const user = userEvent.setup()
-  await user.selectOptions(screen.getByLabelText('Category'), 'category-hardware')
+  await user.selectOptions(screen.getByLabelText(/^Category/), 'category-hardware')
   await user.selectOptions(
-    screen.getByLabelText('Related System'),
+    screen.getByLabelText(/^Related System/),
     'system-email',
   )
-  await user.type(screen.getByLabelText('Summary'), 'Printer queue is stuck')
+  await user.selectOptions(
+    screen.getByLabelText(/^Requested Priority/),
+    'MEDIUM',
+  )
+  await user.type(screen.getByLabelText(/^Summary/), 'Printer queue is stuck')
   await user.type(
-    screen.getByLabelText('Description'),
+    screen.getByLabelText(/^Description/),
     'Print jobs remain queued after restarting the printer.',
   )
   return user
@@ -144,8 +148,8 @@ describe('UI-06/UI-07 · initial and reference states', () => {
     renderScreen()
 
     expect(await screen.findByRole('status')).toHaveTextContent(/loading/i)
-    expect(screen.getByLabelText('Category')).toBeDisabled()
-    expect(screen.getByLabelText('Related System')).toBeDisabled()
+    expect(screen.getByLabelText(/^Category/)).toBeDisabled()
+    expect(screen.getByLabelText(/^Related System/)).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Submit Ticket' })).toBeDisabled()
   })
 
@@ -196,7 +200,7 @@ describe('UI-08 · AC-12 · submitting state', () => {
     const submit = screen.getByRole('button', { name: 'Submit Ticket' })
     await user.click(submit)
     expect(await screen.findByRole('button', { name: /submitting/i })).toBeDisabled()
-    expect(screen.getByLabelText('Summary')).toBeDisabled()
+    expect(screen.getByLabelText(/^Summary/)).toBeDisabled()
 
     await user.click(screen.getByRole('button', { name: /submitting/i }))
     expect(
@@ -234,8 +238,8 @@ describe('UI-10 · AC-13/BR-25 · API failure', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/could not create/i)
     expect(screen.getByRole('alert')).not.toHaveTextContent(/secret database/i)
-    expect(screen.getByLabelText('Summary')).toHaveValue('Printer queue is stuck')
-    expect(screen.getByLabelText('Description')).toHaveValue(
+    expect(screen.getByLabelText(/^Summary/)).toHaveValue('Printer queue is stuck')
+    expect(screen.getByLabelText(/^Description/)).toHaveValue(
       'Print jobs remain queued after restarting the printer.',
     )
     expect(screen.getByRole('button', { name: 'Submit Ticket' })).toBeEnabled()
@@ -254,11 +258,15 @@ describe('UI-11 · AC-16/AC-17 · invalid attachment', () => {
       type: 'application/octet-stream',
     })
 
-    await userEvent.upload(screen.getByLabelText('Attachments'), file)
+    await userEvent.upload(
+      screen.getByLabelText('Attachments', { selector: 'input' }),
+      file,
+      { applyAccept: false },
+    )
 
     expect(await screen.findByText('payload.exe')).toBeInTheDocument()
     expect(screen.getByText(/permitted types/i)).toBeInTheDocument()
-    expect(screen.getByLabelText('Summary')).toBeEnabled()
+    expect(screen.getByLabelText(/^Summary/)).toBeEnabled()
   })
 })
 

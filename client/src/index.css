@@ -285,8 +285,130 @@ body {
   padding: var(--zen-space-6);
 }
 
+/* ---- Create Ticket ---- */
+
+.create-ticket-page {
+  display: grid;
+  gap: var(--zen-space-6);
+}
+
+.create-ticket-page__intro h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 var(--zen-space-2);
+}
+
+.create-ticket-page__intro p:last-child {
+  color: var(--zen-text-muted);
+  margin: 0;
+}
+
+.zen-page-kicker {
+  color: var(--zen-secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin: 0 0 var(--zen-space-1);
+  text-transform: uppercase;
+}
+
+.create-ticket-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--zen-space-6);
+}
+
+.create-ticket-form__group {
+  margin: 0;
+}
+
+.create-ticket-form__group + .create-ticket-form__group {
+  border-top: 1px solid var(--zen-border);
+  padding-top: var(--zen-space-6);
+}
+
+.create-ticket-form__group h2 {
+  color: var(--zen-text);
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0 0 var(--zen-space-4);
+}
+
+.create-ticket-form__system-grid,
+.create-ticket-form__classification-grid {
+  display: grid;
+  gap: var(--zen-space-4);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.create-ticket-form__system-grid .zen-field {
+  margin-bottom: 0;
+}
+
+.create-ticket-form__classification-grid .zen-field {
+  margin-bottom: 0;
+}
+
+.create-ticket-form textarea.zen-field__control {
+  min-height: 144px;
+  padding: var(--zen-space-2) var(--zen-space-3);
+  resize: vertical;
+}
+
+.create-ticket-form__file-list {
+  list-style: none;
+  margin: calc(var(--zen-space-2) * -1) 0 0;
+  padding: 0;
+}
+
+.create-ticket-form__file-list li {
+  align-items: center;
+  border-bottom: 1px solid var(--zen-border);
+  display: flex;
+  gap: var(--zen-space-3);
+  justify-content: space-between;
+  padding: var(--zen-space-2) 0;
+}
+
+.create-ticket-form__file-list .zen-field__hint {
+  margin: 0 auto 0 0;
+}
+
+.create-ticket-form__file-list__invalid {
+  color: var(--zen-error);
+  flex-wrap: wrap;
+}
+
+.create-ticket-form__file-list__invalid span:last-child {
+  font-size: 0.8125rem;
+}
+
+.create-ticket-form__actions {
+  display: flex;
+  gap: var(--zen-space-2);
+  justify-content: flex-end;
+}
+
+.zen-state--success {
+  background: var(--zen-success-bg);
+  border-color: var(--zen-success);
+}
+
+.create-ticket-page__alert {
+  text-align: left;
+}
+
 @media (max-width: 767.98px) {
   .zen-card {
     padding: var(--zen-space-4);
+  }
+
+  .create-ticket-form__system-grid,
+  .create-ticket-form__classification-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .create-ticket-form__actions {
+    flex-direction: column-reverse;
   }
 }
