@@ -20,7 +20,15 @@ export interface Category {
   name: string
 }
 
-export async function fetchCategories(): Promise<Category[]> {
+export interface Requester {
+  id: string
+  displayName: string
+  email: string
+}
+
+export async function fetchCategories(
+  _requesterId?: string,
+): Promise<Category[]> {
   const response = await fetch(`${API_BASE_URL}/api/categories`)
 
   if (!response.ok) {
@@ -28,4 +36,9 @@ export async function fetchCategories(): Promise<Category[]> {
   }
 
   return response.json()
+}
+
+// STUB — seam only (testing-contract.md §5).
+export async function fetchRequesters(): Promise<Requester[]> {
+  return []
 }
