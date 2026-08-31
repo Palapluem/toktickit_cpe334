@@ -5,6 +5,7 @@ import express from 'express'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import app from '../../src/app.js'
 import { errorHandler } from '../../src/http/errors.js'
+import { TicketCreationError } from '../../src/tickets/createTicket.js'
 
 describe('shared unexpected-error middleware', () => {
   afterEach(() => {
@@ -56,5 +57,34 @@ describe('shared unexpected-error middleware', () => {
 
     const body = JSON.stringify(response.body)
     expect(body).not.toMatch(/SELECT password|server\/src\/db\.ts|at .*:\d+/i)
+  })
+
+  it('maps a known API error through the shared middleware', async () => {
+    const probe = express()
+    probe.get('/contract', (_req, _res, next) => {
+      next(
+        new TicketCreationError(
+          400,
+          'VALIDATION_FAILED',
+          'One or more fields are invalid.',
+          [{ field: 'summary', message: 'Summary is required.' }],
+        ),
+      )
+    })
+    probe.use(errorHandler)
+
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+    const response = await request(probe).get('/contract')
+
+    expect(response.status).toBe(400)
+    expect(response.body).toMatchObject({
+      error: {
+        code: 'VALIDATION_FAILED',
+        message: 'One or more fields are invalid.',
+        fieldErrors: [{ field: 'summary', message: 'Summary is required.' }],
+        correlationId: expect.any(String),
+      },
+    })
   })
 })

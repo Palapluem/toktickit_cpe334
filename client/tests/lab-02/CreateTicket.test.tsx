@@ -203,6 +203,7 @@ describe('UI-08 · AC-12 · submitting state', () => {
     expect(screen.getByLabelText(/^Summary/)).toBeDisabled()
     expect(screen.getByLabelText('Requester')).toBeEnabled()
     expect(screen.getByLabelText('Requester')).toHaveAttribute('readonly')
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled()
 
     await user.click(screen.getByRole('button', { name: /submitting/i }))
     expect(
