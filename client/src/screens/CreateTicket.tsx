@@ -215,7 +215,8 @@ export function CreateTicket() {
     setApiError('')
   }
 
-  const controlsDisabled = submitting || referencePhase !== 'loaded'
+  const controlsDisabled =
+    submitting || referencePhase !== 'loaded' || Boolean(createdTicket)
 
   return (
     <div className="create-ticket-page">
@@ -238,7 +239,7 @@ export function CreateTicket() {
       ) : null}
 
       {createdTicket ? (
-        <div className="zen-state zen-state--success" role="alert">
+        <div className="zen-state zen-state--success" role="alert" aria-live="polite">
           <p className="zen-state__title">Ticket created</p>
           <p className="zen-state__detail">
             Your Ticket Number is <strong>{createdTicket.ticketNo}</strong>.
@@ -255,7 +256,11 @@ export function CreateTicket() {
       ) : null}
 
       {apiError ? (
-        <div className="zen-state zen-state--error create-ticket-page__alert" role="alert">
+        <div
+          className="zen-state zen-state--error create-ticket-page__alert"
+          role="alert"
+          aria-live="polite"
+        >
           <p className="zen-state__title">Could not create ticket</p>
           <p className="zen-state__detail">{apiError}</p>
         </div>
@@ -340,7 +345,11 @@ export function CreateTicket() {
               </select>
             </FormField>
             <FormField id="itPriority" label="IT Priority" readOnly hint="Set by IT Staff">
-              <input value="Set by IT Staff" readOnly disabled={submitting} />
+              <input
+                value={createdTicket?.itPriority ?? 'Set by IT Staff'}
+                readOnly
+                disabled={submitting}
+              />
             </FormField>
           </div>
         </section>
@@ -422,11 +431,11 @@ export function CreateTicket() {
             Cancel
           </Button>
           <Button
-            variant="primary"
+            variant={createdTicket ? 'secondary' : 'primary'}
             type="submit"
             busy={submitting}
             busyLabel="Submitting…"
-            disabled={referencePhase !== 'loaded'}
+            disabled={referencePhase !== 'loaded' || Boolean(createdTicket)}
           >
             Submit Ticket
           </Button>

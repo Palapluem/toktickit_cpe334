@@ -1,6 +1,9 @@
 // UNIT-04 (#20). BR-26/BR-27; TC-013/TC-022.
 import { describe, expect, it } from 'vitest'
-import { validateAttachment } from '../../src/tickets/attachmentRules.js'
+import {
+  MAX_ATTACHMENT_SIZE_BYTES,
+  validateAttachment,
+} from '../../src/tickets/attachmentRules.js'
 
 function file(overrides: Partial<{
   originalFilename: string
@@ -17,9 +20,24 @@ function file(overrides: Partial<{
 }
 
 describe('UNIT-04 · attachment rule validation', () => {
+  it.each([
+    ['photo.jpg', 'image/jpeg'],
+    ['photo.jpeg', 'image/jpeg'],
+    ['diagram.png', 'image/png'],
+    ['capture.webp', 'image/webp'],
+    ['report.pdf', 'application/pdf'],
+  ])('accepts the permitted %s type', (originalFilename, mimeType) => {
+    expect(
+      validateAttachment(
+        file({ originalFilename, mimeType, sizeBytes: MAX_ATTACHMENT_SIZE_BYTES }),
+        0,
+      ),
+    ).toBeNull()
+  })
+
   it('rejects a file over 5 MB with the specified status and code', () => {
     expect(
-      validateAttachment(file({ sizeBytes: 5 * 1024 * 1024 + 1 }), 0),
+      validateAttachment(file({ sizeBytes: MAX_ATTACHMENT_SIZE_BYTES + 1 }), 0),
     ).toMatchObject({
       status: 413,
       code: 'FILE_TOO_LARGE',

@@ -1,7 +1,7 @@
 // UI-06…UI-11 (#20). AC-06…AC-17; BR-18…BR-27.
 // The tests use the network boundary and exercise the rendered states.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { CreateTicket } from '../../src/screens/CreateTicket.js'
@@ -224,6 +224,8 @@ describe('UI-09 · AC-06 · successful creation', () => {
     )
     expect(screen.getByRole('link', { name: 'View Ticket' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Create Another' })).toBeInTheDocument()
+    expect(screen.getByLabelText('IT Priority')).toHaveValue('MEDIUM')
+    expect(screen.getByRole('button', { name: 'Submit Ticket' })).toBeDisabled()
   })
 })
 
