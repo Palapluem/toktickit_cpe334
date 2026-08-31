@@ -15,11 +15,23 @@ import {
   MAX_ATTACHMENTS,
 } from './tickets/attachmentRules.js'
 
+type AttachmentRequest = Request & {
+  lastAttachmentFilename?: string
+  lastAttachmentIndex?: number
+}
+
 const attachmentUpload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: MAX_ATTACHMENT_SIZE_BYTES + 2,
+    fileSize: MAX_ATTACHMENT_SIZE_BYTES,
     files: MAX_ATTACHMENTS + 1,
+  },
+  fileFilter: (req, file, callback) => {
+    const attachmentRequest = req as AttachmentRequest
+    attachmentRequest.lastAttachmentFilename = file.originalname
+    attachmentRequest.lastAttachmentIndex =
+      (attachmentRequest.lastAttachmentIndex ?? -1) + 1
+    callback(null, true)
   },
 })
 
@@ -34,12 +46,22 @@ function parseAttachments(req: Request, res: Response, next: NextFunction) {
       }
       if (error instanceof multer.MulterError) {
         if (error.code === 'LIMIT_FILE_SIZE') {
+          const attachmentRequest = req as AttachmentRequest
+          const filename = attachmentRequest.lastAttachmentFilename
+          const index = attachmentRequest.lastAttachmentIndex
           sendError(
             res,
             413,
             'FILE_TOO_LARGE',
             'Each attachment must be 5 MB or smaller.',
-            [{ field: 'attachments', message: 'The file exceeds the 5 MB limit.' }],
+            [
+              {
+                field: index === undefined ? 'attachments' : `attachments[${index}]`,
+                message: filename
+                  ? `${filename} exceeds the 5 MB limit.`
+                  : 'The uploaded attachment exceeds the 5 MB limit.',
+              },
+            ],
           )
           return
         }

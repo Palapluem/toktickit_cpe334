@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 export type AttachmentFile = {
@@ -11,6 +11,7 @@ export type AttachmentFile = {
 
 export interface AttachmentStorage {
   save(file: AttachmentFile): Promise<{ storedFilename: string }>
+  remove(storedFilename: string): Promise<void>
 }
 
 const uploadDirectory = path.resolve(process.cwd(), 'uploads')
@@ -23,5 +24,8 @@ export const localAttachmentStorage: AttachmentStorage = {
       flag: 'wx',
     })
     return { storedFilename }
+  },
+  async remove(storedFilename) {
+    await unlink(path.join(uploadDirectory, storedFilename))
   },
 }

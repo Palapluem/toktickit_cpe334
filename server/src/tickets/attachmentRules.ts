@@ -27,7 +27,7 @@ export function validateAttachment(
     return {
       status: 413,
       code: 'FILE_TOO_LARGE',
-      message: 'Each attachment must be 5 MB or smaller.',
+      message: `${file.originalFilename} exceeds the 5 MB limit.`,
       field,
     }
   }
@@ -40,7 +40,7 @@ export function validateAttachment(
     return {
       status: 415,
       code: 'UNSUPPORTED_FILE_TYPE',
-      message: 'Use a JPG, JPEG, PNG, WEBP, or PDF attachment.',
+      message: `${file.originalFilename} is not permitted. Use a JPG, JPEG, PNG, WEBP, or PDF attachment.`,
       field,
     }
   }

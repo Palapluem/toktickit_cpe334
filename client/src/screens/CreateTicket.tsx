@@ -244,6 +244,15 @@ export function CreateTicket() {
           <p className="zen-state__detail">
             Your Ticket Number is <strong>{createdTicket.ticketNo}</strong>.
           </p>
+          {createdTicket.attachmentFailures.length > 0 ? (
+            <p className="zen-state__detail">
+              Some attachments could not be stored:{' '}
+              {createdTicket.attachmentFailures
+                .map(({ originalFilename }) => originalFilename)
+                .join(', ')}
+              . You can add them from Ticket Detail.
+            </p>
+          ) : null}
           <div className="d-flex justify-content-center gap-2 flex-wrap">
             <Link className="zen-button zen-button--primary" to={`/tickets/${createdTicket.id}`}>
               View Ticket
@@ -271,20 +280,19 @@ export function CreateTicket() {
           <h2 id="system-heading">System-generated</h2>
           <div className="create-ticket-form__system-grid">
             <FormField id="ticketNo" label="Ticket No." readOnly>
-              <input value={createdTicket?.ticketNo ?? 'Generated after submission'} readOnly disabled={submitting} />
+              <input value={createdTicket?.ticketNo ?? 'Generated after submission'} readOnly />
             </FormField>
             <FormField id="ticketDate" label="Ticket Date" readOnly>
               <input
                 value={createdTicket ? new Date(createdTicket.createdAt).toLocaleString() : 'Set on submission'}
                 readOnly
-                disabled={submitting}
               />
             </FormField>
             <FormField id="requester" label="Requester" readOnly>
-              <input value={requester?.displayName ?? ''} readOnly disabled={submitting} />
+              <input value={requester?.displayName ?? ''} readOnly />
             </FormField>
             <FormField id="currentStatus" label="Current Status" readOnly>
-              <input value="New" readOnly disabled={submitting} />
+              <input value="New" readOnly />
             </FormField>
           </div>
         </section>
@@ -348,7 +356,6 @@ export function CreateTicket() {
               <input
                 value={createdTicket?.itPriority ?? 'Set by IT Staff'}
                 readOnly
-                disabled={submitting}
               />
             </FormField>
           </div>

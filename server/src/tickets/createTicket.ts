@@ -14,7 +14,6 @@ import {
 import {
   UUID,
   validateCreateTicketBody,
-  type ValidatedTicketInput,
 } from './validation.js'
 
 export type CreateTicketInput = {
@@ -160,17 +159,22 @@ export async function createTicket(
   for (const file of attachments) {
     try {
       const { storedFilename } = await storage.save(file)
-      await db.attachment.create({
-        data: {
-          ticketId: ticket.id,
-          originalFilename: file.originalFilename,
-          storedFilename,
-          mimeType: file.mimeType,
-          sizeBytes: file.sizeBytes,
-          uploadedById: input.requesterId,
-          createdAt,
-        },
-      })
+      try {
+        await db.attachment.create({
+          data: {
+            ticketId: ticket.id,
+            originalFilename: file.originalFilename,
+            storedFilename,
+            mimeType: file.mimeType,
+            sizeBytes: file.sizeBytes,
+            uploadedById: input.requesterId,
+            createdAt,
+          },
+        })
+      } catch (error) {
+        await storage.remove(storedFilename).catch(() => undefined)
+        throw error
+      }
     } catch {
       attachmentFailures.push({
         originalFilename: file.originalFilename,
