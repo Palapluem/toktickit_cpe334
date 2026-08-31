@@ -77,7 +77,7 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 | API-15 | AC-22, BR-37 | Sorting | Whitelisted fields sort both directions; ties broken deterministically | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
 | API-16 | AC-23, BR-40 | Pagination | Correct page slices and metadata; a page past the end returns empty data, not an error | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
 | API-17 | AC-24, BR-38, BR-39 | Invalid query parameters | 400 for `pageSize` >50, `page` 0, unknown `sort`, unknown parameter | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
-| API-18 | BR-14 | Requester context required | 400 when `X-Requester-Id` is missing, malformed, unknown, or inactive | `server/tests/lab-02/requester-context.api.test.ts` | ✅ |
+| API-18 | BR-14 | Requester context required | 400 when `X-Requester-Id` is missing, malformed, unknown, or inactive; shared error envelope also covers framework failures (TC-008) | `server/tests/lab-02/requester-context.api.test.ts`; `server/tests/lab-02/error-handler.api.test.ts` | ✅ |
 | API-19 | AC-27 | Owned ticket detail | 200 with full ticket and attachment metadata | `server/tests/lab-02/ticket-detail.api.test.ts` | ☐ |
 | API-20 | AC-28, BR-16 | Cross-requester detail | **404** (not 403) so existence is not disclosed | `server/tests/lab-02/ticket-detail.api.test.ts` | ☐ |
 | API-21 | AC-29 | Add attachment | 201; active count increments | `server/tests/lab-02/attachments.api.test.ts` | ☐ |
