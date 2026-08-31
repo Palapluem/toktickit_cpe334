@@ -1,7 +1,7 @@
 # Peer Review Log — Lab 2
 
 **Author:** วิศิษฐ์ สุวรรณเนาว์ (Wisit Suwannao), 67070501042 — GitHub [@Palapluem](https://github.com/Palapluem)
-**Reviewer:** ณัฐวัฒน์ พริมศิริกุลนวุฒิ (Natthawat Primsirikunawut) — GitHub [@N0TAW00D](https://github.com/N0TAW00D)
+**Reviewer:** นัธทวัฒน์ ปริมสิริคุณาวุฒิ (Natthawat Primsirikunawut) — GitHub [@N0TAW00D](https://github.com/N0TAW00D)
 **Repository:** [Palapluem/toktickit_cpe334](https://github.com/Palapluem/toktickit_cpe334)
 
 Agreed rule for this sprint: **the reviewer merges, never the author.** An approval that the author then acts on themselves makes the review a formality. Every merge below was performed by the reviewer.
