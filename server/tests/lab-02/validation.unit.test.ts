@@ -30,6 +30,18 @@ describe('UNIT-03 · BR-19/BR-20/BR-21 · create-ticket validation', () => {
     })
   })
 
+  it('accepts Summary and Description at both documented boundaries', () => {
+    const lower = validateCreateTicketBody(
+      validBody({ summary: 'a'.repeat(5), description: 'b'.repeat(10) }),
+    )
+    const upper = validateCreateTicketBody(
+      validBody({ summary: 'a'.repeat(150), description: 'b'.repeat(5000) }),
+    )
+
+    expect(lower.errors).toEqual([])
+    expect(upper.errors).toEqual([])
+  })
+
   it.each([
     ['summary', 'a'.repeat(4)],
     ['summary', 'a'.repeat(151)],

@@ -201,6 +201,8 @@ describe('UI-08 · AC-12 · submitting state', () => {
     await user.click(submit)
     expect(await screen.findByRole('button', { name: /submitting/i })).toBeDisabled()
     expect(screen.getByLabelText(/^Summary/)).toBeDisabled()
+    expect(screen.getByLabelText('Requester')).toBeEnabled()
+    expect(screen.getByLabelText('Requester')).toHaveAttribute('readonly')
 
     await user.click(screen.getByRole('button', { name: /submitting/i }))
     expect(
@@ -226,6 +228,34 @@ describe('UI-09 · AC-06 · successful creation', () => {
     expect(screen.getByRole('button', { name: 'Create Another' })).toBeInTheDocument()
     expect(screen.getByLabelText('IT Priority')).toHaveValue('MEDIUM')
     expect(screen.getByRole('button', { name: 'Submit Ticket' })).toBeDisabled()
+  })
+
+  it('reports stored attachment failures without exposing the internal reason', async () => {
+    mockApi(
+      response(
+        {
+          data: {
+            ...CREATED_TICKET,
+            attachmentFailures: [
+              { originalFilename: 'network-log.pdf', reason: 'STORAGE_WRITE_FAILED' },
+            ],
+          },
+        },
+        true,
+        201,
+      ),
+    )
+    renderScreen()
+    await waitForReferences()
+    await fillValidForm()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Submit Ticket' }))
+
+    const success = await screen.findByRole('alert')
+    expect(success).toHaveTextContent(/some attachments could not be stored/i)
+    expect(success).toHaveTextContent('network-log.pdf')
+    expect(success).toHaveTextContent(/ticket detail/i)
+    expect(success).not.toHaveTextContent('STORAGE_WRITE_FAILED')
   })
 })
 

@@ -1,54 +1,44 @@
 // API-08…API-10 (#20). AC-15…AC-17; BR-26, BR-27, BR-34, BR-35.
-// TC-013/022/023: rule failures reject before persistence; storage failures keep the Ticket.
+// TC-013/015/022/023: rule failures reject before persistence; storage failures keep the Ticket.
+// TDT-01 equivalence partitions; TDT-02 boundary-value analysis; TDT-05 error guessing for storage failures.
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import request from 'supertest'
 import { createApp } from '../../src/app.js'
 import prisma from '../../src/prisma.js'
-import type { AttachmentStorage } from '../../src/tickets/storage.js'
+import type { AttachmentFile, AttachmentStorage } from '../../src/tickets/storage.js'
+import {
+  BASE_TICKET_PAYLOAD,
+  loadTicketReferences,
+  resetTicketData,
+  type TicketReferences,
+} from './ticket-fixtures.js'
 
-const REQUEST = {
-  summary: 'Attachment upload test',
-  description: 'This ticket exists to exercise creation-time file handling.',
-  requestedPriority: 'HIGH',
-}
-
-let requesterId = ''
-let categoryId = ''
-let relatedSystemId = ''
+let references: TicketReferences
 
 beforeAll(async () => {
-  const [requester, category, relatedSystem] = await Promise.all([
-    prisma.requesterUser.findFirstOrThrow({ where: { isActive: true } }),
-    prisma.category.findFirstOrThrow({ where: { isActive: true } }),
-    prisma.relatedSystem.findFirstOrThrow({ where: { isActive: true } }),
-  ])
-
-  requesterId = requester.id
-  categoryId = category.id
-  relatedSystemId = relatedSystem.id
+  references = await loadTicketReferences()
 })
 
 beforeEach(async () => {
-  await prisma.attachment.deleteMany()
-  await prisma.ticket.deleteMany()
-  await prisma.ticketNumberSequence.deleteMany()
+  await resetTicketData()
 })
 
 function multipart(app: ReturnType<typeof createApp>) {
   return request(app)
     .post('/api/tickets')
-    .set('X-Requester-Id', requesterId)
-    .field('categoryId', categoryId)
-    .field('relatedSystemId', relatedSystemId)
-    .field('summary', REQUEST.summary)
-    .field('description', REQUEST.description)
-    .field('requestedPriority', REQUEST.requestedPriority)
+    .set('X-Requester-Id', references.requesterId)
+    .field('categoryId', references.categoryId)
+    .field('relatedSystemId', references.relatedSystemId)
+    .field('summary', BASE_TICKET_PAYLOAD.summary)
+    .field('description', BASE_TICKET_PAYLOAD.description)
+    .field('requestedPriority', BASE_TICKET_PAYLOAD.requestedPriority)
 }
 
 describe('API-08 · AC-15 · a permitted attachment is stored with metadata', () => {
   it('creates the Ticket and returns the active attachment', async () => {
     const storage: AttachmentStorage = {
       save: vi.fn(async () => ({ storedFilename: 'generated-file-name' })),
+      remove: vi.fn(async () => {}),
     }
 
     const response = await multipart(createApp({ storage })).attach(
@@ -67,6 +57,37 @@ describe('API-08 · AC-15 · a permitted attachment is stored with metadata', ()
     })
     expect(await prisma.attachment.count()).toBe(1)
   })
+
+  it('accepts exactly five permitted attachments at the count boundary', async () => {
+    const storage: AttachmentStorage = {
+      save: vi.fn(async (file: AttachmentFile) => ({
+        storedFilename: `stored-${file.originalFilename}`,
+      })),
+      remove: vi.fn(async () => {}),
+    }
+    let upload = multipart(createApp({ storage }))
+    for (let index = 0; index < 5; index += 1) {
+      upload = upload.attach(
+        'attachments',
+        Buffer.from(`file-${index}`),
+        { filename: `file-${index}.png`, contentType: 'image/png' },
+      )
+    }
+
+    const response = await upload
+
+    expect(response.status).toBe(201)
+    expect(response.body.data.attachments).toHaveLength(5)
+    expect(response.body.data.attachments.map((file: { originalFilename: string }) => file.originalFilename))
+      .toEqual([
+        'file-0.png',
+        'file-1.png',
+        'file-2.png',
+        'file-3.png',
+        'file-4.png',
+      ])
+    expect(await prisma.attachment.count()).toBe(5)
+  })
 })
 
 describe('API-09/API-10 · AC-16/AC-17/BR-34 · rule violations are atomic', () => {
@@ -79,6 +100,13 @@ describe('API-09/API-10 · AC-16/AC-17/BR-34 · rule violations are atomic', () 
 
     expect(response.status).toBe(415)
     expect(response.body.error.code).toBe('UNSUPPORTED_FILE_TYPE')
+    expect(response.body.error.fieldErrors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          message: expect.stringContaining('payload.exe'),
+        }),
+      ]),
+    )
     expect(await prisma.ticket.count()).toBe(0)
     expect(await prisma.attachment.count()).toBe(0)
   })
@@ -92,6 +120,13 @@ describe('API-09/API-10 · AC-16/AC-17/BR-34 · rule violations are atomic', () 
 
     expect(response.status).toBe(413)
     expect(response.body.error.code).toBe('FILE_TOO_LARGE')
+    expect(response.body.error.fieldErrors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          message: expect.stringContaining('too-large.pdf'),
+        }),
+      ]),
+    )
     expect(await prisma.ticket.count()).toBe(0)
     expect(await prisma.attachment.count()).toBe(0)
   })
@@ -119,6 +154,7 @@ describe('API-08 · TC-023 · storage failure keeps the Ticket', () => {
       save: vi.fn(async () => {
         throw new Error('simulated disk failure')
       }),
+      remove: vi.fn(async () => {}),
     }
 
     const response = await multipart(createApp({ storage })).attach(
@@ -137,5 +173,34 @@ describe('API-08 · TC-023 · storage failure keeps the Ticket', () => {
     ])
     expect(await prisma.ticket.count()).toBe(1)
     expect(await prisma.attachment.count()).toBe(0)
+  })
+
+  it('removes a stored file when its metadata row cannot be created', async () => {
+    const remove = vi.fn(async () => {})
+    const storage: AttachmentStorage = {
+      save: vi.fn(async () => ({ storedFilename: 'same-stored-name' })),
+      remove,
+    }
+
+    const response = await multipart(createApp({ storage }))
+      .attach('attachments', Buffer.from('first'), {
+        filename: 'first.png',
+        contentType: 'image/png',
+      })
+      .attach('attachments', Buffer.from('second'), {
+        filename: 'second.png',
+        contentType: 'image/png',
+      })
+
+    expect(response.status).toBe(201)
+    expect(response.body.data.attachments).toHaveLength(1)
+    expect(response.body.data.attachmentFailures).toEqual([
+      {
+        originalFilename: 'second.png',
+        reason: 'STORAGE_WRITE_FAILED',
+      },
+    ])
+    expect(remove).toHaveBeenCalledWith('same-stored-name')
+    expect(await prisma.attachment.count()).toBe(1)
   })
 })
