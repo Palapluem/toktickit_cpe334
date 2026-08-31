@@ -7,5 +7,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './tests/setup.ts',
     include: ['tests/**/*.test.{ts,tsx}'],
+    // UI tests stub the browser-global fetch; keep those stubs isolated by file.
+    fileParallelism: false,
   },
 })
