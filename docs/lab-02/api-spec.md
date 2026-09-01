@@ -235,8 +235,8 @@ The current Requester's Tickets, paginated. **Never returns another Requester's 
 | Parameter | Type | Default | Rules |
 |---|---|---|---|
 | `search` | string | — | trimmed; 1–150 chars; case-insensitive partial match on `ticketNo` **or** `summary` |
-| `categoryId` | UUID | — | must be an existing Category |
-| `relatedSystemId` | UUID | — | must be an existing Related System |
+| `categoryId` | UUID | — | must be an existing **active** Category |
+| `relatedSystemId` | UUID | — | must be an existing **active** Related System |
 | `requestedPriority` | enum | — | `LOW` \| `MEDIUM` \| `HIGH` \| `URGENT` |
 | `itPriority` | enum | — | `LOW` \| `MEDIUM` \| `HIGH` \| `URGENT` |
 | `status` | enum | — | one of the `TicketStatus` values |

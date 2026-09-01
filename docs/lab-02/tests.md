@@ -76,7 +76,7 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 | API-14 | AC-21 | Filters | Category, requested priority, IT priority, and status filters each narrow correctly; combined filters AND | `server/tests/lab-02/my-tickets.api.test.ts` | ✅ |
 | API-15 | AC-22, BR-37 | Sorting | Whitelisted fields sort both directions; ties broken deterministically | `server/tests/lab-02/my-tickets.api.test.ts` | ✅ |
 | API-16 | AC-23, BR-40 | Pagination | Correct page slices and metadata; a page past the end returns empty data, not an error | `server/tests/lab-02/my-tickets.api.test.ts` | ✅ |
-| API-17 | AC-24, BR-38, BR-39 | Invalid query parameters | 400 for invalid UUID/reference, `pageSize` >50, `page` 0, unknown `sort`, unknown parameter | `server/tests/lab-02/my-tickets.api.test.ts` | ✅ |
+| API-17 | AC-24, BR-38, BR-39 | Invalid query parameters | 400 for invalid UUID/reference, inactive reference, `pageSize` >50, `page` 0, unknown `sort`, unknown parameter | `server/tests/lab-02/my-tickets.api.test.ts` | ✅ |
 | API-18 | BR-14 | Requester context required | 400 when `X-Requester-Id` is missing, malformed, unknown, or inactive; shared error envelope also covers framework failures (TC-008) | `server/tests/lab-02/requester-context.api.test.ts`; `server/tests/lab-02/error-handler.api.test.ts` | ✅ |
 | API-19 | AC-27 | Owned ticket detail | 200 with full ticket and attachment metadata | `server/tests/lab-02/ticket-detail.api.test.ts` | ☐ |
 | API-20 | AC-28, BR-16 | Cross-requester detail | **404** (not 403) so existence is not disclosed | `server/tests/lab-02/ticket-detail.api.test.ts` | ☐ |
@@ -109,7 +109,7 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 | UI-13 | AC-19 | Requester switch clears list | Switching context refetches and drops the previous list | `client/tests/lab-02/MyTickets.test.tsx` | ✅ |
 | UI-14 | AC-25 | Empty state | "No tickets yet" with a Create Ticket action | `client/tests/lab-02/MyTickets.test.tsx` | ✅ |
 | UI-15 | AC-26, BR-41 | No-results state | Distinct message with Clear Filters | `client/tests/lab-02/MyTickets.test.tsx` | ✅ |
-| UI-16 | AC-20, AC-21, AC-22 | Search, filter, sort wiring | Controls issue the expected search, category, requested-priority, IT-priority, status, and sort query and render results | `client/tests/lab-02/MyTickets.test.tsx` | ✅ |
+| UI-16 | AC-20, AC-21, AC-22 | Search, filter, sort wiring | Debounced search plus controls issue the expected search, category, requested-priority, IT-priority, status, and sort query and render results | `client/tests/lab-02/MyTickets.test.tsx` | ✅ |
 | UI-17 | AC-23 | Pagination controls | Next/Previous request the right page; metadata rendered | `client/tests/lab-02/MyTickets.test.tsx` | ✅ |
 | UI-18 | AC-27 | Detail read-only | Ticket fields render read-only; no editable control | `client/tests/lab-02/RequesterTicketDetail.test.tsx` | ☐ |
 | UI-19 | AC-29 | Add attachment | Uploading state then active row | `client/tests/lab-02/AttachmentSection.test.tsx` | ☐ |

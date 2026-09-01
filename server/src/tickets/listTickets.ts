@@ -44,14 +44,14 @@ async function validateReferenceFilters(
 ): Promise<void> {
   const [category, relatedSystem] = await Promise.all([
     query.categoryId
-      ? db.category.findUnique({
-          where: { id: query.categoryId },
+      ? db.category.findFirst({
+          where: { id: query.categoryId, isActive: true },
           select: { id: true },
         })
       : Promise.resolve(null),
     query.relatedSystemId
-      ? db.relatedSystem.findUnique({
-          where: { id: query.relatedSystemId },
+      ? db.relatedSystem.findFirst({
+          where: { id: query.relatedSystemId, isActive: true },
           select: { id: true },
         })
       : Promise.resolve(null),

@@ -57,6 +57,8 @@ const DEFAULT_FILTERS: FilterState = {
   pageSize: 10,
 }
 
+const SEARCH_DEBOUNCE_MS = 300
+
 function toTicketQuery(filters: FilterState): TicketListQuery {
   const query: TicketListQuery = {
     sort: filters.sort,
@@ -194,11 +196,24 @@ export function MyTickets() {
   const [categories, setCategories] = useState<Category[]>([])
   const [categoriesLoading, setCategoriesLoading] = useState(false)
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
+  const [searchInput, setSearchInput] = useState(DEFAULT_FILTERS.search)
   const [response, setResponse] = useState<TicketListResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const [retryNumber, setRetryNumber] = useState(0)
   const requesterId = requester?.id ?? null
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      const nextSearch = searchInput.trim()
+      setFilters((current) => {
+        if (current.search === nextSearch) return current
+        return { ...current, search: nextSearch, page: 1 }
+      })
+    }, SEARCH_DEBOUNCE_MS)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [searchInput])
 
   useEffect(() => {
     if (!requesterId) {
@@ -266,6 +281,7 @@ export function MyTickets() {
   }
 
   function clearFilters() {
+    setSearchInput('')
     setFilters(DEFAULT_FILTERS)
   }
 
@@ -342,9 +358,9 @@ export function MyTickets() {
           <input
             type="search"
             placeholder="Search by ticket number or summary…"
-            value={filters.search}
+            value={searchInput}
             disabled={filterDisabled}
-            onChange={(event) => updateFilter('search', event.target.value)}
+            onChange={(event) => setSearchInput(event.target.value)}
           />
         </FormField>
 
