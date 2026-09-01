@@ -12,6 +12,7 @@ import {
   MAX_ATTACHMENT_SIZE_BYTES,
   MAX_ATTACHMENTS,
 } from './tickets/attachmentRules.js'
+import { listTickets } from './tickets/listTickets.js'
 
 type AttachmentRequest = Request & {
   lastAttachmentFilename?: string
@@ -123,6 +124,15 @@ export function createApp(options: CreateTicketOptions = {}) {
       select: { id: true, displayName: true, email: true },
     })
     res.json({ data })
+  })
+
+  app.get('/api/tickets', requireRequesterContext, async (req, res) => {
+    const data = await listTickets(
+      req.requester!.id,
+      req.query,
+      options.db ?? prisma,
+    )
+    res.json(data)
   })
 
   app.post(

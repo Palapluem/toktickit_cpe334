@@ -233,28 +233,35 @@ export async function createTicket(
   return responseBody.data
 }
 
-export function fetchTickets(
-  _requesterId: string,
-  _query: TicketListQuery = {},
+export async function fetchTickets(
+  requesterId: string,
+  query: TicketListQuery = {},
 ): Promise<TicketListResponse> {
-  return Promise.resolve({
-    data: [],
-    pagination: {
-      page: 1,
-      pageSize: 10,
-      totalItems: 0,
-      totalPages: 0,
-      hasPreviousPage: false,
-      hasNextPage: false,
-    },
-    appliedFilters: {
-      search: null,
-      categoryId: null,
-      relatedSystemId: null,
-      requestedPriority: null,
-      itPriority: null,
-      status: null,
-      sort: 'createdAt:desc',
-    },
-  })
+  const params = new URLSearchParams()
+  const add = (key: string, value: string | number | undefined) => {
+    if (value === undefined || value === '') return
+    params.set(key, String(value))
+  }
+
+  add('search', query.search?.trim())
+  add('categoryId', query.categoryId)
+  add('relatedSystemId', query.relatedSystemId)
+  add('requestedPriority', query.requestedPriority)
+  add('itPriority', query.itPriority)
+  add('status', query.status)
+  add('sort', query.sort)
+  add('page', query.page)
+  add('pageSize', query.pageSize)
+
+  const queryString = params.toString()
+  const response = await fetch(
+    `${API_BASE_URL}/api/tickets${queryString ? `?${queryString}` : ''}`,
+    { headers: { 'X-Requester-Id': requesterId } },
+  )
+
+  if (!response.ok) {
+    throw new Error('Tickets request failed')
+  }
+
+  return (await response.json()) as TicketListResponse
 }

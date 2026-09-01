@@ -3,6 +3,15 @@ import type { FieldError } from '../http/errors.js'
 export const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 export const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'] as const
+export const TICKET_STATUSES = [
+  'NEW',
+  'ASSIGNED',
+  'IN_PROGRESS',
+  'PENDING_REQUESTER',
+  'RESOLVED',
+  'CLOSED',
+  'CANCELLED',
+] as const
 
 const ACCEPTED_FIELDS = new Set([
   'categoryId',
