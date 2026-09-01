@@ -137,7 +137,8 @@ describe('API-11/API-12 · AC-18/AC-19 · requester ownership', () => {
       pageSize: '1',
     })
 
-    expectDataArray(response).not.toEqual(
+    expectDataArray(response)
+    expect(response.body.data).not.toEqual(
       expect.arrayContaining([expect.objectContaining({ id: own.id })]),
     )
     expect(response.body.pagination.totalItems).toBe(0)
