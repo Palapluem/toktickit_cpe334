@@ -1,5 +1,5 @@
 // Routes for the four Lab 2 screens plus the Lab 1 demonstration (§11.18, §11.19).
-// Screens are placeholders until their own Issues: #17, #20, #21, #22.
+// Screen implementations land incrementally through the Lab 2 Issue flow.
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { AppShell } from './components/AppShell.js'
 import { SystemCheck } from './screens/SystemCheck.js'
