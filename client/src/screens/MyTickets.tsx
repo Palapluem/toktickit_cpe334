@@ -464,7 +464,7 @@ export function MyTickets() {
       {!loading && !error && response && response.data.length > 0 ? (
         <>
           <div className="zen-card my-tickets__table-card">
-            <div className="my-tickets__table-container">
+            <div className="my-tickets__table-container zen-scroll-x">
               <table className="my-tickets__table">
                 <thead>
                   <tr>

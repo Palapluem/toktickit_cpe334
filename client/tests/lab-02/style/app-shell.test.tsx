@@ -39,6 +39,17 @@ describe('STYLE-07 · application shell', () => {
       screen.getByRole('button', { name: /change requester/i }),
     ).toBeInTheDocument()
   })
+
+  it('uses the header-safe action treatment for both header controls', () => {
+    renderAt('/tickets')
+
+    expect(screen.getByRole('button', { name: 'Menu' })).toHaveClass(
+      'zen-shell__header-action',
+    )
+    expect(
+      screen.getByRole('button', { name: /change requester/i }),
+    ).toHaveClass('zen-shell__header-action')
+  })
 })
 
 describe('STYLE-07 · active page is not colour alone', () => {

@@ -202,6 +202,18 @@ body {
   color: var(--zen-secondary);
 }
 
+/* Tertiary actions sit on the primary header rather than a light surface. */
+.zen-shell__header .zen-shell__header-action {
+  color: var(--zen-surface);
+}
+
+.zen-shell__header .zen-shell__header-action:not(:disabled):hover,
+.zen-shell__header .zen-shell__header-action:not(:disabled):active,
+.zen-shell__header .zen-shell__header-action:not(:disabled):focus-visible {
+  background: var(--zen-pale);
+  color: var(--zen-primary);
+}
+
 .zen-button--destructive {
   background: var(--zen-surface);
   border-color: var(--zen-error);
@@ -487,7 +499,7 @@ body {
 }
 
 .my-tickets__table-container {
-  overflow-x: hidden;
+  overflow-x: auto;
 }
 
 .my-tickets__table {

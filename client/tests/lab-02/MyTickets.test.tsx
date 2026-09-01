@@ -124,6 +124,14 @@ describe('UI-12 · AC-18 · My Tickets list', () => {
     expect(screen.getByRole('button', { name: 'Create Ticket' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Clear Filters' })).toBeInTheDocument()
   })
+
+  it('keeps the wide result table in its own scrollable container', async () => {
+    renderScreen()
+
+    const table = await screen.findByRole('table')
+
+    expect(table.parentElement).toHaveClass('zen-scroll-x')
+  })
 })
 
 describe('UI-12 · loading state', () => {
