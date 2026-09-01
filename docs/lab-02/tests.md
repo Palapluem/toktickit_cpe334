@@ -141,7 +141,7 @@ Viewport rendering is verified with Playwright in Issue #23. These cover the beh
 | NAV-03 | ui-spec §12 | Focus restoration | Escape returns focus to the toggle rather than leaving it on a hidden link | `client/tests/lab-02/style/mobile-nav.test.tsx` | ✅ |
 | NAV-04 | ui-spec §5 | Requester stays visible | The current requester renders on mobile without opening the menu | `client/tests/lab-02/style/mobile-nav.test.tsx` | ✅ |
 
-**Issue #21 implementation result (1 September 2026):** UNIT-05, API-11–API-17, and UI-12–UI-17 are green. The full regression run on `feature/10-my-tickets` is **96 server tests / 99 client tests**; the captured outputs are `_private/evidence/lab-02/test-output/issue-21-full-server.txt` and `_private/evidence/lab-02/test-output/issue-21-full-client.txt`. The final Part 3 result remains pending the release run from `main`.
+**Issue #21 implementation result (1 September 2026):** UNIT-05, API-11–API-17, and UI-12–UI-17 are green. The full regression run on `feature/10-my-tickets` is **97 server tests / 100 client tests**; the captured outputs are `_private/evidence/lab-02/test-output/issue-21-full-server.txt` and `_private/evidence/lab-02/test-output/issue-21-full-client.txt`. The final Part 3 result remains pending the release run from `main`.
 
 ### Responsive and E2E
 
