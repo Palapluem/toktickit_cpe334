@@ -330,6 +330,19 @@ describe('API-17 · AC-24/BR-38/BR-39 · invalid list queries', () => {
     expect(response.status).toBe(400)
     expect(response.body.error.code).toBe('VALIDATION_FAILED')
   })
+
+  it('rejects a valid UUID that does not identify an existing reference row', async () => {
+    const response = await listTickets(requesterIds[0], {
+      categoryId: '11111111-1111-4111-8111-111111111111',
+    })
+
+    expect(response.status).toBe(400)
+    expect(response.body.error.fieldErrors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ field: 'categoryId' }),
+      ]),
+    )
+  })
 })
 
 describe('TC-018 · empty and no-results response states', () => {
