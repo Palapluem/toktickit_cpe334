@@ -60,7 +60,7 @@ export function AppShell({
         <button
           ref={toggleRef}
           type="button"
-          className="zen-button zen-button--tertiary d-md-none"
+          className="zen-button zen-button--tertiary zen-shell__header-action d-md-none"
           aria-expanded={menuOpen}
           aria-controls="zen-shell-nav"
           onClick={() => setMenuOpen((open) => !open)}
@@ -90,7 +90,11 @@ export function AppShell({
         {name ? (
           <div className="ms-auto d-flex align-items-center gap-2">
             <span>{name}</span>
-            <Button variant="tertiary" onClick={changeRequester}>
+            <Button
+              variant="tertiary"
+              className="zen-shell__header-action"
+              onClick={changeRequester}
+            >
               Change Requester
             </Button>
           </div>
