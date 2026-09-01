@@ -238,6 +238,7 @@ The current Requester's Tickets, paginated. **Never returns another Requester's 
 | `categoryId` | UUID | — | must be an existing Category |
 | `relatedSystemId` | UUID | — | must be an existing Related System |
 | `requestedPriority` | enum | — | `LOW` \| `MEDIUM` \| `HIGH` \| `URGENT` |
+| `itPriority` | enum | — | `LOW` \| `MEDIUM` \| `HIGH` \| `URGENT` |
 | `status` | enum | — | one of the `TicketStatus` values |
 | `sort` | string | `createdAt:desc` | `<field>:<asc\|desc>`; field must be whitelisted |
 | `page` | integer | `1` | ≥1 |
@@ -280,6 +281,7 @@ Multiple filters combine with AND. An unrecognised query parameter is rejected.
     "categoryId": null,
     "relatedSystemId": null,
     "requestedPriority": null,
+    "itPriority": null,
     "status": null,
     "sort": "createdAt:desc"
   }

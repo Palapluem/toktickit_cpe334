@@ -65,7 +65,7 @@ Because authentication is a sprint away, they accepted a temporary Requester sel
 ### Ticket listing
 - **FR-16** The system shall list only the Tickets belonging to the current requester.
 - **FR-17** The system shall support searching the requester's Tickets by Ticket Number and Summary.
-- **FR-18** The system shall support filtering the requester's Tickets by Category, Requested Priority, and Current Status.
+- **FR-18** The system shall support filtering the requester's Tickets by Category, Requested Priority, IT Priority, and Current Status.
 - **FR-19** The system shall support sorting the requester's Tickets on a defined set of columns.
 - **FR-20** The system shall paginate the Ticket list and report pagination metadata.
 - **FR-21** The system shall present distinguishable empty and no-results states.
@@ -461,3 +461,6 @@ The header is checked once, before any requester-scoped handler runs: present, w
 Concentrating it in one place is what makes BR-42 cheap. Lab 3 replaces the claim's source with a session and deletes this middleware; every ownership check downstream keeps reading the same resolved requester and needs no edit. Spreading the same four checks through each handler would mean four opportunities per endpoint to forget one, and the one most easily forgotten — the active check — is the one BR-11 depends on.
 
 The middleware resolves the requester and attaches it to the request. Handlers read the resolved row rather than the raw header, so a handler cannot accidentally trust an unvalidated value.
+
+**11.22 IT Priority is an explicit My Tickets filter.**
+`ui-spec.md` §8 requires an IT Priority select, while the first listing wording in FR-18 and `api-spec.md` omitted it. The filter is added to FR-18 and the `GET /api/tickets` query contract rather than silently mapping it to Requested Priority. BR-08 makes the two values equal when a Ticket is created, but IT Staff may change IT Priority later; a client-side alias would therefore return incorrect results. The server owns the filter and combines it with the other filters using AND.
