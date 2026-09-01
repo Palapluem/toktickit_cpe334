@@ -24,6 +24,14 @@ export interface Requester {
 }
 
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
+export type TicketStatus =
+  | 'NEW'
+  | 'ASSIGNED'
+  | 'IN_PROGRESS'
+  | 'PENDING_REQUESTER'
+  | 'RESOLVED'
+  | 'CLOSED'
+  | 'CANCELLED'
 
 export interface TicketAttachment {
   id: string
@@ -43,7 +51,7 @@ export interface Ticket {
   description: string
   requestedPriority: Priority
   itPriority: Priority
-  status: 'NEW'
+  status: TicketStatus
   requester: Pick<Requester, 'id' | 'displayName'>
   category: Category
   relatedSystem: RelatedSystem
@@ -53,6 +61,54 @@ export interface Ticket {
     originalFilename: string
     reason: string
   }>
+}
+
+export type TicketListQuery = {
+  search?: string
+  categoryId?: string
+  relatedSystemId?: string
+  requestedPriority?: Priority
+  itPriority?: Priority
+  status?: TicketStatus
+  sort?: string
+  page?: number
+  pageSize?: number
+}
+
+export interface TicketListItem {
+  id: string
+  ticketNo: string
+  createdAt: string
+  updatedAt: string
+  summary: string
+  requestedPriority: Priority
+  itPriority: Priority
+  status: TicketStatus
+  owner: null
+  category: Category
+  relatedSystem: RelatedSystem
+  activeAttachmentCount: number
+}
+
+export interface TicketListResponse {
+  data: TicketListItem[]
+  pagination: {
+    page: number
+    pageSize: number
+    totalItems: number
+    totalPages: number
+    hasPreviousPage: boolean
+    hasNextPage: boolean
+  }
+  appliedFilters: {
+    search: string | null
+    categoryId: string | null
+    relatedSystemId: string | null
+    requestedPriority: Priority | null
+    itPriority: Priority | null
+    status: TicketStatus | null
+    sort: string
+  }
 }
 
 export type CreateTicketPayload = {
@@ -175,4 +231,30 @@ export async function createTicket(
 
   const responseBody = (await response.json()) as { data: Ticket }
   return responseBody.data
+}
+
+export function fetchTickets(
+  _requesterId: string,
+  _query: TicketListQuery = {},
+): Promise<TicketListResponse> {
+  return Promise.resolve({
+    data: [],
+    pagination: {
+      page: 1,
+      pageSize: 10,
+      totalItems: 0,
+      totalPages: 0,
+      hasPreviousPage: false,
+      hasNextPage: false,
+    },
+    appliedFilters: {
+      search: null,
+      categoryId: null,
+      relatedSystemId: null,
+      requestedPriority: null,
+      itPriority: null,
+      status: null,
+      sort: 'createdAt:desc',
+    },
+  })
 }
