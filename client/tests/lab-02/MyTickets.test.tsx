@@ -115,7 +115,7 @@ describe('UI-12 · AC-18 · My Tickets list', () => {
 
     expect(await screen.findByRole('heading', { name: 'My Tickets' })).toBeInTheDocument()
     expect(screen.getByText('View and track all of your support requests.')).toBeInTheDocument()
-    expect(screen.getByText(LIST_ITEM.ticketNo)).toBeInTheDocument()
+    expect(await screen.findByText(LIST_ITEM.ticketNo)).toBeInTheDocument()
     expect(screen.getByText(LIST_ITEM.summary)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: LIST_ITEM.ticketNo })).toHaveAttribute(
       'href',
@@ -132,8 +132,10 @@ describe('UI-12 · loading state', () => {
     renderScreen()
 
     expect(await screen.findByRole('status')).toHaveTextContent(/loading/i)
-    expect(screen.getByPlaceholderText('Search by ticket number or summary…')).toBeDisabled()
-    expect(screen.getByRole('combobox', { name: 'Category' })).toBeDisabled()
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Search by ticket number or summary…')).toBeDisabled()
+      expect(screen.getByRole('combobox', { name: 'Category' })).toBeDisabled()
+    })
   })
 })
 
@@ -191,10 +193,9 @@ describe('UI-16 · AC-20/AC-21/AC-22 · query wiring', () => {
     await screen.findByText(LIST_ITEM.summary)
     const user = userEvent.setup()
 
-    await user.fill(
-      screen.getByPlaceholderText('Search by ticket number or summary…'),
-      'printer',
-    )
+    const search = screen.getByPlaceholderText('Search by ticket number or summary…')
+    await user.clear(search)
+    await user.type(search, 'printer')
     await user.selectOptions(screen.getByRole('combobox', { name: 'Category' }), 'category-hardware')
     await user.selectOptions(
       screen.getByRole('combobox', { name: 'Requested Priority' }),
