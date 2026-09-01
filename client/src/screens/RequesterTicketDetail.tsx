@@ -1,0 +1,3 @@
+export function RequesterTicketDetail(_props: Record<string, unknown>) {
+  return null
+}
