@@ -7,6 +7,7 @@ import { SystemCheck } from './screens/SystemCheck.js'
 import { StyleGuide } from './screens/StyleGuide.js'
 import { SelectRequester } from './screens/SelectRequester.js'
 import { CreateTicket } from './screens/CreateTicket.js'
+import { MyTickets } from './screens/MyTickets.js'
 import { RequireRequester } from './components/RequireRequester.js'
 
 function Placeholder({ title, issue }: { title: string; issue: string }) {
@@ -47,7 +48,7 @@ function App() {
           path="/tickets"
           element={
             <RequireRequester>
-              <Placeholder title="My Tickets" issue="#21" />
+              <MyTickets />
             </RequireRequester>
           }
         />

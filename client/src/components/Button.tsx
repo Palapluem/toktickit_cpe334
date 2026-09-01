@@ -16,6 +16,7 @@ export function Button({
   busy = false,
   busyLabel,
   disabled,
+  className,
   children,
   type = 'button',
   ...rest
@@ -24,7 +25,9 @@ export function Button({
     <button
       {...rest}
       type={type}
-      className={`zen-button zen-button--${variant}`}
+      className={[`zen-button zen-button--${variant}`, className]
+        .filter(Boolean)
+        .join(' ')}
       disabled={disabled || busy}
       aria-busy={busy ? 'true' : undefined}
     >

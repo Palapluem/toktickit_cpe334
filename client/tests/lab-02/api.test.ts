@@ -3,7 +3,7 @@
 // { data: [...] } envelope and UUID identifiers, so they stayed green against a
 // shape the server no longer returns. These assert the real contract.
 import { describe, expect, it, vi, afterEach } from 'vitest'
-import { fetchCategories, fetchRequesters } from '../../src/api.js'
+import { fetchCategories, fetchRequesters, fetchTickets } from '../../src/api.js'
 
 function mockJson(body: unknown, ok = true, status = 200) {
   return vi.fn().mockResolvedValue({
@@ -66,6 +66,60 @@ describe('api · requesters', () => {
 
     expect(requesters).toHaveLength(1)
     expect(requesters[0].displayName).toBe('Jennifer Anderson')
+  })
+})
+
+describe('api · My Tickets list request', () => {
+  it('serializes the documented filters and preserves the list response shape', async () => {
+    const responseBody = {
+      data: [],
+      pagination: {
+        page: 2,
+        pageSize: 25,
+        totalItems: 0,
+        totalPages: 0,
+        hasPreviousPage: true,
+        hasNextPage: false,
+      },
+      appliedFilters: {
+        search: 'battery',
+        categoryId: '11111111-1111-4111-8111-111111111111',
+        relatedSystemId: null,
+        requestedPriority: 'HIGH',
+        itPriority: 'URGENT',
+        status: 'ASSIGNED',
+        sort: 'summary:asc',
+      },
+    }
+    const fetchMock = mockJson(responseBody)
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await fetchTickets('req-42', {
+      search: '  battery  ',
+      categoryId: '11111111-1111-4111-8111-111111111111',
+      requestedPriority: 'HIGH',
+      itPriority: 'URGENT',
+      status: 'ASSIGNED',
+      sort: 'summary:asc',
+      page: 2,
+      pageSize: 25,
+    })
+
+    const [url, init] = fetchMock.mock.calls[0]
+    const parsedUrl = new URL(String(url))
+    expect(parsedUrl.pathname).toBe('/api/tickets')
+    expect(Object.fromEntries(parsedUrl.searchParams)).toEqual({
+      search: 'battery',
+      categoryId: '11111111-1111-4111-8111-111111111111',
+      requestedPriority: 'HIGH',
+      itPriority: 'URGENT',
+      status: 'ASSIGNED',
+      sort: 'summary:asc',
+      page: '2',
+      pageSize: '25',
+    })
+    expect(new Headers(init?.headers).get('X-Requester-Id')).toBe('req-42')
+    expect(result).toEqual(responseBody)
   })
 })
 
