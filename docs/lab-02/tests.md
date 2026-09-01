@@ -143,6 +143,8 @@ Viewport rendering is verified with Playwright in Issue #23. These cover the beh
 
 **Issue #21 implementation result (1 September 2026):** UNIT-05, API-11–API-17, and UI-12–UI-17 are green. The full regression run on `feature/10-my-tickets` is **97 server tests / 100 client tests**; the captured outputs are `_private/evidence/lab-02/test-output/issue-21-full-server.txt` and `_private/evidence/lab-02/test-output/issue-21-full-client.txt`. The final Part 3 result remains pending the release run from `main`.
 
+**Issue #21 visual follow-up (1 September 2026):** The post-merge regression adds coverage for the tablet table scroll container and the header-safe action treatment. The targeted run is **18/18**, and the full client regression is **102/102**; the output is `_private/evidence/lab-02/test-output/issue-21-visual-followup-full-client.txt`. Browser verification confirms no page-level horizontal overflow at 834px/390px, the tablet table's wide columns remain reachable through its own scroll container, and header actions render with readable token colours.
+
 ### Responsive and E2E
 
 | Test ID | Requirement / AC | What it tests | Expected result | Automated test file | Final |
