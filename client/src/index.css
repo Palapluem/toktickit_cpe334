@@ -455,6 +455,37 @@ body {
   padding: 0;
 }
 
+.my-tickets__loading-results {
+  display: grid;
+  gap: var(--zen-space-4);
+}
+
+.my-tickets__skeleton {
+  background: var(--zen-surface);
+  border: 1px solid var(--zen-border);
+  border-radius: var(--zen-radius);
+  box-shadow: var(--zen-shadow);
+  padding: var(--zen-space-2) var(--zen-space-4);
+}
+
+.my-tickets__skeleton-row {
+  display: grid;
+  gap: var(--zen-space-4);
+  grid-template-columns: 1fr 1fr 2fr 1fr;
+  padding: var(--zen-space-3) 0;
+}
+
+.my-tickets__skeleton-row + .my-tickets__skeleton-row {
+  border-top: 1px solid var(--zen-border);
+}
+
+.my-tickets__skeleton-block {
+  background: var(--zen-disabled-bg);
+  border-radius: var(--zen-radius);
+  display: block;
+  min-height: var(--zen-control-height);
+}
+
 .my-tickets__table-container {
   overflow-x: hidden;
 }
@@ -495,22 +526,13 @@ body {
 
 .my-tickets__sort-button {
   align-items: center;
-  background: transparent;
-  border: 0;
-  color: inherit;
-  cursor: pointer;
   display: inline-flex;
-  font: inherit;
   gap: var(--zen-space-1);
-  min-height: 44px;
-  padding: 0;
   text-align: left;
 }
 
 .my-tickets__sort-button:focus-visible {
-  border-radius: var(--zen-radius);
   box-shadow: var(--zen-focus-ring);
-  outline: none;
 }
 
 .my-tickets__summary {
@@ -638,8 +660,63 @@ body {
     font-weight: 600;
   }
 
+  .my-tickets__table td[data-label="Ticket No."] {
+    display: block;
+    padding: var(--zen-space-4) var(--zen-space-4) var(--zen-space-2);
+  }
+
+  .my-tickets__table td[data-label="Ticket No."]::before,
+  .my-tickets__table td[data-label="Summary"]::before,
+  .my-tickets__table td[data-label="Requested Priority"]::before,
+  .my-tickets__table td[data-label="IT Priority"]::before,
+  .my-tickets__table td[data-label="Current Status"]::before {
+    display: none;
+  }
+
+  .my-tickets__table td[data-label="Ticket No."] a {
+    font-size: 1rem;
+  }
+
+  .my-tickets__table td[data-label="Summary"] {
+    display: block;
+    padding-top: var(--zen-space-2);
+  }
+
+  .my-tickets__table td[data-label="Requested Priority"],
+  .my-tickets__table td[data-label="IT Priority"],
+  .my-tickets__table td[data-label="Current Status"] {
+    display: inline-flex;
+    gap: var(--zen-space-2);
+    grid-template-columns: none;
+    padding-bottom: var(--zen-space-3);
+    padding-top: var(--zen-space-2);
+    width: auto;
+  }
+
+  .my-tickets__table td[data-label="Category"] {
+    padding-top: var(--zen-space-3);
+  }
+
+  .my-tickets__table td[data-label="Created Date"],
+  .my-tickets__table td[data-label="Last Updated"] {
+    display: inline-flex;
+    gap: var(--zen-space-2);
+    grid-template-columns: max-content minmax(0, 1fr);
+    padding-bottom: var(--zen-space-4);
+    width: auto;
+  }
+
   .my-tickets__summary {
     min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .my-tickets__skeleton {
+    padding: var(--zen-space-2) var(--zen-space-4);
+  }
+
+  .my-tickets__skeleton-row {
+    grid-template-columns: 1fr;
   }
 
   .my-tickets__pagination {

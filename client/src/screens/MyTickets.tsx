@@ -117,16 +117,17 @@ function SortButton({
   const active = sort.startsWith(`${field}:`)
   const direction = sort.endsWith(':asc') ? 'ascending' : 'descending'
   return (
-    <button
-      type="button"
+    <Button
+      variant="tertiary"
       className="my-tickets__sort-button"
+      type="button"
       aria-label={`Sort by ${label}`}
       aria-pressed={active}
       onClick={() => onSort(field)}
     >
       {label}
       <span aria-hidden="true"> {active ? (direction === 'ascending' ? '↑' : '↓') : '↕'}</span>
-    </button>
+    </Button>
   )
 }
 
@@ -167,6 +168,23 @@ function TicketRow({ ticket }: { ticket: TicketListItem }) {
       </td>
       <td data-label="Last Updated">{formatDate(ticket.updatedAt)}</td>
     </tr>
+  )
+}
+
+function LoadingResults() {
+  return (
+    <div className="my-tickets__loading-results">
+      <LoadingState label="Loading tickets…" />
+      <div className="my-tickets__skeleton" aria-hidden="true">
+        {Array.from({ length: 3 }, (_, row) => (
+          <div className="my-tickets__skeleton-row" key={row}>
+            {Array.from({ length: 4 }, (_, block) => (
+              <span className="my-tickets__skeleton-block" key={block} />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -397,7 +415,7 @@ export function MyTickets() {
         </FormField>
       </section>
 
-      {loading ? <LoadingState label="Loading tickets…" /> : null}
+      {loading ? <LoadingResults /> : null}
 
       {!loading && error ? (
         <ErrorState
