@@ -54,7 +54,7 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 | UNIT-02 | BR-04 | Annual sequence reset | First ticket of a new year restarts at `000001`; the year follows the `Asia/Bangkok` calendar (§11.13) | `server/tests/lab-02/ticket-number.unit.test.ts` | ✅ |
 | UNIT-03 | BR-19, BR-20, BR-21 | Create-ticket validation schema | Trims input; rejects short/long Summary and Description; whitespace-only is empty | `server/tests/lab-02/validation.unit.test.ts` | ✅ |
 | UNIT-04 | BR-26, BR-27 | Attachment rule checks | Accepts jpg/jpeg/png/webp/pdf ≤5 MB; rejects other types and oversized files | `server/tests/lab-02/attachment-rules.unit.test.ts` | ✅ |
-| UNIT-05 | BR-38, BR-39 | Query-parameter parsing | Applies defaults; rejects non-whitelisted `sort`, `pageSize` >50, non-numeric `page` | `server/tests/lab-02/ticket-query.unit.test.ts` | ☐ |
+| UNIT-05 | BR-38, BR-39 | Query-parameter parsing | Applies defaults; rejects non-whitelisted `sort`, `pageSize` >50, non-numeric `page` | `server/tests/lab-02/ticket-query.unit.test.ts` | ✅ |
 
 ### API integration
 
@@ -70,13 +70,13 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 | API-08 | AC-15 | Create with attachment | 201; attachment listed active with correct metadata; exactly five files are accepted; a storage-adapter failure keeps the Ticket and returns `attachmentFailures` (TC-015, TC-023), while a metadata-write failure removes its orphan file | `server/tests/lab-02/attachments.api.test.ts` | ✅ |
 | API-09 | AC-16 | Disallowed file type | 415; read-back proves no Ticket and no attachment were stored (TC-022) | `server/tests/lab-02/attachments.api.test.ts` | ✅ |
 | API-10 | AC-17 | Oversized file | 413; read-back proves no Ticket and no attachment were stored (TC-022) | `server/tests/lab-02/attachments.api.test.ts` | ✅ |
-| API-11 | AC-18 | List ownership isolation | Requester A's list contains only A's tickets | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
-| API-12 | AC-19 | Cross-requester list | Requester B's list contains none of A's tickets | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
-| API-13 | AC-20, BR-36 | Search | Matches partial, case-insensitive, on ticket number and summary | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
-| API-14 | AC-21 | Filters | Category, requested priority, IT priority, and status filters each narrow correctly; combined filters AND | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
-| API-15 | AC-22, BR-37 | Sorting | Whitelisted fields sort both directions; ties broken deterministically | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
-| API-16 | AC-23, BR-40 | Pagination | Correct page slices and metadata; a page past the end returns empty data, not an error | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
-| API-17 | AC-24, BR-38, BR-39 | Invalid query parameters | 400 for `pageSize` >50, `page` 0, unknown `sort`, unknown parameter | `server/tests/lab-02/my-tickets.api.test.ts` | ☐ |
+| API-11 | AC-18 | List ownership isolation | Requester A's list contains only A's tickets | `server/tests/lab-02/my-tickets.api.test.ts` | ✅ |
+| API-12 | AC-19 | Cross-requester list | Requester B's list contains none of A's tickets | `server/tests/lab-02/my-tickets.api.test.ts` | ✅ |
+| API-13 | AC-20, BR-36 | Search | Matches partial, case-insensitive, on ticket number and summary | `server/tests/lab-02/my-tickets.api.test.ts` | ✅ |
+| API-14 | AC-21 | Filters | Category, requested priority, IT priority, and status filters each narrow correctly; combined filters AND | `server/tests/lab-02/my-tickets.api.test.ts` | ✅ |
+| API-15 | AC-22, BR-37 | Sorting | Whitelisted fields sort both directions; ties broken deterministically | `server/tests/lab-02/my-tickets.api.test.ts` | ✅ |
+| API-16 | AC-23, BR-40 | Pagination | Correct page slices and metadata; a page past the end returns empty data, not an error | `server/tests/lab-02/my-tickets.api.test.ts` | ✅ |
+| API-17 | AC-24, BR-38, BR-39 | Invalid query parameters | 400 for invalid UUID/reference, `pageSize` >50, `page` 0, unknown `sort`, unknown parameter | `server/tests/lab-02/my-tickets.api.test.ts` | ✅ |
 | API-18 | BR-14 | Requester context required | 400 when `X-Requester-Id` is missing, malformed, unknown, or inactive; shared error envelope also covers framework failures (TC-008) | `server/tests/lab-02/requester-context.api.test.ts`; `server/tests/lab-02/error-handler.api.test.ts` | ✅ |
 | API-19 | AC-27 | Owned ticket detail | 200 with full ticket and attachment metadata | `server/tests/lab-02/ticket-detail.api.test.ts` | ☐ |
 | API-20 | AC-28, BR-16 | Cross-requester detail | **404** (not 403) so existence is not disclosed | `server/tests/lab-02/ticket-detail.api.test.ts` | ☐ |
@@ -105,12 +105,12 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 | UI-09 | AC-06 | Success state | Generated Ticket Number and next actions are displayed; storage failures are named safely without exposing internal reasons | `client/tests/lab-02/CreateTicket.test.tsx` | ✅ |
 | UI-10 | AC-13, BR-25 | Create failure preserves input | Safe error shown; entered values still present | `client/tests/lab-02/CreateTicket.test.tsx` | ✅ |
 | UI-11 | AC-16, AC-17 | Invalid attachment feedback | Rejected file shown with its reason; form remains usable | `client/tests/lab-02/CreateTicket.test.tsx` | ✅ |
-| UI-12 | AC-18 | List renders | Loading state resolves into the requester's rows | `client/tests/lab-02/MyTickets.test.tsx` | ☐ |
-| UI-13 | AC-19 | Requester switch clears list | Switching context refetches and drops the previous list | `client/tests/lab-02/MyTickets.test.tsx` | ☐ |
-| UI-14 | AC-25 | Empty state | "No tickets yet" with a Create Ticket action | `client/tests/lab-02/MyTickets.test.tsx` | ☐ |
-| UI-15 | AC-26, BR-41 | No-results state | Distinct message with Clear Filters | `client/tests/lab-02/MyTickets.test.tsx` | ☐ |
-| UI-16 | AC-20, AC-21, AC-22 | Search, filter, sort wiring | Controls issue the expected search, category, requested-priority, IT-priority, status, and sort query and render results | `client/tests/lab-02/MyTickets.test.tsx` | ☐ |
-| UI-17 | AC-23 | Pagination controls | Next/Previous request the right page; metadata rendered | `client/tests/lab-02/MyTickets.test.tsx` | ☐ |
+| UI-12 | AC-18 | List renders | Loading state resolves into the requester's rows | `client/tests/lab-02/MyTickets.test.tsx` | ✅ |
+| UI-13 | AC-19 | Requester switch clears list | Switching context refetches and drops the previous list | `client/tests/lab-02/MyTickets.test.tsx` | ✅ |
+| UI-14 | AC-25 | Empty state | "No tickets yet" with a Create Ticket action | `client/tests/lab-02/MyTickets.test.tsx` | ✅ |
+| UI-15 | AC-26, BR-41 | No-results state | Distinct message with Clear Filters | `client/tests/lab-02/MyTickets.test.tsx` | ✅ |
+| UI-16 | AC-20, AC-21, AC-22 | Search, filter, sort wiring | Controls issue the expected search, category, requested-priority, IT-priority, status, and sort query and render results | `client/tests/lab-02/MyTickets.test.tsx` | ✅ |
+| UI-17 | AC-23 | Pagination controls | Next/Previous request the right page; metadata rendered | `client/tests/lab-02/MyTickets.test.tsx` | ✅ |
 | UI-18 | AC-27 | Detail read-only | Ticket fields render read-only; no editable control | `client/tests/lab-02/RequesterTicketDetail.test.tsx` | ☐ |
 | UI-19 | AC-29 | Add attachment | Uploading state then active row | `client/tests/lab-02/AttachmentSection.test.tsx` | ☐ |
 | UI-20 | AC-32, AC-33 | Removed attachment presentation | Metadata and reason shown; **no download link** | `client/tests/lab-02/AttachmentSection.test.tsx` | ☐ |
@@ -140,6 +140,8 @@ Viewport rendering is verified with Playwright in Issue #23. These cover the beh
 | NAV-02 | ui-spec §5, AC-37 | Keyboard operation | Menu opens from the keyboard alone and closes on Escape, including when focus is on a nav link | `client/tests/lab-02/style/mobile-nav.test.tsx` | ✅ |
 | NAV-03 | ui-spec §12 | Focus restoration | Escape returns focus to the toggle rather than leaving it on a hidden link | `client/tests/lab-02/style/mobile-nav.test.tsx` | ✅ |
 | NAV-04 | ui-spec §5 | Requester stays visible | The current requester renders on mobile without opening the menu | `client/tests/lab-02/style/mobile-nav.test.tsx` | ✅ |
+
+**Issue #21 implementation result (1 September 2026):** UNIT-05, API-11–API-17, and UI-12–UI-17 are green. The full regression run on `feature/10-my-tickets` is **96 server tests / 99 client tests**; the captured outputs are `_private/evidence/lab-02/test-output/issue-21-full-server.txt` and `_private/evidence/lab-02/test-output/issue-21-full-client.txt`. The final Part 3 result remains pending the release run from `main`.
 
 ### Responsive and E2E
 
