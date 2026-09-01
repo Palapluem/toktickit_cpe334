@@ -343,6 +343,40 @@ describe('API-17 · AC-24/BR-38/BR-39 · invalid list queries', () => {
       ]),
     )
   })
+
+  it('rejects inactive category and related-system filter references', async () => {
+    const categoryId = categoryIds[0]
+    const relatedSystemId = relatedSystemIds[0]
+    await Promise.all([
+      prisma.category.update({ where: { id: categoryId }, data: { isActive: false } }),
+      prisma.relatedSystem.update({ where: { id: relatedSystemId }, data: { isActive: false } }),
+    ])
+
+    try {
+      const [categoryResponse, relatedSystemResponse] = await Promise.all([
+        listTickets(requesterIds[0], { categoryId }),
+        listTickets(requesterIds[0], { relatedSystemId }),
+      ])
+
+      expect(categoryResponse.status).toBe(400)
+      expect(categoryResponse.body.error.fieldErrors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: 'categoryId' }),
+        ]),
+      )
+      expect(relatedSystemResponse.status).toBe(400)
+      expect(relatedSystemResponse.body.error.fieldErrors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: 'relatedSystemId' }),
+        ]),
+      )
+    } finally {
+      await Promise.all([
+        prisma.category.update({ where: { id: categoryId }, data: { isActive: true } }),
+        prisma.relatedSystem.update({ where: { id: relatedSystemId }, data: { isActive: true } }),
+      ])
+    }
+  })
 })
 
 describe('TC-018 · empty and no-results response states', () => {

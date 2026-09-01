@@ -1,7 +1,7 @@
 // UI-12…UI-17 (#21). AC-18…AC-26; TDT-03 decision-table coverage for the
 // list states and the search, filter, sort, pagination interaction.
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import * as api from '../../src/api.js'
@@ -213,6 +213,28 @@ describe('UI-16 · AC-20/AC-21/AC-22 · query wiring', () => {
         itPriority: 'URGENT',
         status: 'ASSIGNED',
         sort: 'summary:asc',
+        page: 1,
+        pageSize: 10,
+      })
+    })
+  })
+
+  it('waits for search typing to pause before refetching', async () => {
+    renderScreen()
+    await screen.findByText(LIST_ITEM.summary)
+    const initialCallCount = fetchTicketsMock.mock.calls.length
+    const search = screen.getByPlaceholderText('Search by ticket number or summary…')
+
+    fireEvent.change(search, { target: { value: 'p' } })
+    fireEvent.change(search, { target: { value: 'pr' } })
+    fireEvent.change(search, { target: { value: 'printer' } })
+
+    expect(fetchTicketsMock).toHaveBeenCalledTimes(initialCallCount)
+
+    await waitFor(() => {
+      expect(fetchTicketsMock).toHaveBeenLastCalledWith(REQUESTER_A.id, {
+        search: 'printer',
+        sort: 'createdAt:desc',
         page: 1,
         pageSize: 10,
       })
