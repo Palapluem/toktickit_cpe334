@@ -5,6 +5,18 @@ import type { ErrorRequestHandler, Response } from 'express'
 
 export type FieldError = { field: string; message: string }
 
+export class ApiError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly code: string,
+    message: string,
+    public readonly fieldErrors: FieldError[] = [],
+  ) {
+    super(message)
+    this.name = 'ApiError'
+  }
+}
+
 export function sendError(
   res: Response,
   status: number,
@@ -52,6 +64,17 @@ export const errorHandler: ErrorRequestHandler = (
       400,
       'VALIDATION_FAILED',
       'Request body must be valid JSON.',
+    )
+    return
+  }
+
+  if (error instanceof ApiError) {
+    sendError(
+      res,
+      error.status,
+      error.code,
+      error.message,
+      error.fieldErrors,
     )
     return
   }

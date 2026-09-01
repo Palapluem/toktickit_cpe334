@@ -23,6 +23,60 @@ export interface Requester {
   email: string
 }
 
+export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
+
+export interface TicketAttachment {
+  id: string
+  originalFilename: string
+  mimeType: string
+  sizeBytes: number
+  createdAt: string
+  removedAt: string | null
+}
+
+export interface Ticket {
+  id: string
+  ticketNo: string
+  createdAt: string
+  updatedAt: string
+  summary: string
+  description: string
+  requestedPriority: Priority
+  itPriority: Priority
+  status: 'NEW'
+  requester: Pick<Requester, 'id' | 'displayName'>
+  category: Category
+  relatedSystem: RelatedSystem
+  owner: null
+  attachments: TicketAttachment[]
+  attachmentFailures: Array<{
+    originalFilename: string
+    reason: string
+  }>
+}
+
+export type CreateTicketPayload = {
+  categoryId: string
+  relatedSystemId: string
+  summary: string
+  description: string
+  requestedPriority: Priority
+  attachments?: File[]
+}
+
+export class ApiRequestError extends Error {
+  readonly fieldErrors: Array<{ field: string; message: string }>
+
+  constructor(
+    message: string,
+    fieldErrors: Array<{ field: string; message: string }> = [],
+  ) {
+    super(message)
+    this.fieldErrors = fieldErrors
+    this.name = 'ApiRequestError'
+  }
+}
+
 async function get<T>(
   path: string,
   label: string,
@@ -69,4 +123,56 @@ export function fetchRelatedSystems(
 
 export function fetchRequesters(): Promise<Requester[]> {
   return get<Requester[]>('/api/requesters', 'Requesters')
+}
+
+export async function createTicket(
+  payload: CreateTicketPayload,
+  requesterId: string,
+): Promise<Ticket> {
+  const headers: Record<string, string> = {
+    'X-Requester-Id': requesterId,
+  }
+  let requestBody: BodyInit
+
+  if (payload.attachments?.length) {
+    const form = new FormData()
+    form.append('categoryId', payload.categoryId)
+    form.append('relatedSystemId', payload.relatedSystemId)
+    form.append('summary', payload.summary)
+    form.append('description', payload.description)
+    form.append('requestedPriority', payload.requestedPriority)
+    for (const file of payload.attachments) form.append('attachments', file)
+    requestBody = form
+  } else {
+    headers['Content-Type'] = 'application/json'
+    requestBody = JSON.stringify({
+      categoryId: payload.categoryId,
+      relatedSystemId: payload.relatedSystemId,
+      summary: payload.summary,
+      description: payload.description,
+      requestedPriority: payload.requestedPriority,
+    })
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/tickets`, {
+    method: 'POST',
+    headers,
+    body: requestBody,
+  })
+
+  if (!response.ok) {
+    let fieldErrors: Array<{ field: string; message: string }> = []
+    try {
+      const errorBody = (await response.json()) as {
+        error?: { fieldErrors?: Array<{ field: string; message: string }> }
+      }
+      fieldErrors = errorBody.error?.fieldErrors ?? []
+    } catch {
+      // The UI still has a safe fallback when a failed service returns no JSON.
+    }
+    throw new ApiRequestError('Could not create the ticket.', fieldErrors)
+  }
+
+  const responseBody = (await response.json()) as { data: Ticket }
+  return responseBody.data
 }
