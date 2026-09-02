@@ -13,6 +13,13 @@ import {
   MAX_ATTACHMENTS,
 } from './tickets/attachmentRules.js'
 import { listTickets } from './tickets/listTickets.js'
+import {
+  addTicketAttachment,
+  downloadTicketAttachment,
+  getTicketDetail,
+  listTicketAttachments,
+  removeTicketAttachment,
+} from './tickets/ticketDetail.js'
 
 type AttachmentRequest = Request & {
   lastAttachmentFilename?: string
@@ -31,6 +38,17 @@ const attachmentUpload = multer({
     attachmentRequest.lastAttachmentFilename = file.originalname
     attachmentRequest.lastAttachmentIndex =
       (attachmentRequest.lastAttachmentIndex ?? -1) + 1
+    callback(null, true)
+  },
+})
+
+const singleAttachmentUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_ATTACHMENT_SIZE_BYTES },
+  fileFilter: (req, file, callback) => {
+    const attachmentRequest = req as AttachmentRequest
+    attachmentRequest.lastAttachmentFilename = file.originalname
+    attachmentRequest.lastAttachmentIndex = 0
     callback(null, true)
   },
 })
@@ -77,6 +95,66 @@ function parseAttachments(req: Request, res: Response, next: NextFunction) {
       next(error)
     },
   )
+}
+
+function parseSingleAttachment(req: Request, res: Response, next: NextFunction) {
+  singleAttachmentUpload.single('attachment')(req, res, (error: unknown) => {
+    if (!error) {
+      next()
+      return
+    }
+    if (error instanceof multer.MulterError) {
+      if (error.code === 'LIMIT_FILE_SIZE') {
+        const attachmentRequest = req as AttachmentRequest
+        const filename = attachmentRequest.lastAttachmentFilename
+        sendError(
+          res,
+          413,
+          'FILE_TOO_LARGE',
+          'The attachment must be 5 MB or smaller.',
+          [
+            {
+              field: 'attachment',
+              message: filename
+                ? `${filename} exceeds the 5 MB limit.`
+                : 'The uploaded attachment exceeds the 5 MB limit.',
+            },
+          ],
+        )
+        return
+      }
+      sendError(
+        res,
+        400,
+        'VALIDATION_FAILED',
+        'The attachment field is invalid.',
+        [{ field: 'attachment', message: 'Choose one attachment file.' }],
+      )
+      return
+    }
+    next(error)
+  })
+}
+
+function toAttachmentFile(file: Express.Multer.File | undefined) {
+  return file
+    ? {
+        originalFilename: file.originalname,
+        mimeType: file.mimetype,
+        sizeBytes: file.size,
+        buffer: file.buffer,
+      }
+    : undefined
+}
+
+function sanitizeDownloadFilename(filename: string): string {
+  const basename = filename.replaceAll('\\', '/').split('/').pop() ?? ''
+  const safe = basename.replace(/[\u0000-\u001f\u007f"]/g, '_').trim()
+  return safe || 'download'
+}
+
+function routeParameter(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? value[0] ?? '' : value ?? ''
 }
 
 export function createApp(options: CreateTicketOptions = {}) {
@@ -179,6 +257,78 @@ export function createApp(options: CreateTicketOptions = {}) {
           attachmentFailures: ticket.attachmentFailures,
         },
       })
+    },
+  )
+
+  app.get('/api/tickets/:id', requireRequesterContext, async (req, res) => {
+    const data = await getTicketDetail(
+      routeParameter(req.params.id),
+      req.requester!.id,
+      options.db ?? prisma,
+    )
+    res.json({ data })
+  })
+
+  app.get(
+    '/api/tickets/:id/attachments',
+    requireRequesterContext,
+    async (req, res) => {
+      const data = await listTicketAttachments(
+        routeParameter(req.params.id),
+        req.requester!.id,
+        options.db ?? prisma,
+      )
+      res.json(data)
+    },
+  )
+
+  app.post(
+    '/api/tickets/:id/attachments',
+    requireRequesterContext,
+    parseSingleAttachment,
+    async (req, res) => {
+      const data = await addTicketAttachment(
+        routeParameter(req.params.id),
+        req.requester!.id,
+        toAttachmentFile(req.file),
+        options,
+      )
+      res.status(201).json(data)
+    },
+  )
+
+  app.get(
+    '/api/attachments/:id/download',
+    requireRequesterContext,
+    async (req, res, next) => {
+      const { attachment, stream } = await downloadTicketAttachment(
+        routeParameter(req.params.id),
+        req.requester!.id,
+        options,
+      )
+      res.setHeader('Content-Type', attachment.mimeType)
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${sanitizeDownloadFilename(attachment.originalFilename)}"`,
+      )
+      res.setHeader('Content-Length', String(attachment.sizeBytes))
+      res.setHeader('X-Content-Type-Options', 'nosniff')
+      stream.once('error', next)
+      stream.pipe(res)
+    },
+  )
+
+  app.delete(
+    '/api/attachments/:id',
+    requireRequesterContext,
+    async (req, res) => {
+      const data = await removeTicketAttachment(
+        routeParameter(req.params.id),
+        req.requester!.id,
+        req.body?.reason,
+        options,
+      )
+      res.json(data)
     },
   )
 

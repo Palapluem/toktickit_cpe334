@@ -40,6 +40,10 @@ export interface TicketAttachment {
   sizeBytes: number
   createdAt: string
   removedAt: string | null
+  removedReason?: string | null
+  isDownloadable?: boolean
+  uploadedBy?: Pick<Requester, 'id' | 'displayName'>
+  removedBy?: Pick<Requester, 'id' | 'displayName'> | null
 }
 
 export interface Ticket {
@@ -122,15 +126,51 @@ export type CreateTicketPayload = {
 
 export class ApiRequestError extends Error {
   readonly fieldErrors: Array<{ field: string; message: string }>
+  readonly status?: number
+  readonly code?: string
 
   constructor(
     message: string,
     fieldErrors: Array<{ field: string; message: string }> = [],
+    status?: number,
+    code?: string,
   ) {
     super(message)
     this.fieldErrors = fieldErrors
+    this.status = status
+    this.code = code
     this.name = 'ApiRequestError'
   }
+}
+
+export type AttachmentMutationResponse = {
+  data: TicketAttachment
+  activeCount: number
+  activeLimit: number
+}
+
+async function throwApiRequestError(
+  response: Response,
+  fallbackMessage: string,
+): Promise<never> {
+  let message = fallbackMessage
+  let fieldErrors: Array<{ field: string; message: string }> = []
+  let code: string | undefined
+  try {
+    const body = (await response.json()) as {
+      error?: {
+        code?: string
+        message?: string
+        fieldErrors?: Array<{ field: string; message: string }>
+      }
+    }
+    message = body.error?.message ?? message
+    fieldErrors = body.error?.fieldErrors ?? []
+    code = body.error?.code
+  } catch {
+    // Keep the screen-level message safe when a failed service returns no JSON.
+  }
+  throw new ApiRequestError(message, fieldErrors, response.status, code)
 }
 
 async function get<T>(
@@ -144,9 +184,7 @@ async function get<T>(
   const response = await fetch(`${API_BASE_URL}${path}`, { headers })
 
   if (!response.ok) {
-    // The status is deliberately not surfaced to the caller's message: screens
-    // show a safe sentence, not a transport detail (TC-008).
-    throw new Error(`${label} request failed`)
+    await throwApiRequestError(response, `${label} request failed`)
   }
 
   const body = await response.json()
@@ -217,16 +255,7 @@ export async function createTicket(
   })
 
   if (!response.ok) {
-    let fieldErrors: Array<{ field: string; message: string }> = []
-    try {
-      const errorBody = (await response.json()) as {
-        error?: { fieldErrors?: Array<{ field: string; message: string }> }
-      }
-      fieldErrors = errorBody.error?.fieldErrors ?? []
-    } catch {
-      // The UI still has a safe fallback when a failed service returns no JSON.
-    }
-    throw new ApiRequestError('Could not create the ticket.', fieldErrors)
+    await throwApiRequestError(response, 'Could not create the ticket.')
   }
 
   const responseBody = (await response.json()) as { data: Ticket }
@@ -264,4 +293,74 @@ export async function fetchTickets(
   }
 
   return (await response.json()) as TicketListResponse
+}
+
+export async function fetchTicket(
+  requesterId: string,
+  ticketId: string,
+): Promise<Ticket> {
+  const response = await fetch(`${API_BASE_URL}/api/tickets/${ticketId}`, {
+    headers: { 'X-Requester-Id': requesterId },
+  })
+  if (!response.ok) {
+    await throwApiRequestError(response, 'Ticket request failed')
+  }
+  return ((await response.json()) as { data: Ticket }).data
+}
+
+export async function uploadAttachment(
+  requesterId: string,
+  ticketId: string,
+  file: File,
+): Promise<AttachmentMutationResponse> {
+  const form = new FormData()
+  form.append('attachment', file)
+  const response = await fetch(
+    `${API_BASE_URL}/api/tickets/${ticketId}/attachments`,
+    {
+      method: 'POST',
+      headers: { 'X-Requester-Id': requesterId },
+      body: form,
+    },
+  )
+  if (!response.ok) {
+    await throwApiRequestError(response, 'Attachment upload failed')
+  }
+  return (await response.json()) as AttachmentMutationResponse
+}
+
+export async function removeAttachment(
+  requesterId: string,
+  attachmentId: string,
+  reason: string,
+): Promise<AttachmentMutationResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/attachments/${attachmentId}`,
+    {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requester-Id': requesterId,
+      },
+      body: JSON.stringify({ reason }),
+    },
+  )
+  if (!response.ok) {
+    await throwApiRequestError(response, 'Attachment removal failed')
+  }
+  return (await response.json()) as AttachmentMutationResponse
+}
+
+export async function downloadAttachment(
+  requesterId: string,
+  attachmentId: string,
+): Promise<Blob> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/attachments/${attachmentId}/download`,
+    { headers: { 'X-Requester-Id': requesterId } },
+  )
+  if (!response.ok) {
+    await throwApiRequestError(response, 'Attachment download failed')
+  }
+  return response.blob()
 }

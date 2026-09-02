@@ -1,20 +1,14 @@
 // Routes for the four Lab 2 screens plus the Lab 1 demonstration (§11.18, §11.19).
-// Screens are placeholders until their own Issues: #17, #20, #21, #22.
+// Screen implementations land incrementally through the Lab 2 Issue flow.
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { AppShell } from './components/AppShell.js'
-import { EmptyState } from './components/States.js'
 import { SystemCheck } from './screens/SystemCheck.js'
 import { StyleGuide } from './screens/StyleGuide.js'
 import { SelectRequester } from './screens/SelectRequester.js'
 import { CreateTicket } from './screens/CreateTicket.js'
 import { MyTickets } from './screens/MyTickets.js'
+import { RequesterTicketDetail } from './screens/RequesterTicketDetail.js'
 import { RequireRequester } from './components/RequireRequester.js'
-
-function Placeholder({ title, issue }: { title: string; issue: string }) {
-  return (
-    <EmptyState title={title} detail={`Implemented in Issue ${issue}.`} />
-  )
-}
 
 function ShellLayout() {
   const { pathname } = useLocation()
@@ -64,7 +58,7 @@ function App() {
           path="/tickets/:id"
           element={
             <RequireRequester>
-              <Placeholder title="Ticket Detail" issue="#22" />
+              <RequesterTicketDetail />
             </RequireRequester>
           }
         />

@@ -78,17 +78,17 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 | API-16 | AC-23, BR-40 | Pagination | Correct page slices and metadata; a page past the end returns empty data, not an error | `server/tests/lab-02/my-tickets.api.test.ts` | ✅ |
 | API-17 | AC-24, BR-38, BR-39 | Invalid query parameters | 400 for invalid UUID/reference, inactive reference, `pageSize` >50, `page` 0, unknown `sort`, unknown parameter | `server/tests/lab-02/my-tickets.api.test.ts` | ✅ |
 | API-18 | BR-14 | Requester context required | 400 when `X-Requester-Id` is missing, malformed, unknown, or inactive; shared error envelope also covers framework failures (TC-008) | `server/tests/lab-02/requester-context.api.test.ts`; `server/tests/lab-02/error-handler.api.test.ts` | ✅ |
-| API-19 | AC-27 | Owned ticket detail | 200 with full ticket and attachment metadata | `server/tests/lab-02/ticket-detail.api.test.ts` | ☐ |
-| API-20 | AC-28, BR-16 | Cross-requester detail | **404** (not 403) so existence is not disclosed | `server/tests/lab-02/ticket-detail.api.test.ts` | ☐ |
-| API-21 | AC-29 | Add attachment | 201; active count increments | `server/tests/lab-02/attachments.api.test.ts` | ☐ |
-| API-22 | AC-30, BR-28 | Active limit | 409 on the sixth active file; count stays at five | `server/tests/lab-02/attachments.api.test.ts` | ☐ |
-| API-23 | BR-28 | Removed files do not count | After removing one of five, a new upload succeeds | `server/tests/lab-02/attachments.api.test.ts` | ☐ |
-| API-24 | AC-31 | Download active | 200 with correct content type, length, and `Content-Disposition: attachment` | `server/tests/lab-02/attachments.api.test.ts` | ☐ |
-| API-25 | AC-32, BR-31 | Soft removal | 200; `removedAt`, `removedReason`, `removedById` set; row retained | `server/tests/lab-02/attachments.api.test.ts` | ☐ |
-| API-26 | AC-33, BR-33 | Removed download blocked | **410**; no content served | `server/tests/lab-02/attachments.api.test.ts` | ☐ |
-| API-27 | BR-32 | Removal reason required | 400 when reason missing or shorter than three characters | `server/tests/lab-02/attachments.api.test.ts` | ☐ |
-| API-28 | AC-34, BR-17 | Cross-requester attachment | 404 for another requester's attachment metadata, download, and removal | `server/tests/lab-02/attachments.api.test.ts` | ☐ |
-| API-29 | BR-30 | Stored filename generated | Stored name is a generated identifier, not the uploaded filename | `server/tests/lab-02/attachments.api.test.ts` | ☐ |
+| API-19 | AC-27 | Owned ticket detail | 200 with full ticket and attachment metadata | `server/tests/lab-02/ticket-detail.api.test.ts` | ✅ |
+| API-20 | AC-28, BR-16 | Cross-requester detail | **404** (not 403) so existence is not disclosed | `server/tests/lab-02/ticket-detail.api.test.ts` | ✅ |
+| API-21 | AC-29 | Add attachment | 201; active count increments | `server/tests/lab-02/attachments.api.test.ts` | ✅ |
+| API-22 | AC-30, BR-28 | Active limit | 409 on the sixth active file; count stays at five | `server/tests/lab-02/attachments.api.test.ts` | ✅ |
+| API-23 | BR-28 | Removed files do not count | After removing one of five, a new upload succeeds | `server/tests/lab-02/attachments.api.test.ts` | ✅ |
+| API-24 | AC-31 | Download active | 200 with correct content type, length, and `Content-Disposition: attachment` | `server/tests/lab-02/attachments.api.test.ts` | ✅ |
+| API-25 | AC-32, BR-31 | Soft removal | 200; `removedAt`, `removedReason`, `removedById` set; row retained | `server/tests/lab-02/attachments.api.test.ts` | ✅ |
+| API-26 | AC-33, BR-33 | Removed download blocked | **410**; no content served | `server/tests/lab-02/attachments.api.test.ts` | ✅ |
+| API-27 | BR-32 | Removal reason required | 400 when reason missing or shorter than three characters | `server/tests/lab-02/attachments.api.test.ts` | ✅ |
+| API-28 | AC-34, BR-17 | Cross-requester attachment | 404 for another requester's attachment metadata, download, and removal | `server/tests/lab-02/attachments.api.test.ts` | ✅ |
+| API-29 | BR-30 | Stored filename generated | Stored name is a generated identifier, not the uploaded filename | `server/tests/lab-02/attachments.api.test.ts` | ✅ |
 
 ### UI component
 
@@ -111,11 +111,11 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 | UI-15 | AC-26, BR-41 | No-results state | Distinct message with Clear Filters | `client/tests/lab-02/MyTickets.test.tsx` | ✅ |
 | UI-16 | AC-20, AC-21, AC-22 | Search, filter, sort wiring | Debounced search plus controls issue the expected search, category, requested-priority, IT-priority, status, and sort query and render results | `client/tests/lab-02/MyTickets.test.tsx` | ✅ |
 | UI-17 | AC-23 | Pagination controls | Next/Previous request the right page; metadata rendered | `client/tests/lab-02/MyTickets.test.tsx` | ✅ |
-| UI-18 | AC-27 | Detail read-only | Ticket fields render read-only; no editable control | `client/tests/lab-02/RequesterTicketDetail.test.tsx` | ☐ |
-| UI-19 | AC-29 | Add attachment | Uploading state then active row | `client/tests/lab-02/AttachmentSection.test.tsx` | ☐ |
-| UI-20 | AC-32, AC-33 | Removed attachment presentation | Metadata and reason shown; **no download link** | `client/tests/lab-02/AttachmentSection.test.tsx` | ☐ |
-| UI-21 | BR-32 | Removal confirmation | Dialog requires a reason; cancel makes no request | `client/tests/lab-02/AttachmentSection.test.tsx` | ☐ |
-| UI-22 | AC-30 | Limit reached | Add control disabled with an explanatory tooltip at five active | `client/tests/lab-02/AttachmentSection.test.tsx` | ☐ |
+| UI-18 | AC-27 | Detail read-only | Ticket fields render read-only; no editable control | `client/tests/lab-02/RequesterTicketDetail.test.tsx` | ✅ |
+| UI-19 | AC-29 | Add attachment | Uploading state then active row | `client/tests/lab-02/AttachmentSection.test.tsx` | ✅ |
+| UI-20 | AC-32, AC-33 | Removed attachment presentation | Metadata and reason shown; **no download link** | `client/tests/lab-02/AttachmentSection.test.tsx` | ✅ |
+| UI-21 | BR-32 | Removal confirmation | Dialog requires a reason; cancel makes no request | `client/tests/lab-02/AttachmentSection.test.tsx` | ✅ |
+| UI-22 | AC-30 | Limit reached | Add control disabled with an explanatory tooltip at five active | `client/tests/lab-02/AttachmentSection.test.tsx` | ✅ |
 
 ### UI style
 
@@ -144,6 +144,8 @@ Viewport rendering is verified with Playwright in Issue #23. These cover the beh
 **Issue #21 implementation result (1 September 2026):** UNIT-05, API-11–API-17, and UI-12–UI-17 are green. The full regression run on `feature/10-my-tickets` is **97 server tests / 100 client tests**; the captured outputs are `_private/evidence/lab-02/test-output/issue-21-full-server.txt` and `_private/evidence/lab-02/test-output/issue-21-full-client.txt`. The final Part 3 result remains pending the release run from `main`.
 
 **Issue #21 visual follow-up (1 September 2026):** The post-merge regression adds coverage for the tablet table scroll container and the header-safe action treatment. The targeted run is **18/18**, and the full client regression is **102/102**; the output is `_private/evidence/lab-02/test-output/issue-21-visual-followup-full-client.txt`. Browser verification confirms no page-level horizontal overflow at 834px/390px, the tablet table's wide columns remain reachable through its own scroll container, and header actions render with readable token colours.
+
+**Issue #22 implementation result (2 September 2026):** API-19–API-29 are green (**19/19**) and UI-18–UI-22 are green (**5/5**). The full regression is **109 server tests / 107 client tests**; outputs are `_private/evidence/lab-02/test-output/issue-22-full-server.txt` and `_private/evidence/lab-02/test-output/issue-22-full-client.txt`. Targeted green outputs are `_private/evidence/lab-02/test-output/issue-22-api-green.txt` and `_private/evidence/lab-02/test-output/issue-22-ui-green.txt`. The browser evidence report is `_private/evidence/lab-02/test-output/issue-22-browser-detail.txt`; the four required figures are indexed under `ticket-detail/`.
 
 ### Responsive and E2E
 
