@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures'
 import {
   VIEWPORTS,
   captureScreenshot,
@@ -21,10 +21,14 @@ test('RESP-01 renders Create Ticket at desktop, tablet, and mobile', async ({ pa
 })
 
 // RESP-02 · AC-35 · STY-023, STY-024, STY-025 · TDT-01 equivalence partitioning.
-test('RESP-02 renders My Tickets at desktop, tablet, and mobile', async ({ page }) => {
+test('RESP-02 renders My Tickets at desktop, tablet, and mobile', async ({
+  page,
+  e2eSummaries,
+}) => {
   await selectRequester(page, 'Jennifer Anderson')
   await page.goto('/tickets/new')
   const summary = `E2E responsive list ${Date.now()}`
+  e2eSummaries.add(summary)
   await createTicket(page, summary)
 
   for (const viewport of VIEWPORTS) {
@@ -41,9 +45,14 @@ test('RESP-02 renders My Tickets at desktop, tablet, and mobile', async ({ page 
 })
 
 // RESP-03 · AC-35 · STY-023, STY-024 · TDT-01 equivalence partitioning.
-test('RESP-03 renders Ticket Detail at desktop, tablet, and mobile', async ({ page }) => {
+test('RESP-03 renders Ticket Detail at desktop, tablet, and mobile', async ({
+  page,
+  e2eSummaries,
+}) => {
   await selectRequester(page, 'Jennifer Anderson')
-  const created = await createTicket(page, `E2E responsive detail ${Date.now()}`)
+  const summary = `E2E responsive detail ${Date.now()}`
+  e2eSummaries.add(summary)
+  const created = await createTicket(page, summary)
 
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport)

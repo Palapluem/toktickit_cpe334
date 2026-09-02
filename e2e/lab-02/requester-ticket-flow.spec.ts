@@ -1,9 +1,13 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures'
 import { createTicket, selectRequester } from './helpers'
 
 // E2E-01 · AC-01, AC-06, AC-15, AC-18 · TDT-05 error guessing.
-test('E2E-01 completes requester creation and My Tickets journey', async ({ page }) => {
+test('E2E-01 completes requester creation and My Tickets journey', async ({
+  page,
+  e2eSummaries,
+}) => {
   const summary = `E2E creation ${Date.now()}`
+  e2eSummaries.add(summary)
   await selectRequester(page, 'Jennifer Anderson')
 
   const created = await createTicket(page, summary, 'e2e-creation.png')

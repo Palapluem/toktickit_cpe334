@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures'
 import {
   API_BASE_URL,
   createTicket,
@@ -11,9 +11,12 @@ import {
 test('E2E-03 covers add, download, soft-remove, and blocked attachment', async ({
   page,
   request,
+  e2eSummaries,
 }) => {
+  const summary = `E2E attachment ${Date.now()}`
+  e2eSummaries.add(summary)
   await selectRequester(page, 'Jennifer Anderson')
-  const created = await createTicket(page, `E2E attachment ${Date.now()}`)
+  const created = await createTicket(page, summary)
   await page.goto(`/tickets/${created.ticketId}`)
 
   const uploadResponsePromise = page.waitForResponse(
