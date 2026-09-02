@@ -205,7 +205,7 @@ cd client && npm test
 npm run test:e2e
 ```
 
-The E2E runner needs a dedicated local database, for example `toktickit_e2e_test`, and reads its connection credentials from `server/.env.test` unless `E2E_DATABASE_URL` is supplied. The URL must name a database ending in `_test`; the harness applies migrations and seeds reference data before the run. It starts the API on port 3002 and the client on port 5174, so it does not use the normal development ports.
+The E2E runner needs a dedicated local database, for example `toktickit_e2e_test`, and reads its connection credentials from `server/.env.test` unless `E2E_DATABASE_URL` is supplied. The URL must name a database ending in `_test`; PostgreSQL URI credential characters such as `@`, `:`, `/`, and `%` must be percent-encoded. The harness applies migrations and seeds reference data before the run. It starts the non-watch API on port 3002 and the strict-port client on port 5174, so it does not use the normal development ports.
 
 Database preparation for API integration tests is no longer a manual step. `npm test` runs it, so the suite is reproducible from a clean clone rather than depending on a database somebody prepared by hand (`specification.md` §11.16):
 

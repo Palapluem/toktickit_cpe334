@@ -29,7 +29,7 @@ async function main(): Promise<void> {
   const databaseUrl = process.env.DATABASE_URL
   if (!databaseUrl) throw new Error('DATABASE_URL is required.')
 
-  const databaseName = new URL(databaseUrl).pathname.replace(/^\/+/, '')
+  const databaseName = decodeURIComponent(new URL(databaseUrl).pathname.replace(/^\/+/, ''))
   if (!databaseName.endsWith('_test')) {
     throw new Error(`Refusing E2E cleanup for non-test database "${databaseName}".`)
   }

@@ -110,9 +110,12 @@ npm run test:e2e
 ```
 
 The runner applies migrations and the idempotent seed automatically. It uses
-ports 3002 and 5174 and writes the nine reproducible viewport captures to
-`artifacts/lab-02/screenshots/`. Set `E2E_DATABASE_URL` to override the
-derived database, but never point it at a development database.
+the non-watch API command `tsx src/server.ts`, Vite's strict port 5174, and
+the isolated API port 3002. It writes the nine reproducible viewport captures
+to `artifacts/lab-02/screenshots/`. Set `E2E_DATABASE_URL` to override the
+`.env.test` value, but never point it at a development database. `DATABASE_URL`
+is a PostgreSQL URI, so percent-encode reserved credential characters such as
+`@`, `:`, `/`, and `%`.
 
 ## Branch and Pull Request Rules
 

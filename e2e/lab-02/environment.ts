@@ -16,20 +16,28 @@ function readDatabaseUrl(filePath: string): string | undefined {
 }
 
 function databaseName(urlValue: string): string {
-  return new URL(urlValue).pathname.replace(/^\/+/, '')
+  // DATABASE_URL follows PostgreSQL URI syntax. Reserved characters in
+  // credentials must be percent-encoded; this lookup only reads the path.
+  const name = decodeURIComponent(new URL(urlValue).pathname.replace(/^\/+/, ''))
+  if (!name) throw new Error('DATABASE_URL must include a database name.')
+  return name
 }
 
-export function getE2EDatabaseUrl(): string {
+export function getE2EDatabaseUrl(): string
+export function getE2EDatabaseUrl(options: { required: false }): string | undefined
+export function getE2EDatabaseUrl(
+  options: { required?: boolean } = {},
+): string | undefined {
   const repoRoot = process.cwd()
-  const explicitUrl = process.env.E2E_DATABASE_URL
+  const explicitUrl = process.env.E2E_DATABASE_URL?.trim() || undefined
   const sourceUrl =
     explicitUrl ??
-    readDatabaseUrl(path.join(repoRoot, 'server', '.env.e2e')) ??
     readDatabaseUrl(path.join(repoRoot, 'server', '.env.test'))
 
   if (!sourceUrl) {
+    if (options.required === false) return undefined
     throw new Error(
-      'E2E_DATABASE_URL is required, or server/.env.e2e/server/.env.test must define DATABASE_URL.',
+      'E2E_DATABASE_URL is required, or server/.env.test must define DATABASE_URL.',
     )
   }
 

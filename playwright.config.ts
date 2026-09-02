@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 import { getE2EDatabaseUrl } from './e2e/lab-02/environment'
 
-const e2eDatabaseUrl = getE2EDatabaseUrl()
+const e2eDatabaseUrl = getE2EDatabaseUrl({ required: false })
 const { FORCE_COLOR: _forceColor, NO_COLOR: _noColor, ...cleanEnv } = process.env
 
 export default defineConfig({
@@ -22,18 +22,24 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [
     {
-      command: 'npm run dev',
+      command: 'npm run start:e2e',
       cwd: 'server',
-      env: { ...cleanEnv, DATABASE_URL: e2eDatabaseUrl, NO_COLOR: '1', PORT: '3002' },
+      env: {
+        ...cleanEnv,
+        DATABASE_URL: e2eDatabaseUrl ?? '',
+        NO_COLOR: '1',
+        PORT: '3002',
+      },
       url: 'http://127.0.0.1:3002/api/health',
       reuseExistingServer: false,
       timeout: 120_000,
     },
     {
-      command: 'npm run dev -- --host 127.0.0.1 --port 5174',
+      command: 'npm run dev -- --host 127.0.0.1 --port 5174 --strictPort',
       cwd: 'client',
       env: { ...cleanEnv, NO_COLOR: '1', VITE_API_BASE_URL: 'http://127.0.0.1:3002' },
       url: 'http://127.0.0.1:5174/select-requester',
+      // Reusing a local server could connect the tests to the wrong database.
       reuseExistingServer: false,
       timeout: 120_000,
     },

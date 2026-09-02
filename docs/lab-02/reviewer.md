@@ -217,6 +217,22 @@ This follow-up keeps the shared button text, file chooser, description, and inva
 
 ---
 
+## PR #37 — E2E, responsive evidence, and release integration
+
+**Issue:** #23 · **Branch:** `feature/12-e2e-and-release` → `lab2-staging` · **Open as of 2 September 2026**
+
+### Comment received
+
+> **N0TAW00D:** The suite is solid and green, with seven non-blocking suggestions about the E2E server launcher, database URL parsing and fallback documentation, config-load behaviour, cleanup cost, sequence-counter wording, and Vite port handling.
+
+### Disposition
+
+The follow-up keeps per-test cleanup because TCS-03 requires rows to be removed after each test, but documents that `TicketNumberSequence` is intentionally retained for uniqueness. It changes the API E2E server to a non-watch command, adds Vite `--strictPort`, makes the database URL lookup optional during config inspection, uses only the documented `.env.test` fallback, and documents percent-encoding for reserved PostgreSQL URI credential characters. `reuseExistingServer: false` remains deliberate so the suite cannot attach to a server using a different database.
+
+The author has not posted a GitHub reply through the agent. Update this section with the final commit and peer response after the author replies and the reviewer rechecks the PR.
+
+---
+
 ## What the review process caught
 
 Recorded because the value of peer review is easier to argue from evidence than from principle.
@@ -229,5 +245,6 @@ Recorded because the value of peer review is easier to argue from evidence than 
 | #32 | Reviewer questioning submission blocking, layered errors, and `memoryStorage` | The UI gained the missing disabled-state coverage; error translation was centralised; attachment validation remained before storage for TC-022 |
 | #33 | Reviewer questioning search requests and inactive reference validation | The search gained debounce and server-side filters stopped accepting inactive references |
 | #34 | Reviewer warning about overflow | Tablet table scrolling stayed inside its container and page-level overflow remained absent |
+| #37 | Reviewer checking the E2E/release harness | The test runner now avoids a hot-reload API process, fails fast on a busy Vite port, and documents the database/cleanup boundaries without weakening per-test isolation |
 
 The first two were questions rather than corrections. Neither reviewer comment asserted that something was wrong — each asked the author to show where something was, and the answer turned out not to exist. Later review threads are recorded above with their concrete fixes and responses.
