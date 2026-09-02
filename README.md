@@ -23,6 +23,7 @@ read them in.
 ## Installation
 
 ```bash
+npm install                 # root Playwright runner for Lab 2 E2E
 cd server && npm install
 cd ../client && npm install
 ```
@@ -96,6 +97,22 @@ database is already current.
 Server tests live in `server/tests/lab-01/` and `server/tests/lab-02/`; every
 test cites the `FR`/`BR`/`AC`/`TC`/`STY` identifier it proves
 (`docs/lab-02/testing-contract.md` TCS-01).
+
+## E2E and responsive evidence
+
+Issue #23 runs Playwright against a separate disposable database and starts
+its own API/client processes. Create a local database whose name ends in
+`_test` (for example `toktickit_e2e_test`), ensure `server/.env.test` contains
+the matching local credentials, then run from the repository root:
+
+```bash
+npm run test:e2e
+```
+
+The runner applies migrations and the idempotent seed automatically. It uses
+ports 3002 and 5174 and writes the nine reproducible viewport captures to
+`artifacts/lab-02/screenshots/`. Set `E2E_DATABASE_URL` to override the
+derived database, but never point it at a development database.
 
 ## Branch and Pull Request Rules
 

@@ -253,24 +253,32 @@ Bootstrap breakpoints are used unless a screen documents a stronger need.
 
 Completed against real screenshots, not memory, and compared with this document plus the labsheet illustrations.
 
+**Candidate inspection (2 September 2026):** All sixteen checks below pass
+against the checked-in RESP captures and the state-specific figures indexed in
+`_private/evidence/lab-02/figures/INDEX.md`. The tablet My Tickets table is an
+intentional horizontal scroll region rather than page overflow; its right-side
+priority, status, and Last Updated columns were verified in the supplemental
+`my-tickets/tablet-list-right-viewport.png` capture. Re-run this checklist from
+the final `main` release candidate before submission.
+
 | # | Check | Desktop | Tablet | Mobile |
 |---|---|---|---|---|
-| 1 | Header, navigation, and active-page indicator render correctly | ☐ | ☐ | ☐ |
-| 2 | Current Development Requester and Change Requester are visible | ☐ | ☐ | ☐ |
-| 3 | Zen Green tokens used; no stray off-palette colour | ☐ | ☐ | ☐ |
-| 4 | Editable and read-only fields are clearly distinguishable | ☐ | ☐ | ☐ |
-| 5 | Required-field asterisks present on every required field | ☐ | ☐ | ☐ |
-| 6 | Validation messages sit beside their own field | ☐ | ☐ | ☐ |
-| 7 | Exactly one primary button per screen; hierarchy correct | ☐ | ☐ | ☐ |
-| 8 | Submit busy state visible and control disabled | ☐ | ☐ | ☐ |
-| 9 | No clipped labels or truncated attachment names | ☐ | ☐ | ☐ |
-| 10 | No overlapping text or controls | ☐ | ☐ | ☐ |
-| 11 | No unintended horizontal page scrolling | ☐ | ☐ | ☐ |
-| 12 | Priority and status badges consistent across screens | ☐ | ☐ | ☐ |
-| 13 | Filters, sorting, and pagination usable | ☐ | ☐ | ☐ |
-| 14 | Empty and no-results states distinct and correctly worded | ☐ | ☐ | ☐ |
-| 15 | Attachment controls usable; removed attachments show no download link | ☐ | ☐ | ☐ |
-| 16 | Keyboard focus visible throughout; dialog focus trapped | ☐ | ☐ | ☐ |
+| 1 | Header, navigation, and active-page indicator render correctly | ✅ | ✅ | ✅ |
+| 2 | Current Development Requester and Change Requester are visible | ✅ | ✅ | ✅ |
+| 3 | Zen Green tokens used; no stray off-palette colour | ✅ | ✅ | ✅ |
+| 4 | Editable and read-only fields are clearly distinguishable | ✅ | ✅ | ✅ |
+| 5 | Required-field asterisks present on every required field | ✅ | ✅ | ✅ |
+| 6 | Validation messages sit beside their own field | ✅ | ✅ | ✅ |
+| 7 | Exactly one primary button per screen; hierarchy correct | ✅ | ✅ | ✅ |
+| 8 | Submit busy state visible and control disabled | ✅ | ✅ | ✅ |
+| 9 | No clipped labels or truncated attachment names | ✅ | ✅ | ✅ |
+| 10 | No overlapping text or controls | ✅ | ✅ | ✅ |
+| 11 | No unintended horizontal page scrolling | ✅ | ✅ | ✅ |
+| 12 | Priority and status badges consistent across screens | ✅ | ✅ | ✅ |
+| 13 | Filters, sorting, and pagination usable | ✅ | ✅ | ✅ |
+| 14 | Empty and no-results states distinct and correctly worded | ✅ | ✅ | ✅ |
+| 15 | Attachment controls usable; removed attachments show no download link | ✅ | ✅ | ✅ |
+| 16 | Keyboard focus visible throughout; dialog focus trapped | ✅ | ✅ | ✅ |
 
 ## 13a. Component state gallery
 

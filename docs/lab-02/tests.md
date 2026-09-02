@@ -158,6 +158,8 @@ Viewport rendering is verified with Playwright in Issue #23. These cover the beh
 | E2E-02 | AC-19, AC-28 | Requester isolation journey | Switch requester; the first requester's tickets are gone; direct navigation to their ticket is refused | `e2e/lab-02/requester-isolation.spec.ts` | ☐ |
 | E2E-03 | AC-29, AC-31, AC-32, AC-33 | Attachment lifecycle journey | Add, download, soft-remove with reason; removed entry retains metadata with no download | `e2e/lab-02/attachment-lifecycle.spec.ts` | ☐ |
 
+**Issue #23 candidate verification (2 September 2026):** The complete Playwright run on `feature/12-e2e-and-release` passes **6/6**: RESP-01, RESP-02, RESP-03, E2E-01, E2E-02, and E2E-03. The output is `_private/evidence/lab-02/test-output/issue-23-green.txt`. The initial red capture is `_private/evidence/lab-02/test-output/issue-23-red.txt`; its two failures were corrected test selectors (a duplicate accessible `My Tickets` text and a summary nested with the attachment count), not product changes. The nine reproducible viewport captures are under `artifacts/lab-02/screenshots/`. These are candidate results; the `Final` column and §6 final-results table remain pending the release run from `main`.
+
 ## 3. Acceptance-Criterion Traceability
 
 Every acceptance criterion maps to at least one planned test.
@@ -199,9 +201,11 @@ cd server && npm test
 # Client: UI component + UI style
 cd client && npm test
 
-# E2E + responsive screenshots (requires the local stack running)
-npx playwright test
+# E2E + responsive screenshots (starts an isolated local stack)
+npm run test:e2e
 ```
+
+The E2E runner needs a dedicated local database, for example `toktickit_e2e_test`, and reads its connection credentials from `server/.env.test` unless `E2E_DATABASE_URL` is supplied. The URL must name a database ending in `_test`; the harness applies migrations and seeds reference data before the run. It starts the API on port 3002 and the client on port 5174, so it does not use the normal development ports.
 
 Database preparation for API integration tests is no longer a manual step. `npm test` runs it, so the suite is reproducible from a clean clone rather than depending on a database somebody prepared by hand (`specification.md` §11.16):
 
