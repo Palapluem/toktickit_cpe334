@@ -173,12 +173,16 @@ body {
 /* ---- Buttons ---- */
 
 .zen-button {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
   min-height: 44px;
   border-radius: var(--zen-radius);
   padding: 0 var(--zen-space-4);
   font-weight: 600;
   border: 1px solid transparent;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .zen-button:focus-visible {
@@ -362,9 +366,16 @@ body {
 }
 
 .create-ticket-form textarea.zen-field__control {
+  display: block;
   min-height: 144px;
   padding: var(--zen-space-2) var(--zen-space-3);
   resize: vertical;
+  vertical-align: top;
+}
+
+.create-ticket-form input[type='file'].zen-field__control {
+  align-items: center;
+  display: flex;
 }
 
 .create-ticket-form__file-list {
@@ -386,7 +397,8 @@ body {
   margin: 0 auto 0 0;
 }
 
-.create-ticket-form__file-list__invalid {
+.create-ticket-form__file-list li.create-ticket-form__file-list__invalid {
+  align-items: flex-start;
   color: var(--zen-error);
   flex-wrap: wrap;
 }
