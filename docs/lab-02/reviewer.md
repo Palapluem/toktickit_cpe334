@@ -229,7 +229,7 @@ This follow-up keeps the shared button text, file chooser, description, and inva
 
 The follow-up keeps per-test cleanup because TCS-03 requires rows to be removed after each test, but documents that `TicketNumberSequence` is intentionally retained for uniqueness. It changes the API E2E server to a non-watch command, adds Vite `--strictPort`, makes the database URL lookup optional during config inspection, uses only the documented `.env.test` fallback, and documents percent-encoding for reserved PostgreSQL URI credential characters. `reuseExistingServer: false` remains deliberate so the suite cannot attach to a server using a different database.
 
-The author has not posted a GitHub reply through the agent. Update this section with the final commit and peer response after the author replies and the reviewer rechecks the PR.
+Follow-up commit `f7fb8ce` was pushed with these dispositions. The author has not posted a GitHub reply through the agent; the reviewer must recheck the updated PR before approval/merge.
 
 ---
 
