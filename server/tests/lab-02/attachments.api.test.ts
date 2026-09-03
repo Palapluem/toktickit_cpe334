@@ -1,6 +1,5 @@
 // API-08…API-10 (#20). AC-15…AC-17; BR-26, BR-27, BR-34, BR-35.
-// TC-013/015/022/023: rule failures reject before persistence; storage failures keep the Ticket.
-// TDT-01 equivalence partitions; TDT-02 boundary-value analysis; TDT-05 error guessing for storage failures.
+// TC-013/015/022/023; TDT-01/02 partitions and boundaries; TDT-05 storage failures.
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Readable } from 'node:stream'
 import request from 'supertest'
@@ -123,6 +122,31 @@ describe('API-08 · AC-15 · a permitted attachment is stored with metadata', ()
       sizeBytes: 14,
       removedAt: null,
     })
+    expect(Object.keys(response.body.data).sort()).toEqual([
+      'attachmentFailures',
+      'attachments',
+      'category',
+      'createdAt',
+      'description',
+      'id',
+      'itPriority',
+      'owner',
+      'relatedSystem',
+      'requestedPriority',
+      'requester',
+      'status',
+      'summary',
+      'ticketNo',
+      'updatedAt',
+    ])
+    expect(Object.keys(response.body.data.attachments[0]).sort()).toEqual([
+      'createdAt',
+      'id',
+      'mimeType',
+      'originalFilename',
+      'removedAt',
+      'sizeBytes',
+    ])
     expect(await prisma.attachment.count()).toBe(1)
   })
 
@@ -322,6 +346,40 @@ describe('API-22 · AC-30 · BR-28 · active attachment limit', () => {
     expect(storage.save).not.toHaveBeenCalled()
     expect(await prisma.attachment.count({ where: { ticketId, removedAt: null } })).toBe(5)
   })
+
+  it('serializes concurrent uploads so the active count cannot exceed five', async () => {
+    const ticketId = await createExistingTicket()
+    await seedActiveAttachments(ticketId, 4)
+    const storage: AttachmentStorage = {
+      save: vi.fn(async (file: AttachmentFile) => {
+        await new Promise((resolve) => setTimeout(resolve, 20))
+        return { storedFilename: `concurrent-${file.originalFilename}` }
+      }),
+      remove: vi.fn(async () => {}),
+    }
+
+    const responses = await Promise.all([
+      request(createApp({ storage }))
+        .post(`/api/tickets/${ticketId}/attachments`)
+        .set('X-Requester-Id', references.requesterId)
+        .attach('attachment', Buffer.from('first'), {
+          filename: 'first.png',
+          contentType: 'image/png',
+        }),
+      request(createApp({ storage }))
+        .post(`/api/tickets/${ticketId}/attachments`)
+        .set('X-Requester-Id', references.requesterId)
+        .attach('attachment', Buffer.from('second'), {
+          filename: 'second.png',
+          contentType: 'image/png',
+        }),
+    ])
+
+    expect(responses.map((response) => response.status).sort()).toEqual([201, 409])
+    expect(
+      await prisma.attachment.count({ where: { ticketId, removedAt: null } }),
+    ).toBe(5)
+  })
 })
 
 describe('API-23 · BR-28 · removed attachments do not count toward the limit', () => {
@@ -376,6 +434,25 @@ describe('API-24 · AC-31 · active attachment download', () => {
     expect(response.body).toEqual(content)
     expect(storage.getStream).toHaveBeenCalledWith(`generated-${ticketId}`)
   })
+
+  it('encodes non-ASCII filenames without exposing an invalid header', async () => {
+    const ticketId = await createExistingTicket()
+    const attachment = await seedAttachment(ticketId, {
+      originalFilename: 'หลักฐานการแจ้งปัญหา.png',
+      storedFilename: `unicode-${ticketId}`,
+      sizeBytes: 3,
+    })
+    const storage = downloadStorage(Buffer.from('pdf'))
+
+    const response = await request(createApp({ storage }))
+      .get(`/api/attachments/${attachment.id}/download`)
+      .set('X-Requester-Id', references.requesterId)
+
+    expect(response.status).toBe(200)
+    expect(response.headers['content-disposition']).toMatch(
+      /^attachment; filename="[\x20-\x7e]+"; filename\*=UTF-8''%/,
+    )
+  })
 })
 
 describe('API-25 · AC-32 · BR-31 · soft removal', () => {
@@ -406,6 +483,26 @@ describe('API-25 · AC-32 · BR-31 · soft removal', () => {
     expect(stored.removedReason).toBe('Uploaded the wrong file')
     expect(stored.removedById).toBe(references.requesterId)
   })
+
+  it('returns the existing removal record when removal is repeated', async () => {
+    const ticketId = await createExistingTicket()
+    const attachment = await seedAttachment(ticketId, {
+      removedAt: new Date('2026-09-01T09:00:00.000Z'),
+      removedReason: 'Uploaded the wrong file',
+      removedById: references.requesterId,
+    })
+
+    const response = await request(createApp())
+      .delete(`/api/attachments/${attachment.id}`)
+      .set('X-Requester-Id', references.requesterId)
+
+    expect(response.status).toBe(200)
+    expect(response.body.data).toMatchObject({
+      id: attachment.id,
+      removedReason: 'Uploaded the wrong file',
+      isDownloadable: false,
+    })
+  })
 })
 
 describe('API-26 · AC-33 · BR-33 · removed attachment download', () => {
@@ -432,6 +529,20 @@ describe('API-26 · AC-33 · BR-33 · removed attachment download', () => {
     expect(storage.getStream).not.toHaveBeenCalled()
   })
 })
+
+describe('route parameter validation', () =>
+  it('returns the attachment not-found envelope for a malformed attachment id', async () => {
+    const response = await request(createApp())
+      .get('/api/attachments/not-a-uuid/download')
+      .set('X-Requester-Id', references.requesterId)
+
+    expect(response.status).toBe(404)
+    expect(response.body.error).toMatchObject({
+      code: 'ATTACHMENT_NOT_FOUND',
+      fieldErrors: [],
+    })
+  })
+)
 
 describe('API-27 · BR-32 · removal reason validation', () => {
   it.each([

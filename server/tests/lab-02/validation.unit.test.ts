@@ -1,6 +1,5 @@
 // UNIT-03 (#20). BR-19/BR-20/BR-21; TC-005/TC-006.
-// TDT-01 equivalence partitions for empty, valid, short, and long text.
-// TDT-02 boundary-value analysis for the Summary and Description limits.
+// TDT-01 text partitions; TDT-02 Summary and Description boundary analysis.
 import { describe, expect, it } from 'vitest'
 import { validateCreateTicketBody } from '../../src/tickets/validation.js'
 

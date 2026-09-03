@@ -1,8 +1,5 @@
-// API-18 (#17). BR-11, BR-14, §11.21.
-// TDT-01: absent / malformed / unknown / inactive / valid are the five classes.
-// The middleware is mounted on a probe route here because no requester-scoped
-// endpoint exists yet — #20 adds the first. What is under test is the real
-// middleware, not a copy of its logic.
+// API-18 (#17). BR-11, BR-14, §11.21; TDT-01 covers five context classes.
+// A probe route isolates the real middleware before requester-scoped endpoints exist.
 import express from 'express'
 import { describe, expect, it, beforeAll } from 'vitest'
 import request from 'supertest'

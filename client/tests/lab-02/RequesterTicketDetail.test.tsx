@@ -26,7 +26,6 @@ const TICKET = {
   relatedSystem: { id: 'system-corporate-laptop', name: 'Corporate Laptop' },
   owner: null,
   attachments: [],
-  attachmentFailures: [],
 }
 
 describe('UI-18 · AC-27 · owned Ticket Detail', () => {

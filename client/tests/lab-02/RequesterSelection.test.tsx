@@ -59,6 +59,20 @@ describe('UI-02 · AC-02 · the selector lists active requesters', () => {
     expect(await screen.findByText(/not a login screen/i)).toBeInTheDocument()
   })
 
+  it('renders the identity icon and both explanatory callouts', async () => {
+    vi.stubGlobal('fetch', mockFetch({ data: REQUESTERS }))
+    renderScreen()
+
+    expect(await screen.findByRole('option', { name: 'David Lee' })).toBeInTheDocument()
+    expect(document.querySelector('.requester-selection__intro-icon')).toBeInTheDocument()
+    expect(document.querySelector('.requester-selection__callout--info')).toHaveTextContent(
+      'Only active development requesters are shown.',
+    )
+    expect(document.querySelector('.requester-selection__callout--shield')).toHaveTextContent(
+      /Authentication coming in Lab 3/i,
+    )
+  })
+
   it('disables Continue until a requester is chosen', async () => {
     vi.stubGlobal('fetch', mockFetch({ data: REQUESTERS }))
     renderScreen()

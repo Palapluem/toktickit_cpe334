@@ -1,7 +1,4 @@
-// Seed idempotency (#18). Definition of Done, §7.
-// TDT-05: guards a seed written with create instead of upsert, which works on a
-// clean database and duplicates everything on the second run.
-// Invoked as a child process, so what is tested is the command people run.
+// Seed idempotency (#18). BR-10, TC-011; TDT-05 exercises repeated CLI runs.
 import { execFileSync } from 'node:child_process'
 import { describe, expect, it, beforeAll } from 'vitest'
 import request from 'supertest'

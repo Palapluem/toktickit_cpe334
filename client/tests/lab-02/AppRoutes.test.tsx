@@ -1,6 +1,5 @@
-// UI-06/UI-07 (#20). AC-06, AC-11; ui-spec §5.
-// TDT-01 equivalence partition: the Create Ticket route must render inside the
-// application shell with its route-specific breadcrumb.
+// UI-06/UI-07 (#20). AC-06, AC-11; ui-spec §5; TDT-01 route-shell partition.
+// Create Ticket and requester selection must render the required shell context.
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
@@ -54,5 +53,25 @@ describe('Create Ticket route shell contract', () => {
     expect(screen.getByLabelText('Breadcrumb')).toHaveTextContent(
       'My Tickets › Create Ticket',
     )
+  })
+})
+
+describe('Requester Selection route shell contract', () => {
+  it('shows the TokTickIT identity and breadcrumb without ticket navigation', async () => {
+    window.sessionStorage.clear()
+
+    render(
+      <MemoryRouter initialEntries={['/select-requester']}>
+        <RequesterProvider>
+          <App />
+        </RequesterProvider>
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('link', { name: 'TokTickIT' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Breadcrumb')).toHaveTextContent(
+      'Development Requester Selection',
+    )
+    expect(screen.queryByRole('navigation', { name: 'Main' })).not.toBeInTheDocument()
   })
 })
