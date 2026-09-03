@@ -274,6 +274,15 @@ Branch `fix/pr39-review-findings` adds regression coverage and fixes the confirm
 
 This follow-up contains the test-first fixes for the release review. Verification on the branch is server **114/114**, client **110/110**, Playwright **6/6**, and both builds pass; client lint exits successfully with two existing Fast Refresh warnings. The reviewer remains responsible for reviewing and merging #40, after which #39 can be rechecked and merged.
 
+### Follow-up comment and disposition
+
+On 4 September 2026, N0TAW00D noted that the final `tests.md` §6 table, mobile input/select height, and the AI-use reflection heading still needed attention, while the remaining code observations were minor design notes.
+
+- `tests.md` §6 remains intentionally empty until the final verification run from `main`, as required by `specification.md` §11.25.
+- Input and select controls remain 40px: `ui-spec.md` §3 defines the shared editable-control height, while §11 applies the ≥44px mobile target to buttons.
+- `ai-use.md` now uses the required `My Reflection` heading and retains six selected prompt rows, within the labsheet's 6–10 range.
+- The global Prisma dependency, DOM requester identifier, redundant success announcement attributes, status-badge styling, and strict MIME/extension match remain deferred design observations; none is a release acceptance gap or an approved scope change for this follow-up.
+
 ---
 
 ## What the review process caught

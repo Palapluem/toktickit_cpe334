@@ -21,7 +21,7 @@ result.
 | Check whether the CSS alignment follow-up changes the already merged work before opening a PR. | Confirmed the form-control fix was a separate, reviewable follow-up and opened PR #36 against `lab2-staging`. | Separating the follow-up preserved the scope and review history of the merged ticket-creation work. |
 | Check the latest merged PR and continue the plan, but do not post GitHub comments or reviews for me. | Verified PR #35 merged into `lab2-staging`, kept GitHub conversation actions manual, and updated the private handoff with the current stage. | The agent can prepare evidence and commands, but peer-review communication and merge ownership stay with me and my reviewer. |
 
-## Reflection on improving my prompts
+## My Reflection
 
 The most useful prompts named the exact repository, phase, source documents,
 and forbidden actions. The handoff also made it easier to ask for evidence
