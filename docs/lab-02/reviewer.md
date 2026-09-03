@@ -279,9 +279,10 @@ This follow-up contains the test-first fixes for the release review. Verificatio
 On 4 September 2026, N0TAW00D noted that the final `tests.md` §6 table, mobile input/select height, and the AI-use reflection heading still needed attention, while the remaining code observations were minor design notes.
 
 - `tests.md` §6 remains intentionally empty until the final verification run from `main`, as required by `specification.md` §11.25.
-- Input and select controls remain 40px: `ui-spec.md` §3 defines the shared editable-control height, while §11 applies the ≥44px mobile target to buttons.
-- `ai-use.md` now uses the required `My Reflection` heading and retains ten selected prompt rows, within the labsheet's 6–10 range.
+- **Revisited.** On reflection this held for buttons but not for inputs and selects — `ui-spec.md` §11 only ever named buttons for the ≥44px mobile target, which is a gap the spec was silent on rather than a rule that was satisfied. Recorded as `specification.md` §11.26 and fixed: `.zen-field__control` now matches the button's 44px below 768px. Desktop keeps 40px, where a pointer has pixel precision a finger does not.
+- `ai-use.md` now uses the required `My Reflection` heading and retains ten selected prompt rows, within the labsheet's 6–10 range. **Revisited again** after direct feedback that the "Prompt used" cells read as paraphrases rather than the actual prompts: the table now shows each selected prompt as the literal multi-line phase template that was typed — the same fenced-block style as `_private/lab-02/prompts/01-contract-review.md` — with a short summary table above it to keep the labsheet's "table of 6–10 prompts" requirement intact.
 - The global Prisma dependency, DOM requester identifier, redundant success announcement attributes, status-badge styling, and strict MIME/extension match remain deferred design observations; none is a release acceptance gap or an approved scope change for this follow-up.
+- While rechecking this branch, `tests.md`'s `RESP-01`–`RESP-03` and `E2E-01`–`E2E-03` rows were found still marked open despite Issue #23 having shipped the suites that prove them. Reran the full E2E suite directly (6/6) before marking them, rather than trusting the stale marks; the run also refreshed the nine canonical screenshots at their fixed paths to reflect the touch-target fix above.
 
 ---
 
