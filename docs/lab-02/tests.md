@@ -60,8 +60,8 @@ Following the Red → Green → Refactor cycle: for each Issue, write the failin
 
 | Test ID | Requirement / AC | What it tests | Expected result | Automated test file | Final |
 |---|---|---|---|---|---|
-| API-01 | AC-02 | Active requesters only | 200; the inactive seeded requester is absent | `server/tests/lab-02/requesters.api.test.ts` | ☐ |
-| API-02 | AC-11 | Reference data | 200; four categories and seven related systems from the database | `server/tests/lab-02/reference-data.api.test.ts` | ☐ |
+| API-01 | AC-02 | Active requesters only | 200; the inactive seeded requester is absent | `server/tests/lab-02/reference-data.test.ts` | ✅ |
+| API-02 | AC-11 | Reference data | 200; four categories and seven related systems from the database | `server/tests/lab-02/reference-data.test.ts` | ✅ |
 | API-03 | AC-06, AC-08 | Valid ticket creation | 201; one ticket saved; `ticketNo` returned; status `NEW`; no owner | `server/tests/lab-02/create-ticket.api.test.ts` | ✅ |
 | API-04 | AC-07 | Requester binding | Saved row's `requesterId` equals the `X-Requester-Id` used | `server/tests/lab-02/create-ticket.api.test.ts` | ✅ |
 | API-05 | AC-10, BR-18 | Creation validation | 400 with field errors for each missing/invalid field; no ticket created | `server/tests/lab-02/create-ticket.api.test.ts` | ✅ |
@@ -159,6 +159,8 @@ Viewport rendering is verified with Playwright in Issue #23. These cover the beh
 | E2E-03 | AC-29, AC-31, AC-32, AC-33 | Attachment lifecycle journey | Add, download, soft-remove with reason; removed entry retains metadata with no download | `e2e/lab-02/attachment-lifecycle.spec.ts` | ☐ |
 
 **Issue #23 candidate verification (2 September 2026):** The complete Playwright run on `feature/12-e2e-and-release` passes **6/6**: RESP-01, RESP-02, RESP-03, E2E-01, E2E-02, and E2E-03. The raw output is `_private/evidence/lab-02/test-output/issue-23-green.txt`; the latest clean-database rerun is summarized in `_private/evidence/lab-02/test-output/issue-23-clean-run.txt`. The initial red capture is `_private/evidence/lab-02/test-output/issue-23-red.txt`; its two failures were corrected test selectors (a duplicate accessible `My Tickets` text and a summary nested with the attachment count), not product changes. The nine reproducible viewport captures are under `artifacts/lab-02/screenshots/`. Each test now cleans its registered Ticket and attachment files through the dedicated E2E teardown. These are candidate results; the `Final` column and §6 final-results table remain pending the release run from `main`.
+
+**PR #39 review-fix candidate verification (4 September 2026):** The follow-up branch `fix/pr39-review-findings` passes the full server regression (**114/114**), full client regression (**110/110**), and Playwright suite (**6/6**). Server and client builds also pass; client lint exits successfully with two pre-existing Fast Refresh warnings in `RequesterContext.tsx`. These remain release-candidate results; §6 is intentionally reserved for the final verification run from `main` after PR #39 merges.
 
 ## 3. Acceptance-Criterion Traceability
 
