@@ -95,6 +95,13 @@ body {
   .zen-shell__header .zen-button {
     width: auto;
   }
+
+  /* The 44px touch target applies to every control, not only buttons (§11.26).
+     Desktop keeps 40px (ui-spec §3); a pointer does not need the margin a
+     finger does. Textareas and the file input already exceed this. */
+  .zen-field__control {
+    min-height: 44px;
+  }
 }
 
 /* No page-level horizontal scroll at any width (ui-spec §11). Wide content

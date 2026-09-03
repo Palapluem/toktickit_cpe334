@@ -473,3 +473,10 @@ The RESP tests capture full-page screenshots at the fixed widths in `ui-spec.md`
 
 **11.25 Candidate evidence is distinct from final release evidence.**
 Issue #23 may record a green run on its feature branch and on the integrated `lab2-staging` release candidate. The `tests.md` §6 final-results table and the final acceptance of the visual checklist are completed only after the release Pull Request has merged into `main`, because the Definition of Done requires the documented suite to pass from the final branch.
+
+**11.26 The 44px mobile touch target applies to every control, not only buttons.**
+`ui-spec.md` §11 named buttons explicitly ("buttons stay touch-friendly, ≥44 px target") while §3 fixed every editable control at 40px with no mobile exception. PR #40's release review asked whether that 40px height still held up on a touch device, and reading the two sections side by side showed the target was never written for inputs and selects at all — not a rule that was violated, a rule that was silent.
+
+WCAG 2.5.5 and the platform guidance both size the target by finger contact, not by control type: a 40px `<select>` is exactly as hard to tap accurately as a 40px button. §3's 40px stands on desktop, where the input device is a pointer with pixel precision. Below 768px, `.zen-field__control` now matches the button's 44px, alongside the existing full-width buttons from §11.20's mobile block.
+
+Textareas and the file input are unaffected — both already exceed 44px for reasons unrelated to touch sizing (BR-20's content length, file-picker affordance).
