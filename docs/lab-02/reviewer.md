@@ -12,6 +12,15 @@ This file is appended to as each Pull Request closes, not reconstructed at the e
 
 ## Summary
 
+### Current status (3 September 2026)
+
+| PR | Issue | Current state | Merged by |
+|---|---|---|---|
+| [#36](https://github.com/Palapluem/toktickit_cpe334/pull/36) | [#20](https://github.com/Palapluem/toktickit_cpe334/issues/20) | Merged at `d3c5a25`; Issue CLOSED; card Done | N0TAW00D |
+| [#37](https://github.com/Palapluem/toktickit_cpe334/pull/37) | [#23](https://github.com/Palapluem/toktickit_cpe334/issues/23) | Approved and merged at `3458178`; staging audit passed | N0TAW00D |
+
+The original table below is retained as the historical review ledger. The current merge outcomes and post-merge evidence are recorded above and in the detailed sections.
+
 | PR | Issue | Title | Reviewer verdict | Merged by |
 |---|---|---|---|---|
 | [#24](https://github.com/Palapluem/toktickit_cpe334/pull/24) | [#16](https://github.com/Palapluem/toktickit_cpe334/issues/16) | Sprint specification and test plan | Approved | N0TAW00D |
@@ -213,7 +222,7 @@ No changes were requested. The reviewer merged the PR after the targeted/full te
 
 **Issue:** #20 · **Branch:** `fix/20-ticket-form-alignment` → `lab2-staging` · **Open as of 2 September 2026**
 
-This follow-up keeps the shared button text, file chooser, description, and invalid-attachment row aligned. It is intentionally separate from merged PR #32, has no reviewer comment yet, and must not be merged by the author. Update this section after the peer review and merge.
+The reviewer commented `lgtm` and merged this follow-up on 2 September 2026 at `d3c5a25`. Issue #20 was then closed by hand and its project card moved to **Done**. The alignment evidence is now included in the staging tree.
 
 ---
 
@@ -229,7 +238,11 @@ This follow-up keeps the shared button text, file chooser, description, and inva
 
 The follow-up keeps per-test cleanup because TCS-03 requires rows to be removed after each test, but documents that `TicketNumberSequence` is intentionally retained for uniqueness. It changes the API E2E server to a non-watch command, adds Vite `--strictPort`, makes the database URL lookup optional during config inspection, uses only the documented `.env.test` fallback, and documents percent-encoding for reserved PostgreSQL URI credential characters. `reuseExistingServer: false` remains deliberate so the suite cannot attach to a server using a different database.
 
-Follow-up commit `f7fb8ce` was pushed with these dispositions. The author has not posted a GitHub reply through the agent; the reviewer must recheck the updated PR before approval/merge.
+Follow-up commit `f7fb8ce` was pushed with these dispositions. The reviewer rechecked the updated PR, approved it, and merged it on 3 September 2026 at `3458178`.
+
+### Post-merge verification
+
+The merged staging tree passed the full server regression (**109/109**) and build, the full client regression (**107/107**) and build/lint, the style/security audits, and the E2E/responsive suite (**6/6**). The dedicated E2E database ended at **0 Tickets / 0 Attachments**. The nine fresh staging screenshots were visually checked and retained as private evidence; the tracked candidate screenshots remain unchanged. Issue #23 still needs to be closed by hand and its card moved from **PR Review** to **Done**.
 
 ---
 
