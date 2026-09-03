@@ -10,16 +10,23 @@ collaborators rather than authorities: I checked the contracts, source,
 GitHub state, test output, screenshots, and commit history before accepting a
 result.
 
-## Selected key prompts
+## Selected Key Prompts (10 of many)
 
-| Prompt | What the agent did | My reflection |
-|---|---|---|
-| Read `HANDOFF.md` and `AGENTS.md` in the required order. Tell me the next Issue, its blocker, and current test counts before writing code. | Established the handoff rules, the reviewer-merge rule, the current `lab2-staging` commit, and the next Issue. | Starting from the handoff stopped the work from reopening settled decisions or using the wrong repository. |
-| Run the phase-1 contract review for Issue #23 against `tests.md`, `ui-spec.md`, `style-contract.md`, and `specification.md` before writing code. | Found the missing E2E database isolation choice, the exact screenshot-path requirement, the staging-candidate versus final-main contradiction, and the missing AI-use document. | Reviewing the documents together exposed workflow gaps that a test file alone would not show. |
-| Issue #23: write the failing tests only. Configure Playwright and show assertion failures, not import/configuration failures. | Added the E2E/responsive seams and captured the first failures. Several setup problems were caught and recorded before the test result was interpreted. | A red terminal exit is not automatically useful red evidence; the failure reason must be read. |
-| Continue Issue #23 through the phases in detail, and warn me whenever screenshots are required. | Corrected two test assertions, ran all six tests green, and generated the nine reproducible viewport screenshots. | This kept the automated evidence and the manual visual-review task connected to the same run. |
-| Check whether the CSS alignment follow-up changes the already merged work before opening a PR. | Confirmed the form-control fix was a separate, reviewable follow-up and opened PR #36 against `lab2-staging`. | Separating the follow-up preserved the scope and review history of the merged ticket-creation work. |
-| Check the latest merged PR and continue the plan, but do not post GitHub comments or reviews for me. | Verified PR #35 merged into `lab2-staging`, kept GitHub conversation actions manual, and updated the private handoff with the current stage. | The agent can prepare evidence and commands, but peer-review communication and merge ownership stay with me and my reviewer. |
+The entries below are selected from the running prompt log. Thai entries are the
+prompts I actually typed; the English entries are retained as they were used.
+
+| Agent | Prompt used | What the agent did | My reflection |
+|---|---|---|---|
+| Claude Code / Sonnet 5 | `คือจริง ๆ อะ ตอนนี้เราอยากทำงานส่วนไหนก็ได้ ที่ยังไม่ต้องรอ Lecture 4 เพื่อความชัวร์อะ ของแลป 2 ถ้าอิงตาม syllabus และเนื้อหาที่เราเรียนไปแล้ว` | Checked the syllabus and lectures, finding that Lab 3 overlapped the Lab 2 deadline and that the testing taxonomy was already available; only the Definition of Done still needed Lecture 4 confirmation. | Asking what was actually unblocked was more useful than asking for a generic next step. |
+| Codex / GPT-5 | `Read the handoff and AGENTS instructions, then continue the next phase in detail. Warn me before any screenshot work.` | Re-established the handoff rules, branch state, evidence boundary, and the requirement to warn before screenshot work. | The handoff made a short continuation prompt safe because the constraints were already written down. |
+| Codex / GPT-5 | `Write the failing tests only, run them, and do not accept import/configuration failures as red evidence.` | Ran the Issue #23 red phase, separated Windows/Prisma harness failures from real assertion failures, corrected the test selectors, and preserved the valid red evidence. | A red exit code is not automatically useful evidence; I have to read why the test failed. |
+| Codex / GPT-5 | `Continue the phase work in detail, and tell me what I need to screenshot.` | Completed the green E2E run at 6/6, generated the nine fixed-viewport captures, and inspected the images against the responsive contract. | This connected automated E2E evidence with the manual visual checklist instead of treating screenshots as decoration. |
+| Codex / GPT-5 | `Continue the phase work in detail; complete the Issue #23 audit before opening the PR.` | Found that the first E2E harness left data behind despite passing tests, then added scoped cleanup and rechecked the suite, build, lint, style, and hygiene gates. | A disposable database is not enough by itself; test-created data still needs explicit teardown. |
+| Codex / GPT-5 | `แก้ปุ่มที่แปลก ๆ ได้ไหม ถ้าไม่มีกระทบ PR เดิม` | Kept the Create Ticket alignment correction separate from the already merged implementation and opened follow-up PR #36 against `lab2-staging`. | A visual improvement should keep its own review boundary when it changes merged work. |
+| Codex / GPT-5 | `ตรง memoryStorage, diskStorage เอาจริงถ้าเป็นงานนี้กับขอบเขตของงานในแลปมันควรเป็นอันไหนกว่ากันนะ หรือแบบมีแนวทางที่เหมาะสมอย่างไรบ้าง` | Compared both storage choices with the labsheet and specification, keeping local disk storage behind an adapter because attachments must persist and SeaweedFS was outside this sprint. | Asking about the trade-off before implementation prevented an easy but incorrect in-memory choice. |
+| Codex / GPT-5 | `เพื่อนเรารีวิวให้แล้ว เช็คและปรับอย่างละเอียดเลยได้ไหม + คอมเมนต์ด้วย` | Audited PR #39 against the contracts, added test-first release fixes in follow-up PR #40, and kept GitHub replies manual for me to post. | Peer review exposed contract gaps that the feature-level tests had not shown, so release review deserves its own audit. |
+| Codex / GPT-5 | `เพื่อนเรา merge เรียบร้อยละ เช็คอีกรอบแล้วทำตามแผนงานต่อไปได้เลย` | Rechecked the merged staging state and continued the release sequence without reopening completed Issues or creating unnecessary work. | A concise prompt worked because the current branch and process state were recorded in the handoff. |
+| Codex / GPT-5 | `PR #40 เพื่อนเราคอมเมนต์ให้ละ ทำต่อเนื่องแบบละเอียดเลย` | Distinguished the deferred final `main` test table and already-satisfied 40px field rule from the one documentation gap, added the `My Reflection` heading, and recorded the disposition in `reviewer.md`. | The closed-world rule helped me answer every review point with evidence instead of changing code just to make the diff look complete. |
 
 ## My Reflection
 

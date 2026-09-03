@@ -280,7 +280,7 @@ On 4 September 2026, N0TAW00D noted that the final `tests.md` §6 table, mobile 
 
 - `tests.md` §6 remains intentionally empty until the final verification run from `main`, as required by `specification.md` §11.25.
 - Input and select controls remain 40px: `ui-spec.md` §3 defines the shared editable-control height, while §11 applies the ≥44px mobile target to buttons.
-- `ai-use.md` now uses the required `My Reflection` heading and retains six selected prompt rows, within the labsheet's 6–10 range.
+- `ai-use.md` now uses the required `My Reflection` heading and retains ten selected prompt rows, within the labsheet's 6–10 range.
 - The global Prisma dependency, DOM requester identifier, redundant success announcement attributes, status-badge styling, and strict MIME/extension match remain deferred design observations; none is a release acceptance gap or an approved scope change for this follow-up.
 
 ---
