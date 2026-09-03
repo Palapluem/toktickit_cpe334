@@ -151,12 +151,12 @@ Viewport rendering is verified with Playwright in Issue #23. These cover the beh
 
 | Test ID | Requirement / AC | What it tests | Expected result | Automated test file | Final |
 |---|---|---|---|---|---|
-| RESP-01 | AC-35 | Create Ticket at three viewports | No horizontal overflow, clipping, or overlap; screenshots captured | `e2e/lab-02/responsive.spec.ts` | ☐ |
-| RESP-02 | AC-35 | My Tickets at three viewports | Desktop table, mobile cards; controls reachable; screenshots captured | `e2e/lab-02/responsive.spec.ts` | ☐ |
-| RESP-03 | AC-35 | Ticket Detail at three viewports | Attachment names readable; no overflow; screenshots captured | `e2e/lab-02/responsive.spec.ts` | ☐ |
-| E2E-01 | AC-01, AC-06, AC-15, AC-18 | Full creation journey | Select requester → create ticket with attachment → confirmation shows the official number → ticket found in My Tickets | `e2e/lab-02/requester-ticket-flow.spec.ts` | ☐ |
-| E2E-02 | AC-19, AC-28 | Requester isolation journey | Switch requester; the first requester's tickets are gone; direct navigation to their ticket is refused | `e2e/lab-02/requester-isolation.spec.ts` | ☐ |
-| E2E-03 | AC-29, AC-31, AC-32, AC-33 | Attachment lifecycle journey | Add, download, soft-remove with reason; removed entry retains metadata with no download | `e2e/lab-02/attachment-lifecycle.spec.ts` | ☐ |
+| RESP-01 | AC-35 | Create Ticket at three viewports | No horizontal overflow, clipping, or overlap; screenshots captured | `e2e/lab-02/responsive.spec.ts` | ✅ |
+| RESP-02 | AC-35 | My Tickets at three viewports | Desktop table, mobile cards; controls reachable; screenshots captured | `e2e/lab-02/responsive.spec.ts` | ✅ |
+| RESP-03 | AC-35 | Ticket Detail at three viewports | Attachment names readable; no overflow; screenshots captured | `e2e/lab-02/responsive.spec.ts` | ✅ |
+| E2E-01 | AC-01, AC-06, AC-15, AC-18 | Full creation journey | Select requester → create ticket with attachment → confirmation shows the official number → ticket found in My Tickets | `e2e/lab-02/requester-ticket-flow.spec.ts` | ✅ |
+| E2E-02 | AC-19, AC-28 | Requester isolation journey | Switch requester; the first requester's tickets are gone; direct navigation to their ticket is refused | `e2e/lab-02/requester-isolation.spec.ts` | ✅ |
+| E2E-03 | AC-29, AC-31, AC-32, AC-33 | Attachment lifecycle journey | Add, download, soft-remove with reason; removed entry retains metadata with no download | `e2e/lab-02/attachment-lifecycle.spec.ts` | ✅ |
 
 **Issue #23 candidate verification (2 September 2026):** The complete Playwright run on `feature/12-e2e-and-release` passes **6/6**: RESP-01, RESP-02, RESP-03, E2E-01, E2E-02, and E2E-03. The raw output is `_private/evidence/lab-02/test-output/issue-23-green.txt`; the latest clean-database rerun is summarized in `_private/evidence/lab-02/test-output/issue-23-clean-run.txt`. The initial red capture is `_private/evidence/lab-02/test-output/issue-23-red.txt`; its two failures were corrected test selectors (a duplicate accessible `My Tickets` text and a summary nested with the attachment count), not product changes. The nine reproducible viewport captures are under `artifacts/lab-02/screenshots/`. Each test now cleans its registered Ticket and attachment files through the dedicated E2E teardown. These are candidate results; the `Final` column and §6 final-results table remain pending the release run from `main`.
 
