@@ -17,7 +17,14 @@ This file is appended to as each Pull Request closes, not reconstructed at the e
 | [#24](https://github.com/Palapluem/toktickit_cpe334/pull/24) | [#16](https://github.com/Palapluem/toktickit_cpe334/issues/16) | Sprint specification and test plan | Approved | N0TAW00D |
 | [#26](https://github.com/Palapluem/toktickit_cpe334/pull/26) | [#25](https://github.com/Palapluem/toktickit_cpe334/issues/25) | Lecture 4 contracts, Definition of Done | Approved | N0TAW00D |
 | [#27](https://github.com/Palapluem/toktickit_cpe334/pull/27) | [#18](https://github.com/Palapluem/toktickit_cpe334/issues/18) | Prisma schema, UUID migration, reference data | Commented → changes made → merged | N0TAW00D |
-| [#28](https://github.com/Palapluem/toktickit_cpe334/pull/28) | [#19](https://github.com/Palapluem/toktickit_cpe334/issues/19) | Zen Green UI foundation and shell | Commented → changes made → open | — |
+| [#28](https://github.com/Palapluem/toktickit_cpe334/pull/28) | [#19](https://github.com/Palapluem/toktickit_cpe334/issues/19) | Zen Green UI foundation and shell | Commented → changes made → merged | N0TAW00D |
+| [#30](https://github.com/Palapluem/toktickit_cpe334/pull/30) | [#29](https://github.com/Palapluem/toktickit_cpe334/issues/29) | Peer review log | Commented → correction made → merged | N0TAW00D |
+| [#31](https://github.com/Palapluem/toktickit_cpe334/pull/31) | [#17](https://github.com/Palapluem/toktickit_cpe334/issues/17) | Development Requester context | Commented → response/fix → merged | N0TAW00D |
+| [#32](https://github.com/Palapluem/toktickit_cpe334/pull/32) | [#20](https://github.com/Palapluem/toktickit_cpe334/issues/20) | Ticket creation | Commented → responses/fixes → merged | N0TAW00D |
+| [#33](https://github.com/Palapluem/toktickit_cpe334/pull/33) | [#21](https://github.com/Palapluem/toktickit_cpe334/issues/21) | My Tickets listing | Commented → responses/fixes → merged | N0TAW00D |
+| [#34](https://github.com/Palapluem/toktickit_cpe334/pull/34) | [#21](https://github.com/Palapluem/toktickit_cpe334/issues/21) | My Tickets visual regressions | Commented → response/fix → merged | N0TAW00D |
+| [#35](https://github.com/Palapluem/toktickit_cpe334/pull/35) | [#22](https://github.com/Palapluem/toktickit_cpe334/issues/22) | Ticket Detail attachment lifecycle | Commented → accepted → merged | N0TAW00D |
+| [#36](https://github.com/Palapluem/toktickit_cpe334/pull/36) | [#20](https://github.com/Palapluem/toktickit_cpe334/issues/20) | Create Ticket form-control alignment follow-up | Open; review pending | — |
 
 ---
 
@@ -117,6 +124,115 @@ A merge conflict with `lab2-staging` was also resolved (`48abd32`). Both branche
 
 ---
 
+## PR #30 — Peer review log
+
+**Issue:** #29 · **Branch:** `docs/9-reviewer-log` → `lab2-staging` · **Merged:** 31 August 2026 at `a7f96ce`
+
+### Comment received
+
+> **N0TAW00D:** "all was great, but pls fix my name."
+
+### Response and result
+
+The reviewer identity in the document was corrected, and the revised commit was merged by `N0TAW00D`. No product code changed.
+
+---
+
+## PR #31 — Development Requester context
+
+**Issue:** #17 · **Branch:** `feature/6-requester-context` → `lab2-staging` · **Merged:** 31 August 2026 at `acb72ae`
+
+### Comment received and response
+
+> **N0TAW00D, on `server/src/http/errors.ts`:** "I would like to suggest the other error handling pattern following the default from [express](https://expressjs.com/en/guide/error-handling/#the-default-error-handler). If it's work for u or easier for implementation."
+
+> **Response:** "Thanks for the suggestion Natthawat! I followed Express’s error-middleware pattern while keeping our safe JSON envelope and `correlationId` required by `api-spec.md §1`, since the default handler can expose stack/HTML."
+
+The shared middleware was adjusted to follow Express's error-handler shape without exposing stack traces or changing the API error envelope. The response was posted in the same inline thread before the reviewer merged the PR.
+
+---
+
+## PR #32 — Ticket creation
+
+**Issue:** #20 · **Branch:** `feature/9-ticket-creation` → `lab2-staging` · **Merged:** 1 September 2026 at `57cca96`
+
+### Comments received and responses
+
+| Location | Reviewer comment | Response / resulting change |
+|---|---|---|
+| `client/src/screens/CreateTicket.tsx` | "pls check the ui constraints such as button blocking (disable) during submission." | `Cancel` is disabled while submission is in flight, and UI coverage was added for that state. |
+| `server/src/tickets/createTicket.ts` | "concern this error return by to many layer of error handling." | `TicketCreationError` now flows through the shared Express error middleware instead of being translated locally in the route. |
+| `server/src/app.ts` | "Im not familiar to memoryStorage, should it going to diskStorage?" | `memoryStorage` was kept intentionally: TC-022 requires validating all files before storage or Ticket creation; after commit, the storage adapter writes files and cleans up orphan files if metadata persistence fails. |
+
+All three comments received a response and the changes were pushed before the reviewer merged the PR. The final implementation and review follow-up are recorded in `tests.md` and the private evidence index.
+
+---
+
+## PR #33 — My Tickets listing
+
+**Issue:** #21 · **Branch:** `feature/10-my-tickets` → `lab2-staging` · **Merged:** 1 September 2026 at `97ac295`
+
+### Comments received and responses
+
+| Location | Reviewer comment | Response / resulting change |
+|---|---|---|
+| `client/src/screens/MyTickets.tsx` | "I think the search box is going to break once we hit a real backend. There's no debounce, so every keystroke fires a refetch." | A 300 ms debounce was added to the search input and UI coverage was added. |
+| `server/src/tickets/listTickets.ts` | "validateReferenceFilters does findUnique({ where: { id } }) with no isActive check, but GET /api/categories and GET /api/related-systems only return active rows." | Category and Related System filters now validate against active reference rows, with API coverage for inactive references. |
+
+Both comments were answered in their inline threads and the fixes were included before merge.
+
+---
+
+## PR #34 — My Tickets visual regressions
+
+**Issue:** #21 · **Branch:** `fix/my-tickets-visual-regressions` → `lab2-staging` · **Merged:** 1 September 2026 at `3734b5a`
+
+### Comment received and response
+
+> **N0TAW00D:** "All great just beware using overflow."
+
+> **Response:** "Thanks! I checked it—the overflow is scoped to the table container, so it doesn’t cause page-level horizontal overflow. I’ll keep it this way."
+
+The tablet table remains reachable through its own scroll container while page-level overflow stays absent. The reviewer merged the follow-up after the response.
+
+---
+
+## PR #35 — Ticket Detail attachment lifecycle
+
+**Issue:** #22 · **Branch:** `feature/11-ticket-detail-attachments` → `lab2-staging` · **Merged:** 2 September 2026 at `087379a`
+
+### Comment received
+
+> **N0TAW00D:** "You are in control."
+
+No changes were requested. The reviewer merged the PR after the targeted/full test and browser evidence was available. Issue #22 was closed by hand and its card moved to Done afterwards.
+
+---
+
+## PR #36 — Create Ticket form-control alignment follow-up
+
+**Issue:** #20 · **Branch:** `fix/20-ticket-form-alignment` → `lab2-staging` · **Open as of 2 September 2026**
+
+This follow-up keeps the shared button text, file chooser, description, and invalid-attachment row aligned. It is intentionally separate from merged PR #32, has no reviewer comment yet, and must not be merged by the author. Update this section after the peer review and merge.
+
+---
+
+## PR #37 — E2E, responsive evidence, and release integration
+
+**Issue:** #23 · **Branch:** `feature/12-e2e-and-release` → `lab2-staging` · **Open as of 2 September 2026**
+
+### Comment received
+
+> **N0TAW00D:** The suite is solid and green, with seven non-blocking suggestions about the E2E server launcher, database URL parsing and fallback documentation, config-load behaviour, cleanup cost, sequence-counter wording, and Vite port handling.
+
+### Disposition
+
+The follow-up keeps per-test cleanup because TCS-03 requires rows to be removed after each test, but documents that `TicketNumberSequence` is intentionally retained for uniqueness. It changes the API E2E server to a non-watch command, adds Vite `--strictPort`, makes the database URL lookup optional during config inspection, uses only the documented `.env.test` fallback, and documents percent-encoding for reserved PostgreSQL URI credential characters. `reuseExistingServer: false` remains deliberate so the suite cannot attach to a server using a different database.
+
+Follow-up commit `f7fb8ce` was pushed with these dispositions. The author has not posted a GitHub reply through the agent; the reviewer must recheck the updated PR before approval/merge.
+
+---
+
 ## What the review process caught
 
 Recorded because the value of peer review is easier to argue from evidence than from principle.
@@ -125,5 +241,10 @@ Recorded because the value of peer review is easier to argue from evidence than 
 |---|---|---|
 | #27 | Reviewer asking whether the Issue was fully closed | An acceptance criterion would have shipped unimplemented, and two Issues would have double-counted the same work |
 | #28 | Reviewer asking where the responsive CSS was | A keyboard user would have lost focus on every menu dismissal, and the responsive layer would have reached the final demo untested |
+| #31 | Reviewer suggesting Express's default error-handler pattern | The response preserved the safe JSON envelope and correlation id while aligning the middleware with the framework's error flow |
+| #32 | Reviewer questioning submission blocking, layered errors, and `memoryStorage` | The UI gained the missing disabled-state coverage; error translation was centralised; attachment validation remained before storage for TC-022 |
+| #33 | Reviewer questioning search requests and inactive reference validation | The search gained debounce and server-side filters stopped accepting inactive references |
+| #34 | Reviewer warning about overflow | Tablet table scrolling stayed inside its container and page-level overflow remained absent |
+| #37 | Reviewer checking the E2E/release harness | The test runner now avoids a hot-reload API process, fails fast on a busy Vite port, and documents the database/cleanup boundaries without weakening per-test isolation |
 
-Both were questions rather than corrections. Neither reviewer comment asserted that something was wrong — each asked the author to show where something was, and the answer turned out not to exist.
+The first two were questions rather than corrections. Neither reviewer comment asserted that something was wrong — each asked the author to show where something was, and the answer turned out not to exist. Later review threads are recorded above with their concrete fixes and responses.
