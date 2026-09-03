@@ -19,7 +19,7 @@ This file is appended to as each Pull Request closes, not reconstructed at the e
 | [#36](https://github.com/Palapluem/toktickit_cpe334/pull/36) | [#20](https://github.com/Palapluem/toktickit_cpe334/issues/20) | Merged at `d3c5a25`; Issue CLOSED; card Done | N0TAW00D |
 | [#37](https://github.com/Palapluem/toktickit_cpe334/pull/37) | [#23](https://github.com/Palapluem/toktickit_cpe334/issues/23) | Approved and merged at `3458178`; staging audit passed | N0TAW00D |
 | [#38](https://github.com/Palapluem/toktickit_cpe334/pull/38) | — | Merged at `bf994b6`; post-merge review log synchronized | N0TAW00D |
-| [#39](https://github.com/Palapluem/toktickit_cpe334/pull/39) | — | Open; release review received; follow-up fixes in progress | — |
+| [#39](https://github.com/Palapluem/toktickit_cpe334/pull/39) | — | Open; release review received; follow-up [#40](https://github.com/Palapluem/toktickit_cpe334/pull/40) open | — |
 
 The original table below is retained as the historical review ledger. The current merge outcomes and post-merge evidence are recorded above and in the detailed sections.
 
@@ -36,7 +36,8 @@ The original table below is retained as the historical review ledger. The curren
 | [#34](https://github.com/Palapluem/toktickit_cpe334/pull/34) | [#21](https://github.com/Palapluem/toktickit_cpe334/issues/21) | My Tickets visual regressions | Commented → response/fix → merged | N0TAW00D |
 | [#35](https://github.com/Palapluem/toktickit_cpe334/pull/35) | [#22](https://github.com/Palapluem/toktickit_cpe334/issues/22) | Ticket Detail attachment lifecycle | Commented → accepted → merged | N0TAW00D |
 | [#38](https://github.com/Palapluem/toktickit_cpe334/pull/38) | — | Post-merge review log synchronization | Merged | N0TAW00D |
-| [#39](https://github.com/Palapluem/toktickit_cpe334/pull/39) | — | Lab 2 release | Review feedback received; follow-up in progress | — |
+| [#39](https://github.com/Palapluem/toktickit_cpe334/pull/39) | — | Lab 2 release | Review feedback received; follow-up #40 open | — |
+| [#40](https://github.com/Palapluem/toktickit_cpe334/pull/40) | — | PR #39 release review follow-up | Open; review requested | — |
 
 ---
 
@@ -266,6 +267,12 @@ On 4 September 2026, [N0TAW00D's release review](https://github.com/Palapluem/to
 ### Follow-up disposition
 
 Branch `fix/pr39-review-findings` adds regression coverage and fixes the confirmed contract issues, including atomic active-attachment limits, exact response mapping, UUID route validation, requester-selection shell/callouts, accessible sort/required/dialog states, and the release documentation. The final `tests.md` §6 table remains intentionally reserved for the post-merge verification run from `main` required by `specification.md` §11.25.
+
+## PR #40 — PR #39 release review follow-up
+
+**Branch:** `fix/pr39-review-findings` → `lab2-staging` · **Open; review requested:** 4 September 2026
+
+This follow-up contains the test-first fixes for the release review. Verification on the branch is server **114/114**, client **110/110**, Playwright **6/6**, and both builds pass; client lint exits successfully with two existing Fast Refresh warnings. The reviewer remains responsible for reviewing and merging #40, after which #39 can be rechecked and merged.
 
 ---
 
