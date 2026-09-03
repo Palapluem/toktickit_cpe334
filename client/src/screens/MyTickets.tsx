@@ -35,6 +35,8 @@ type SortField =
 type SortDirection = 'asc' | 'desc'
 type SortValue = `${SortField}:${SortDirection}`
 
+type AriaSort = 'ascending' | 'descending' | 'none'
+
 type FilterState = {
   search: string
   categoryId: string
@@ -99,7 +101,7 @@ function formatDate(value: string): string {
 
 function CreateTicketLink() {
   return (
-    <Link className="zen-button zen-button--primary my-tickets__link-button" to="/tickets/new">
+    <Link className="zen-button zen-button--secondary my-tickets__link-button" to="/tickets/new">
       Create Ticket
     </Link>
   )
@@ -131,6 +133,11 @@ function SortButton({
       <span aria-hidden="true"> {active ? (direction === 'ascending' ? '↑' : '↓') : '↕'}</span>
     </Button>
   )
+}
+
+function ariaSortFor(field: SortField, sort: SortValue): AriaSort {
+  if (!sort.startsWith(`${field}:`)) return 'none'
+  return sort.endsWith(':asc') ? 'ascending' : 'descending'
 }
 
 function AttachmentCount({ count }: { count: number }) {
@@ -468,20 +475,20 @@ export function MyTickets() {
               <table className="my-tickets__table">
                 <thead>
                   <tr>
-                    <th scope="col">
+                    <th scope="col" aria-sort={ariaSortFor('ticketNo', filters.sort)}>
                       <SortButton field="ticketNo" label="Ticket No." sort={filters.sort} onSort={sortBy} />
                     </th>
-                    <th scope="col">
+                    <th scope="col" aria-sort={ariaSortFor('createdAt', filters.sort)}>
                       <SortButton field="createdAt" label="Created Date" sort={filters.sort} onSort={sortBy} />
                     </th>
-                    <th scope="col">
+                    <th scope="col" aria-sort={ariaSortFor('summary', filters.sort)}>
                       <SortButton field="summary" label="Summary" sort={filters.sort} onSort={sortBy} />
                     </th>
                     <th scope="col">Category</th>
                     <th scope="col">Requested Priority</th>
                     <th scope="col">IT Priority</th>
                     <th scope="col">Current Status</th>
-                    <th scope="col">
+                    <th scope="col" aria-sort={ariaSortFor('updatedAt', filters.sort)}>
                       <SortButton field="updatedAt" label="Last Updated" sort={filters.sort} onSort={sortBy} />
                     </th>
                   </tr>
@@ -516,7 +523,7 @@ export function MyTickets() {
               {Array.from({ length: response.pagination.totalPages }, (_, index) => index + 1).map((page) => (
                 <Button
                   key={page}
-                  variant={page === response.pagination.page ? 'primary' : 'tertiary'}
+                  variant={page === response.pagination.page ? 'secondary' : 'tertiary'}
                   aria-current={page === response.pagination.page ? 'page' : undefined}
                   onClick={() =>
                     setFilters((current) => ({

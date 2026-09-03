@@ -6,9 +6,9 @@ import {
   fetchCategories,
   fetchRelatedSystems,
   type Category,
+  type CreatedTicket,
   type Priority,
   type RelatedSystem,
-  type Ticket,
 } from '../api.js'
 import { Button } from '../components/Button.js'
 import { FormField } from '../components/FormField.js'
@@ -117,7 +117,7 @@ export function CreateTicket() {
   const [attachmentIssues, setAttachmentIssues] = useState<AttachmentIssue[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [apiError, setApiError] = useState('')
-  const [createdTicket, setCreatedTicket] = useState<Ticket | null>(null)
+  const [createdTicket, setCreatedTicket] = useState<CreatedTicket | null>(null)
 
   const loadReferences = useCallback(() => {
     if (!requester) return

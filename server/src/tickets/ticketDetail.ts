@@ -78,6 +78,18 @@ function mapAttachment(attachment: AttachmentRecord): AttachmentResponse {
   }
 }
 
+function mapTicketDetailAttachment(attachment: AttachmentRecord) {
+  return {
+    id: attachment.id,
+    originalFilename: attachment.originalFilename,
+    mimeType: attachment.mimeType,
+    sizeBytes: attachment.sizeBytes,
+    createdAt: attachment.createdAt,
+    removedAt: attachment.removedAt,
+    removedReason: attachment.removedReason,
+  }
+}
+
 function mapTicket(ticket: TicketDetailRecord) {
   return {
     id: ticket.id,
@@ -93,8 +105,7 @@ function mapTicket(ticket: TicketDetailRecord) {
     category: ticket.category,
     relatedSystem: ticket.relatedSystem,
     owner: null,
-    attachments: ticket.attachments.map(mapAttachment),
-    attachmentFailures: [],
+    attachments: ticket.attachments.map(mapTicketDetailAttachment),
   }
 }
 
@@ -152,7 +163,6 @@ export async function addTicketAttachment(
   options: TicketDetailOptions = {},
 ) {
   const db = options.db ?? prisma
-  await findOwnedTicket(ticketId, requesterId, db)
 
   if (!file) {
     throw new ApiError(
@@ -173,43 +183,55 @@ export async function addTicketAttachment(
     )
   }
 
-  const activeCount = await db.attachment.count({
-    where: { ticketId, removedAt: null },
-  })
-  if (activeCount >= MAX_ATTACHMENTS) {
-    throw new ApiError(
-      409,
-      'ATTACHMENT_LIMIT_REACHED',
-      `A Ticket can have at most ${MAX_ATTACHMENTS} active attachments.`,
-    )
-  }
-
   const storage = options.storage ?? localAttachmentStorage
-  const { storedFilename } = await storage.save(file)
-  const createdAt = (options.now ?? (() => new Date()))()
+  return db.$transaction(async (transaction) => {
+    const ownedTicket = await transaction.$queryRaw<{ id: string }[]>(
+      Prisma.sql`
+        SELECT "id"
+        FROM "Ticket"
+        WHERE "id" = ${ticketId} AND "requesterId" = ${requesterId}
+        FOR UPDATE
+      `,
+    )
+    if (!ownedTicket[0]) throw ticketNotFound()
 
-  try {
-    const attachment = await db.attachment.create({
-      data: {
-        ticketId,
-        originalFilename: file.originalFilename,
-        storedFilename,
-        mimeType: file.mimeType,
-        sizeBytes: file.sizeBytes,
-        uploadedById: requesterId,
-        createdAt,
-      },
-      include: ATTACHMENT_INCLUDE,
+    const activeCount = await transaction.attachment.count({
+      where: { ticketId, removedAt: null },
     })
-    return {
-      data: mapAttachment(attachment),
-      activeCount: activeCount + 1,
-      activeLimit: MAX_ATTACHMENTS,
+    if (activeCount >= MAX_ATTACHMENTS) {
+      throw new ApiError(
+        409,
+        'ATTACHMENT_LIMIT_REACHED',
+        `A Ticket can have at most ${MAX_ATTACHMENTS} active attachments.`,
+      )
     }
-  } catch (error) {
-    await storage.remove(storedFilename).catch(() => undefined)
-    throw error
-  }
+
+    const { storedFilename } = await storage.save(file)
+    const createdAt = (options.now ?? (() => new Date()))()
+
+    try {
+      const attachment = await transaction.attachment.create({
+        data: {
+          ticketId,
+          originalFilename: file.originalFilename,
+          storedFilename,
+          mimeType: file.mimeType,
+          sizeBytes: file.sizeBytes,
+          uploadedById: requesterId,
+          createdAt,
+        },
+        include: ATTACHMENT_INCLUDE,
+      })
+      return {
+        data: mapAttachment(attachment),
+        activeCount: activeCount + 1,
+        activeLimit: MAX_ATTACHMENTS,
+      }
+    } catch (error) {
+      await storage.remove(storedFilename).catch(() => undefined)
+      throw error
+    }
+  })
 }
 
 export async function removeTicketAttachment(
@@ -231,16 +253,6 @@ export async function removeTicketAttachment(
   })
   if (!attachment) throw attachmentNotFound()
 
-  const trimmedReason = typeof reason === 'string' ? reason.trim() : ''
-  if (trimmedReason.length < 3 || trimmedReason.length > 200) {
-    throw new ApiError(
-      400,
-      'VALIDATION_FAILED',
-      'A removal reason is required and must be 3–200 characters.',
-      [{ field: 'reason', message: 'Enter a reason between 3 and 200 characters.' }],
-    )
-  }
-
   if (attachment.removedAt) {
     const activeCount = await db.attachment.count({
       where: { ticketId: attachment.ticket.id, removedAt: null },
@@ -250,6 +262,16 @@ export async function removeTicketAttachment(
       activeCount,
       activeLimit: MAX_ATTACHMENTS,
     }
+  }
+
+  const trimmedReason = typeof reason === 'string' ? reason.trim() : ''
+  if (trimmedReason.length < 3 || trimmedReason.length > 200) {
+    throw new ApiError(
+      400,
+      'VALIDATION_FAILED',
+      'A removal reason is required and must be 3–200 characters.',
+      [{ field: 'reason', message: 'Enter a reason between 3 and 200 characters.' }],
+    )
   }
 
   const removedAt = (options.now ?? (() => new Date()))()

@@ -1,6 +1,5 @@
-// Component state gallery — the Part 9 evidence in one page (Issue #19).
-// Every component in every state ui-spec §3 requires, so the visual checklist
-// can be walked without waiting for the screens that use them.
+// Component state gallery — Part 9 evidence in one page (Issue #19).
+// It covers every state required by ui-spec §3 for the visual checklist.
 import { useState } from 'react'
 import { Button } from '../components/Button.js'
 import { FormField } from '../components/FormField.js'

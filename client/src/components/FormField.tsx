@@ -40,6 +40,7 @@ export function FormField({
         id,
         className: controlClass,
         readOnly: readOnly || undefined,
+        'aria-required': required ? 'true' : undefined,
         'aria-invalid': error ? 'true' : undefined,
         'aria-describedby': describedBy || undefined,
       })

@@ -2,7 +2,7 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import cors from 'cors'
 import multer from 'multer'
 import prisma from './prisma.js'
-import { errorHandler, sendError } from './http/errors.js'
+import { ApiError, errorHandler, sendError } from './http/errors.js'
 import { requireRequesterContext } from './middleware/requesterContext.js'
 import {
   createTicket,
@@ -13,6 +13,7 @@ import {
   MAX_ATTACHMENTS,
 } from './tickets/attachmentRules.js'
 import { listTickets } from './tickets/listTickets.js'
+import { UUID } from './tickets/validation.js'
 import {
   addTicketAttachment,
   downloadTicketAttachment,
@@ -147,14 +148,43 @@ function toAttachmentFile(file: Express.Multer.File | undefined) {
     : undefined
 }
 
+function toAttachmentFiles(files: Express.Multer.File[] | undefined) {
+  return (files ?? []).map((file) => toAttachmentFile(file)!)
+}
+
 function sanitizeDownloadFilename(filename: string): string {
   const basename = filename.replaceAll('\\', '/').split('/').pop() ?? ''
   const safe = basename.replace(/[\u0000-\u001f\u007f"]/g, '_').trim()
   return safe || 'download'
 }
 
+function contentDisposition(filename: string): string {
+  const safe = sanitizeDownloadFilename(filename)
+  const asciiFallback = safe.replace(/[^\x20-\x7e]/g, '_') || 'download'
+  if (asciiFallback === safe) return `attachment; filename="${asciiFallback}"`
+
+  const encoded = encodeURIComponent(safe).replace(/[!'()*]/g, (character) =>
+    `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
+  )
+  return `attachment; filename="${asciiFallback}"; filename*=UTF-8''${encoded}`
+}
+
 function routeParameter(value: string | string[] | undefined): string {
   return Array.isArray(value) ? value[0] ?? '' : value ?? ''
+}
+
+function ticketParameter(value: string | string[] | undefined): string {
+  const id = routeParameter(value)
+  if (!UUID.test(id)) throw new ApiError(404, 'TICKET_NOT_FOUND', 'Ticket not found.')
+  return id
+}
+
+function attachmentParameter(value: string | string[] | undefined): string {
+  const id = routeParameter(value)
+  if (!UUID.test(id)) {
+    throw new ApiError(404, 'ATTACHMENT_NOT_FOUND', 'Attachment not found.')
+  }
+  return id
 }
 
 export function createApp(options: CreateTicketOptions = {}) {
@@ -219,21 +249,23 @@ export function createApp(options: CreateTicketOptions = {}) {
     parseAttachments,
     // Express 5 forwards rejected async handlers to the final error middleware.
     async (req, res) => {
-      const files = Array.isArray(req.files)
-        ? req.files.map((file) => ({
-            originalFilename: file.originalname,
-            mimeType: file.mimetype,
-            sizeBytes: file.size,
-            buffer: file.buffer,
-          }))
-        : []
+      const files = Array.isArray(req.files) ? toAttachmentFiles(req.files) : []
       const ticket = await createTicket(
         { requesterId: req.requester!.id, body: req.body, attachments: files },
         options,
       )
       const stored = await (options.db ?? prisma).ticket.findUniqueOrThrow({
         where: { id: ticket.id },
-        include: {
+        select: {
+          id: true,
+          ticketNo: true,
+          createdAt: true,
+          updatedAt: true,
+          summary: true,
+          description: true,
+          requestedPriority: true,
+          itPriority: true,
+          status: true,
           requester: { select: { id: true, displayName: true } },
           category: { select: { id: true, name: true } },
           relatedSystem: { select: { id: true, name: true } },
@@ -252,8 +284,20 @@ export function createApp(options: CreateTicketOptions = {}) {
       })
       res.status(201).json({
         data: {
-          ...stored,
+          id: stored.id,
+          ticketNo: stored.ticketNo,
+          createdAt: stored.createdAt,
+          updatedAt: stored.updatedAt,
+          summary: stored.summary,
+          description: stored.description,
+          requestedPriority: stored.requestedPriority,
+          itPriority: stored.itPriority,
+          status: stored.status,
+          requester: stored.requester,
+          category: stored.category,
+          relatedSystem: stored.relatedSystem,
           owner: null,
+          attachments: stored.attachments,
           attachmentFailures: ticket.attachmentFailures,
         },
       })
@@ -262,7 +306,7 @@ export function createApp(options: CreateTicketOptions = {}) {
 
   app.get('/api/tickets/:id', requireRequesterContext, async (req, res) => {
     const data = await getTicketDetail(
-      routeParameter(req.params.id),
+      ticketParameter(req.params.id),
       req.requester!.id,
       options.db ?? prisma,
     )
@@ -274,7 +318,7 @@ export function createApp(options: CreateTicketOptions = {}) {
     requireRequesterContext,
     async (req, res) => {
       const data = await listTicketAttachments(
-        routeParameter(req.params.id),
+        ticketParameter(req.params.id),
         req.requester!.id,
         options.db ?? prisma,
       )
@@ -288,7 +332,7 @@ export function createApp(options: CreateTicketOptions = {}) {
     parseSingleAttachment,
     async (req, res) => {
       const data = await addTicketAttachment(
-        routeParameter(req.params.id),
+        ticketParameter(req.params.id),
         req.requester!.id,
         toAttachmentFile(req.file),
         options,
@@ -302,15 +346,12 @@ export function createApp(options: CreateTicketOptions = {}) {
     requireRequesterContext,
     async (req, res, next) => {
       const { attachment, stream } = await downloadTicketAttachment(
-        routeParameter(req.params.id),
+        attachmentParameter(req.params.id),
         req.requester!.id,
         options,
       )
       res.setHeader('Content-Type', attachment.mimeType)
-      res.setHeader(
-        'Content-Disposition',
-        `attachment; filename="${sanitizeDownloadFilename(attachment.originalFilename)}"`,
-      )
+      res.setHeader('Content-Disposition', contentDisposition(attachment.originalFilename))
       res.setHeader('Content-Length', String(attachment.sizeBytes))
       res.setHeader('X-Content-Type-Options', 'nosniff')
       stream.once('error', next)
@@ -323,7 +364,7 @@ export function createApp(options: CreateTicketOptions = {}) {
     requireRequesterContext,
     async (req, res) => {
       const data = await removeTicketAttachment(
-        routeParameter(req.params.id),
+        attachmentParameter(req.params.id),
         req.requester!.id,
         req.body?.reason,
         options,

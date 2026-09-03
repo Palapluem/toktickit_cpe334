@@ -57,6 +57,7 @@ export function AttachmentSection({
   const [rows, setRows] = useState(attachments)
   const [currentActiveCount, setCurrentActiveCount] = useState(activeCount)
   const [uploading, setUploading] = useState(false)
+  const [uploadingFilename, setUploadingFilename] = useState<string | null>(null)
   const [invalidUpload, setInvalidUpload] = useState<InvalidUpload | null>(null)
   const [downloadError, setDownloadError] = useState('')
   const [removing, setRemoving] = useState<TicketAttachment | null>(null)
@@ -125,6 +126,7 @@ export function AttachmentSection({
     if (!file) return
 
     setInvalidUpload(null)
+    setUploadingFilename(file.name)
     setUploading(true)
     try {
       const attachment = await onAdd(file)
@@ -140,6 +142,7 @@ export function AttachmentSection({
       })
     } finally {
       setUploading(false)
+      setUploadingFilename(null)
     }
   }
 
@@ -222,8 +225,27 @@ export function AttachmentSection({
         </div>
       ) : null}
 
-      {rows.length > 0 ? (
+      {rows.length > 0 || uploadingFilename ? (
         <ul className="attachment-section__list">
+          {uploadingFilename ? (
+            <li className="attachment-section__row attachment-section__row--uploading">
+              <div className="attachment-section__identity">
+                <span className="attachment-section__type" aria-hidden="true">
+                  FILE
+                </span>
+                <div>
+                  <strong className="attachment-section__filename">
+                    {uploadingFilename}
+                  </strong>
+                  <p className="attachment-section__metadata">Uploading…</p>
+                </div>
+              </div>
+              <progress
+                aria-label={`Uploading ${uploadingFilename}`}
+                className="attachment-section__progress"
+              />
+            </li>
+          ) : null}
           {rows.map((attachment) => {
             const removed = attachment.removedAt !== null
             return (
@@ -287,31 +309,35 @@ export function AttachmentSection({
       )}
 
       {removing ? (
-        <div className="attachment-section__dialog" role="dialog" aria-modal="true" aria-labelledby="remove-attachment-heading" ref={dialogRef}>
-          <h3 id="remove-attachment-heading">Remove attachment?</h3>
-          <p>{removing.originalFilename}</p>
-          <label className="zen-field__label" htmlFor="removal-reason">Removal reason</label>
-          <input
-            id="removal-reason"
-            className="zen-field__control"
-            value={reason}
-            onChange={(event) => setReason(event.target.value)}
-            maxLength={200}
-          />
-          <p className="zen-field__hint">Enter 3–200 characters.</p>
-          <div className="attachment-section__dialog-actions">
-            <Button variant="secondary" onClick={closeDialog} disabled={removingInProgress}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmRemoval}
-              disabled={reason.trim().length < 3}
-              busy={removingInProgress}
-              busyLabel="Removing…"
-            >
-              Remove
-            </Button>
+        <div className="attachment-section__dialog-layer">
+          <div className="attachment-section__dialog-backdrop" aria-hidden="true" />
+          <div className="attachment-section__dialog" role="dialog" aria-modal="true" aria-labelledby="remove-attachment-heading" ref={dialogRef}>
+            <h3 id="remove-attachment-heading">Remove attachment?</h3>
+            <p>{removing.originalFilename}</p>
+            <label className="zen-field__label" htmlFor="removal-reason">Removal reason</label>
+            <input
+              id="removal-reason"
+              className="zen-field__control"
+              aria-required="true"
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              maxLength={200}
+            />
+            <p className="zen-field__hint">Enter 3–200 characters.</p>
+            <div className="attachment-section__dialog-actions">
+              <Button variant="secondary" onClick={closeDialog} disabled={removingInProgress}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={confirmRemoval}
+                disabled={reason.trim().length < 3}
+                busy={removingInProgress}
+                busyLabel="Removing…"
+              >
+                Remove
+              </Button>
+            </div>
           </div>
         </div>
       ) : null}

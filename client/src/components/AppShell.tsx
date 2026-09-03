@@ -9,6 +9,7 @@ export type AppShellProps = {
   requesterName?: string
   onChangeRequester?: () => void
   breadcrumb?: string[]
+  showNavigation?: boolean
   children?: ReactNode
 }
 
@@ -21,6 +22,7 @@ export function AppShell({
   requesterName,
   onChangeRequester,
   breadcrumb,
+  showNavigation = true,
   children,
 }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -57,35 +59,39 @@ export function AppShell({
           TokTickIT
         </Link>
 
-        <button
-          ref={toggleRef}
-          type="button"
-          className="zen-button zen-button--tertiary zen-shell__header-action d-md-none"
-          aria-expanded={menuOpen}
-          aria-controls="zen-shell-nav"
-          onClick={() => setMenuOpen((open) => !open)}
-        >
-          Menu
-        </button>
+        {showNavigation ? (
+          <button
+            ref={toggleRef}
+            type="button"
+            className="zen-button zen-button--tertiary zen-shell__header-action d-md-none"
+            aria-expanded={menuOpen}
+            aria-controls="zen-shell-nav"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            Menu
+          </button>
+        ) : null}
 
-        <nav
-          id="zen-shell-nav"
-          aria-label="Main"
-          className={`zen-shell__nav d-md-flex gap-4 ${menuOpen ? 'd-flex' : 'd-none'}`}
-        >
-          {NAV.map(({ to, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end
-              className={({ isActive }) =>
-                `zen-shell__nav-link${isActive ? ' zen-shell__nav-link--active' : ''}`
-              }
-            >
-              {label}
-            </NavLink>
-          ))}
-        </nav>
+        {showNavigation ? (
+          <nav
+            id="zen-shell-nav"
+            aria-label="Main"
+            className={`zen-shell__nav d-md-flex gap-4 ${menuOpen ? 'd-flex' : 'd-none'}`}
+          >
+            {NAV.map(({ to, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end
+                className={({ isActive }) =>
+                  `zen-shell__nav-link${isActive ? ' zen-shell__nav-link--active' : ''}`
+                }
+              >
+                {label}
+              </NavLink>
+            ))}
+          </nav>
+        ) : null}
 
         {name ? (
           <div className="ms-auto d-flex align-items-center gap-2">

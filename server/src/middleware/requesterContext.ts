@@ -1,7 +1,5 @@
-// Validates X-Requester-Id once, before any requester-scoped handler (§11.21).
-// Handlers read req.requester, never the raw header, so an unvalidated value
-// cannot be trusted by accident. Lab 3 deletes this file and nothing downstream
-// changes (BR-42).
+// Validate X-Requester-Id once before requester-scoped handlers (§11.21).
+// Handlers read req.requester; Lab 3 can replace this source without downstream changes (BR-42).
 import type { NextFunction, Request, Response } from 'express'
 import prisma from '../prisma.js'
 import { sendError } from '../http/errors.js'
