@@ -1,7 +1,7 @@
 # Peer Review Log — Lab 2
 
 **Author:** วิศิษฐ์ สุวรรณเนาว์ (Wisit Suwannao), 67070501042 — GitHub [@Palapluem](https://github.com/Palapluem)
-**Reviewer:** ณัฐวัฒน์ พริมศิริกุลนวุฒิ (Natthawat Primsirikunawut) — GitHub [@N0TAW00D](https://github.com/N0TAW00D)
+**Reviewer:** นัธทวัฒน์ ปริมสิริคุณาวุฒิ (Natthawat Primsirikunawut) — GitHub [@N0TAW00D](https://github.com/N0TAW00D)
 **Repository:** [Palapluem/toktickit_cpe334](https://github.com/Palapluem/toktickit_cpe334)
 
 Agreed rule for this sprint: **the reviewer merges, never the author.** An approval that the author then acts on themselves makes the review a formality. Every merge below was performed by the reviewer.
@@ -281,7 +281,7 @@ This follow-up contains the test-first fixes for the release review. Verificatio
 
 On 4 September 2026, N0TAW00D noted that the final `tests.md` §6 table, mobile input/select height, and the AI-use reflection heading still needed attention, while the remaining code observations were minor design notes.
 
-- `tests.md` §6 remains intentionally empty until the final verification run from `main`, as required by `specification.md` §11.25.
+- `tests.md` §6 was intentionally completed only after the final verification run from `main`, as required by `specification.md` §11.25.
 - **Revisited.** On reflection this held for buttons but not for inputs and selects — `ui-spec.md` §11 only ever named buttons for the ≥44px mobile target, which is a gap the spec was silent on rather than a rule that was satisfied. Recorded as `specification.md` §11.26 and fixed: `.zen-field__control` now matches the button's 44px below 768px. Desktop keeps 40px, where a pointer has pixel precision a finger does not.
 - `ai-use.md` now uses the required `My Reflection` heading and retains ten selected prompt rows, within the labsheet's 6–10 range. **Revisited again** after direct feedback that the "Prompt used" cells read as paraphrases rather than the actual prompts: the table keeps its original shape, but each cell that maps to a phase template now holds that template's exact multi-line text (indentation preserved) rather than a summary sentence — the same text as `_private/lab-02/prompts/01-contract-review.md` and its siblings, filled in per Issue.
 - The global Prisma dependency, DOM requester identifier, redundant success announcement attributes, status-badge styling, and strict MIME/extension match remain deferred design observations; none is a release acceptance gap or an approved scope change for this follow-up.
@@ -289,21 +289,26 @@ On 4 September 2026, N0TAW00D noted that the final `tests.md` §6 table, mobile 
 
 ## Final release verification
 
-The released `main` tree at `189335e` was checked again on 4 September 2026. The server suite passed **114/114** across 14 files, the client suite passed **110/110** across 17 files, and the Playwright E2E/responsive suite passed **6/6**. Server and client builds passed; lint exited 0 with the two existing Fast Refresh warnings in `RequesterContext.tsx`. The E2E database teardown removed each test-created Ticket, and the nine canonical responsive screenshots were visually checked against `ui-spec.md` §§11, 13, and 14. Final test details are recorded in `docs/lab-02/tests.md` §6.
+The released product tree at `main` commit `189335e` was checked again on 4
+September 2026. The server suite passed **114/114** across 14 files, the
+client suite passed **110/110** across 17 files, and the Playwright
+E2E/responsive suite passed **6/6**. Server and client builds passed; lint
+exited 0 with the two existing Fast Refresh warnings in `RequesterContext.tsx`.
+The E2E database teardown removed each test-created Ticket, and the nine
+canonical responsive screenshots were visually checked against `ui-spec.md`
+§§11, 13, and 14. The evidence docs and captures are now in `main` at
+`f9faa0b` through PR #41; final test details are recorded in `docs/lab-02/tests.md` §6.
 
 ## PR #41 — Final Lab 2 release evidence
 
 **Branch:** `docs/lab2-final-evidence` → `main` · **Approved and merged:** 4 September 2026 at `f9faa0b`
 
-This documentation/evidence follow-up records the final verification from
-released `main` commit `189335e`, synchronizes the release merge ledger, and
-refreshes the six run-dependent canonical screenshots. The finalization branch
-passed Server **114/114**, Client **110/110**, E2E **6/6**, both builds, and
-lint exit 0 with two existing Fast Refresh warnings. The remaining submission
-artifacts are the authenticated GitHub Kanban/commit-history screenshots and
-the assembled PDF; they are submission-only private artifacts and are not part
-of the graded repository. The reviewer approved and merged this documentation
-follow-up into `main` at `f9faa0b`.
+This documentation/evidence follow-up recorded the final verification from
+the released product tree, synchronized the release merge ledger, and refreshed
+the six run-dependent canonical screenshots. The reviewer approved and merged
+it into `main`. The remaining submission artifacts are the authenticated
+GitHub Kanban/commit-history screenshots and the assembled PDF; they are
+submission-only private artifacts and are not part of the graded repository.
 
 ---
 
