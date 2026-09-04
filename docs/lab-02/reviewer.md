@@ -21,6 +21,7 @@ This file is appended to as each Pull Request closes, not reconstructed at the e
 | [#38](https://github.com/Palapluem/toktickit_cpe334/pull/38) | — | Merged at `bf994b6`; post-merge review log synchronized | N0TAW00D |
 | [#40](https://github.com/Palapluem/toktickit_cpe334/pull/40) | — | Merged at `6f71f06`; release-review fixes accepted | N0TAW00D |
 | [#39](https://github.com/Palapluem/toktickit_cpe334/pull/39) | — | Merged at `189335e`; `main` release | N0TAW00D |
+| [#41](https://github.com/Palapluem/toktickit_cpe334/pull/41) | — | Final release evidence; review requested | — |
 
 The original table below is retained as the historical review ledger. The current merge outcomes and post-merge evidence are recorded above and in the detailed sections.
 
@@ -39,6 +40,7 @@ The original table below is retained as the historical review ledger. The curren
 | [#38](https://github.com/Palapluem/toktickit_cpe334/pull/38) | — | Post-merge review log synchronization | Merged | N0TAW00D |
 | [#40](https://github.com/Palapluem/toktickit_cpe334/pull/40) | — | PR #39 release review follow-up | Commented → fixes made → merged | N0TAW00D |
 | [#39](https://github.com/Palapluem/toktickit_cpe334/pull/39) | — | Lab 2 release | Rechecked after #40 → merged into `main` | N0TAW00D |
+| [#41](https://github.com/Palapluem/toktickit_cpe334/pull/41) | — | Final Lab 2 release evidence | Open; review requested | — |
 
 ---
 
@@ -288,6 +290,19 @@ On 4 September 2026, N0TAW00D noted that the final `tests.md` §6 table, mobile 
 ## Final release verification
 
 The released `main` tree at `189335e` was checked again on 4 September 2026. The server suite passed **114/114** across 14 files, the client suite passed **110/110** across 17 files, and the Playwright E2E/responsive suite passed **6/6**. Server and client builds passed; lint exited 0 with the two existing Fast Refresh warnings in `RequesterContext.tsx`. The E2E database teardown removed each test-created Ticket, and the nine canonical responsive screenshots were visually checked against `ui-spec.md` §§11, 13, and 14. Final test details are recorded in `docs/lab-02/tests.md` §6.
+
+## PR #41 — Final Lab 2 release evidence
+
+**Branch:** `docs/lab2-final-evidence` → `main` · **Open; review requested:** 4 September 2026
+
+This documentation/evidence follow-up records the final verification from
+released `main` commit `189335e`, synchronizes the release merge ledger, and
+refreshes the six run-dependent canonical screenshots. The finalization branch
+passed Server **114/114**, Client **110/110**, E2E **6/6**, both builds, and
+lint exit 0 with two existing Fast Refresh warnings. The remaining submission
+artifacts are the authenticated GitHub Kanban/commit-history screenshots and
+the assembled PDF; these are not committed by this PR until they are captured
+in the user's authenticated browser.
 
 ---
 
