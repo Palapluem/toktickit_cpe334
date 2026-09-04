@@ -17,6 +17,20 @@
 | #7 — Create and seed IT request categories (final review) | N0TAW00D | Approved after clarification | No additional summary comment; the final review state was `APPROVED` on commit `ed36dfde`. | "The command inconsistency and database-seeding clarification were addressed and re-reviewed. The PR was merged into `lab1-staging` as `e35fbf5e`." | https://github.com/Palapluem/toktickit_cpe334/pull/7 |
 | #9 — Display the IT request category list | N0TAW00D | Approved | "These things look great." | (no changes requested — clean approve, merged as-is) | https://github.com/Palapluem/toktickit_cpe334/pull/9 |
 
+## Verified GitHub Merge Metadata
+
+This historical table records the actor and merge commit shown by GitHub. The
+Lab 1 feature PRs were merged by the repository owner after peer review; the
+Lab 2 workflow subsequently adopted the explicit rule that the reviewer merges.
+
+| PR | GitHub state | Merge commit | Merged by |
+|---|---|---|---|
+| [#5](https://github.com/Palapluem/toktickit_cpe334/pull/5) | `MERGED` | `49a000a` | `Palapluem` |
+| [#6](https://github.com/Palapluem/toktickit_cpe334/pull/6) | `MERGED` | `deb2c2c` | `Palapluem` |
+| [#7](https://github.com/Palapluem/toktickit_cpe334/pull/7) | `MERGED` | `e35fbf5` | `Palapluem` |
+| [#9](https://github.com/Palapluem/toktickit_cpe334/pull/9) | `MERGED` | `a03bd78` | `Palapluem` |
+| [#12](https://github.com/Palapluem/toktickit_cpe334/pull/12) | `MERGED` | `d3d2725` | `Palapluem` |
+
 ## My Reviews of Partner Pull Requests
 | Partner PR | My decision | My review comment | Partner response | Evidence link |
 |---|---|---|---|---|
