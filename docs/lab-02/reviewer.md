@@ -19,7 +19,9 @@ This file is appended to as each Pull Request closes, not reconstructed at the e
 | [#36](https://github.com/Palapluem/toktickit_cpe334/pull/36) | [#20](https://github.com/Palapluem/toktickit_cpe334/issues/20) | Merged at `d3c5a25`; Issue CLOSED; card Done | N0TAW00D |
 | [#37](https://github.com/Palapluem/toktickit_cpe334/pull/37) | [#23](https://github.com/Palapluem/toktickit_cpe334/issues/23) | Approved and merged at `3458178`; staging audit passed | N0TAW00D |
 | [#38](https://github.com/Palapluem/toktickit_cpe334/pull/38) | — | Merged at `bf994b6`; post-merge review log synchronized | N0TAW00D |
-| [#39](https://github.com/Palapluem/toktickit_cpe334/pull/39) | — | Open; release review received; follow-up [#40](https://github.com/Palapluem/toktickit_cpe334/pull/40) open | — |
+| [#40](https://github.com/Palapluem/toktickit_cpe334/pull/40) | — | Merged at `6f71f06`; release-review fixes accepted | N0TAW00D |
+| [#39](https://github.com/Palapluem/toktickit_cpe334/pull/39) | — | Merged at `189335e`; `main` release | N0TAW00D |
+| [#41](https://github.com/Palapluem/toktickit_cpe334/pull/41) | — | Final release evidence; review requested | — |
 
 The original table below is retained as the historical review ledger. The current merge outcomes and post-merge evidence are recorded above and in the detailed sections.
 
@@ -36,8 +38,9 @@ The original table below is retained as the historical review ledger. The curren
 | [#34](https://github.com/Palapluem/toktickit_cpe334/pull/34) | [#21](https://github.com/Palapluem/toktickit_cpe334/issues/21) | My Tickets visual regressions | Commented → response/fix → merged | N0TAW00D |
 | [#35](https://github.com/Palapluem/toktickit_cpe334/pull/35) | [#22](https://github.com/Palapluem/toktickit_cpe334/issues/22) | Ticket Detail attachment lifecycle | Commented → accepted → merged | N0TAW00D |
 | [#38](https://github.com/Palapluem/toktickit_cpe334/pull/38) | — | Post-merge review log synchronization | Merged | N0TAW00D |
-| [#39](https://github.com/Palapluem/toktickit_cpe334/pull/39) | — | Lab 2 release | Review feedback received; follow-up #40 open | — |
-| [#40](https://github.com/Palapluem/toktickit_cpe334/pull/40) | — | PR #39 release review follow-up | Open; review requested | — |
+| [#40](https://github.com/Palapluem/toktickit_cpe334/pull/40) | — | PR #39 release review follow-up | Commented → fixes made → merged | N0TAW00D |
+| [#39](https://github.com/Palapluem/toktickit_cpe334/pull/39) | — | Lab 2 release | Rechecked after #40 → merged into `main` | N0TAW00D |
+| [#41](https://github.com/Palapluem/toktickit_cpe334/pull/41) | — | Final Lab 2 release evidence | Open; review requested | — |
 
 ---
 
@@ -111,7 +114,7 @@ Reviewed N0TAW00D's corresponding Lab 2 Pull Request.
 
 ## PR #28 — Zen Green UI foundation and application shell
 
-**Issue:** #19 · **Branch:** `feature/8-zen-green-foundation` → `lab2-staging` · **Open**
+**Issue:** #19 · **Branch:** `feature/8-zen-green-foundation` → `lab2-staging` · **Merged:** 31 August 2026 at `a61b29c`
 
 ### Comments received
 
@@ -256,9 +259,9 @@ The reviewer log was synchronized with the merged #36 and #37 outcomes and the s
 
 ## PR #39 — Lab 2 release review
 
-**Branch:** `lab2-staging` → `main` · **Open**
+**Branch:** `lab2-staging` → `main` · **Merged:** 4 September 2026 at `189335e`
 
-The reviewer identified contract, accessibility, UI hierarchy, documentation, and traceability gaps in the release candidate. A follow-up branch is addressing the confirmed findings before the release PR is approved; the reviewer remains responsible for merging both the follow-up and #39.
+The reviewer identified contract, accessibility, UI hierarchy, documentation, and traceability gaps in the release candidate. The confirmed findings were fixed in PR #40, which the reviewer merged into `lab2-staging` at `6f71f06`; the reviewer then merged this release PR into `main` at `189335e`.
 
 ### Comment received
 
@@ -266,13 +269,13 @@ On 4 September 2026, [N0TAW00D's release review](https://github.com/Palapluem/to
 
 ### Follow-up disposition
 
-Branch `fix/pr39-review-findings` adds regression coverage and fixes the confirmed contract issues, including atomic active-attachment limits, exact response mapping, UUID route validation, requester-selection shell/callouts, accessible sort/required/dialog states, and the release documentation. The final `tests.md` §6 table remains intentionally reserved for the post-merge verification run from `main` required by `specification.md` §11.25.
+Branch `fix/pr39-review-findings` added regression coverage and fixed the confirmed contract issues, including atomic active-attachment limits, exact response mapping, UUID route validation, requester-selection shell/callouts, accessible sort/required/dialog states, and the release documentation. PR #40 carried these changes into `lab2-staging`; the final release verification is recorded below from commit `189335e`.
 
 ## PR #40 — PR #39 release review follow-up
 
-**Branch:** `fix/pr39-review-findings` → `lab2-staging` · **Open; review requested:** 4 September 2026
+**Branch:** `fix/pr39-review-findings` → `lab2-staging` · **Merged:** 4 September 2026 at `6f71f06`
 
-This follow-up contains the test-first fixes for the release review. Verification on the branch is server **114/114**, client **110/110**, Playwright **6/6**, and both builds pass; client lint exits successfully with two existing Fast Refresh warnings. The reviewer remains responsible for reviewing and merging #40, after which #39 can be rechecked and merged.
+This follow-up contains the test-first fixes for the release review. Verification on the branch was server **114/114**, client **110/110**, Playwright **6/6**, and both builds pass; client lint exited successfully with two existing Fast Refresh warnings. The reviewer accepted the follow-up and merged it into `lab2-staging` before merging #39 into `main`.
 
 ### Follow-up comment and disposition
 
@@ -283,6 +286,23 @@ On 4 September 2026, N0TAW00D noted that the final `tests.md` §6 table, mobile 
 - `ai-use.md` now uses the required `My Reflection` heading and retains ten selected prompt rows, within the labsheet's 6–10 range. **Revisited again** after direct feedback that the "Prompt used" cells read as paraphrases rather than the actual prompts: the table keeps its original shape, but each cell that maps to a phase template now holds that template's exact multi-line text (indentation preserved) rather than a summary sentence — the same text as `_private/lab-02/prompts/01-contract-review.md` and its siblings, filled in per Issue.
 - The global Prisma dependency, DOM requester identifier, redundant success announcement attributes, status-badge styling, and strict MIME/extension match remain deferred design observations; none is a release acceptance gap or an approved scope change for this follow-up.
 - While rechecking this branch, `tests.md`'s `RESP-01`–`RESP-03` and `E2E-01`–`E2E-03` rows were found still marked open despite Issue #23 having shipped the suites that prove them. Reran the full E2E suite directly (6/6) before marking them, rather than trusting the stale marks; the run also refreshed the nine canonical screenshots at their fixed paths to reflect the touch-target fix above.
+
+## Final release verification
+
+The released `main` tree at `189335e` was checked again on 4 September 2026. The server suite passed **114/114** across 14 files, the client suite passed **110/110** across 17 files, and the Playwright E2E/responsive suite passed **6/6**. Server and client builds passed; lint exited 0 with the two existing Fast Refresh warnings in `RequesterContext.tsx`. The E2E database teardown removed each test-created Ticket, and the nine canonical responsive screenshots were visually checked against `ui-spec.md` §§11, 13, and 14. Final test details are recorded in `docs/lab-02/tests.md` §6.
+
+## PR #41 — Final Lab 2 release evidence
+
+**Branch:** `docs/lab2-final-evidence` → `main` · **Open; review requested:** 4 September 2026
+
+This documentation/evidence follow-up records the final verification from
+released `main` commit `189335e`, synchronizes the release merge ledger, and
+refreshes the six run-dependent canonical screenshots. The finalization branch
+passed Server **114/114**, Client **110/110**, E2E **6/6**, both builds, and
+lint exit 0 with two existing Fast Refresh warnings. The remaining submission
+artifacts are the authenticated GitHub Kanban/commit-history screenshots and
+the assembled PDF; these are not committed by this PR until they are captured
+in the user's authenticated browser.
 
 ---
 
