@@ -1,7 +1,18 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render as rtlRender, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import App from '../../src/App.js'
+
+// The Lab 1 screen is now the /system-check route inside the shell (§11.18).
+// Only the wrapper changed; every assertion below is the one Lab 1 shipped.
+function render(_: unknown = null) {
+  return rtlRender(
+    <MemoryRouter initialEntries={['/system-check']}>
+      <App />
+    </MemoryRouter>,
+  )
+}
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -109,14 +120,19 @@ describe('UI-02: category list', () => {
           json: async () => ({ status: 'ok', service: 'TokTickIT API' }),
         }))
       }
+      // Updated in #17 to the real contract: UUID ids inside a data envelope.
+      // The old bare array with integer ids kept this test green against a shape
+      // the server had stopped returning since #18.
       return Promise.resolve({
         ok: true,
-        json: async () => [
-          { id: 1, name: 'Account and Access' },
-          { id: 2, name: 'Hardware' },
-          { id: 3, name: 'Software' },
-          { id: 4, name: 'Network' },
-        ],
+        json: async () => ({
+          data: [
+            { id: '3f1a0000-0000-4000-8000-000000000001', name: 'Account and Access' },
+            { id: '8c220000-0000-4000-8000-000000000002', name: 'Hardware' },
+            { id: 'b0d70000-0000-4000-8000-000000000003', name: 'Network' },
+            { id: 'e5f90000-0000-4000-8000-000000000004', name: 'Software' },
+          ],
+        }),
       })
     })
     vi.stubGlobal('fetch', mockFetch)

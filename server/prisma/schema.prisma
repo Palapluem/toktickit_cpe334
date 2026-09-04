@@ -1,7 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// TokTickIT data model. Authority: docs/lab-02/specification.md §7.
+// UUID identifiers (§11.1). Timestamps UTC.
 
 generator client {
   provider = "prisma-client"
@@ -12,8 +10,116 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  NEW
+  ASSIGNED
+  IN_PROGRESS
+  PENDING_REQUESTER
+  RESOLVED
+  CLOSED
+  CANCELLED
+}
+
+/// Temporary Lab 2 stand-in for the authenticated user (BR-03, BR-42).
+model RequesterUser {
+  id          String   @id @default(uuid()) @db.Uuid
+  displayName String
+  email       String   @unique
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+
+  tickets             Ticket[]
+  uploadedAttachments Attachment[] @relation("AttachmentUploader")
+  removedAttachments  Attachment[] @relation("AttachmentRemover")
+}
+
 model Category {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid()) @db.Uuid
   name      String   @unique
-  createdAt DateTime @default(now())
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  tickets Ticket[]
+}
+
+model RelatedSystem {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  tickets Ticket[]
+}
+
+model Ticket {
+  id       String @id @default(uuid()) @db.Uuid
+  ticketNo String @unique
+
+  requesterId     String @db.Uuid
+  categoryId      String @db.Uuid
+  relatedSystemId String @db.Uuid
+
+  summary     String
+  description String
+
+  requestedPriority Priority
+  itPriority        Priority
+  status            TicketStatus @default(NEW)
+
+  /// Null throughout Lab 2 (BR-07); modelled now so Lab 3 adds a key, not a column.
+  ownerId String? @db.Uuid
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  requester     RequesterUser @relation(fields: [requesterId], references: [id], onDelete: Restrict)
+  category      Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  relatedSystem RelatedSystem @relation(fields: [relatedSystemId], references: [id], onDelete: Restrict)
+  attachments   Attachment[]
+
+  @@index([requesterId, createdAt(sort: Desc)]) // default list query (BR-37)
+  @@index([requesterId, status]) // FR-18 filters
+  @@index([requesterId, categoryId])
+}
+
+model Attachment {
+  id       String @id @default(uuid()) @db.Uuid
+  ticketId String @db.Uuid
+
+  originalFilename String
+  /// Generated, never derived from user input (BR-30).
+  storedFilename   String @unique
+  mimeType         String
+  sizeBytes        Int
+
+  uploadedById String   @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+
+  /// Soft removal (BR-31). removedAt is the only source of truth for active state.
+  removedAt     DateTime? @db.Timestamptz(3)
+  removedReason String?
+  removedById   String?   @db.Uuid
+
+  ticket     Ticket         @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+  // Two references to one model, so both are named (§7).
+  uploadedBy RequesterUser  @relation("AttachmentUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
+  removedBy  RequesterUser? @relation("AttachmentRemover", fields: [removedById], references: [id], onDelete: Restrict)
+
+  @@index([ticketId, removedAt]) // active-attachment count (BR-28)
+}
+
+/// One row per Bangkok calendar year (§11.13), locked inside the creation
+/// transaction. Chosen over MAX(ticketNo)+1 and Postgres sequences — see §7.
+model TicketNumberSequence {
+  year      Int      @id
+  lastValue Int      @default(0)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
 }

@@ -1,77 +1,79 @@
-import { useState } from 'react'
-import { fetchHealth, fetchCategories, type Category } from './api.js'
+// Routes for the four Lab 2 screens plus the Lab 1 demonstration (§11.18, §11.19).
+// Screen implementations land incrementally through the Lab 2 Issue flow.
+import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import { AppShell } from './components/AppShell.js'
+import { SystemCheck } from './screens/SystemCheck.js'
+import { StyleGuide } from './screens/StyleGuide.js'
+import { SelectRequester } from './screens/SelectRequester.js'
+import { CreateTicket } from './screens/CreateTicket.js'
+import { MyTickets } from './screens/MyTickets.js'
+import { RequesterTicketDetail } from './screens/RequesterTicketDetail.js'
+import { RequireRequester } from './components/RequireRequester.js'
 
-type SystemState = 'idle' | 'loading' | 'online' | 'offline'
-
-function App() {
-  const [systemState, setSystemState] = useState<SystemState>('idle')
-  const [errorDetail, setErrorDetail] = useState<string | null>(null)
-  const [categories, setCategories] = useState<Category[]>([])
-
-  async function handleCheckSystem() {
-    setSystemState('loading')
-
-    try {
-      await fetchHealth()
-      const fetchedCategories = await fetchCategories()
-      setCategories(fetchedCategories)
-      setSystemState('online')
-    } catch (error) {
-      console.error('Health check failed:', error)
-      setErrorDetail(error instanceof Error ? error.message : 'Unknown error')
-      setSystemState('offline')
-    }
-  }
+function ShellLayout() {
+  const { pathname } = useLocation()
+  const breadcrumb =
+    pathname === '/tickets/new'
+      ? ['My Tickets', 'Create Ticket']
+      : pathname.startsWith('/tickets/')
+        ? ['My Tickets', 'Ticket Details']
+        : pathname === '/tickets'
+          ? ['My Tickets']
+          : []
 
   return (
-    <div className="container py-5">
-      <nav className="navbar navbar-dark bg-dark rounded px-3 mb-4">
-        <span className="navbar-brand mb-0 h1">TokTickIT</span>
-      </nav>
+    <AppShell breadcrumb={breadcrumb}>
+      <Outlet />
+    </AppShell>
+  )
+}
 
-      <div className="card shadow-sm">
-        <div className="card-body">
-          <h1 className="card-title">TokTickIT IT Service Desk</h1>
+function RequesterSelectionLayout() {
+  return (
+    <AppShell showNavigation={false} breadcrumb={['Development Requester Selection']}>
+      <SelectRequester />
+    </AppShell>
+  )
+}
 
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={handleCheckSystem}
-            disabled={systemState === 'loading'}
-          >
-            {systemState === 'loading' ? 'Checking…' : 'Check System'}
-          </button>
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/tickets" replace />} />
 
-          {systemState === 'online' && (
-            <div className="mt-3">
-              <p className="mb-2">
-                System Status: <strong className="text-success">Online</strong>
-              </p>
-              <p className="mb-1 fw-semibold">Supported Request Categories</p>
-              <ol className="mb-0">
-                {categories.map((category) => (
-                  <li key={category.id}>{category.name}</li>
-                ))}
-              </ol>
-            </div>
-          )}
+      <Route path="/select-requester" element={<RequesterSelectionLayout />} />
 
-          {systemState === 'offline' && (
-            <div className="mt-3">
-              <p className="mb-1">
-                System Status: <strong className="text-danger">Offline</strong>
-              </p>
-              <p className="text-danger mb-0">
-                Unable to connect to TokTickIT API
-              </p>
-              {errorDetail && (
-                <p className="text-muted small mb-0">Details: {errorDetail}</p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+      <Route
+        element={<ShellLayout />}
+      >
+        <Route
+          path="/tickets"
+          element={
+            <RequireRequester>
+              <MyTickets />
+            </RequireRequester>
+          }
+        />
+        <Route
+          path="/tickets/new"
+          element={
+            <RequireRequester>
+              <CreateTicket />
+            </RequireRequester>
+          }
+        />
+        <Route
+          path="/tickets/:id"
+          element={
+            <RequireRequester>
+              <RequesterTicketDetail />
+            </RequireRequester>
+          }
+        />
+        <Route path="/system-check" element={<SystemCheck />} />
+        <Route path="/style-guide" element={<StyleGuide />} />
+      </Route>
+    </Routes>
   )
 }
 

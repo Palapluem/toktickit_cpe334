@@ -18,6 +18,10 @@ server/src/generated/
 # Test coverage
 coverage/
 
+# Playwright diagnostics (canonical responsive screenshots stay tracked)
+artifacts/lab-02/playwright-results/
+.playwright-cli/
+
 # Editor / OS noise
 .vscode/
 .idea/

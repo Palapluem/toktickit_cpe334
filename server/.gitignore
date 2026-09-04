@@ -3,3 +3,6 @@ node_modules
 .env
 
 /src/generated/prisma
+
+# Runtime-uploaded attachment content (BR-35)
+uploads/
