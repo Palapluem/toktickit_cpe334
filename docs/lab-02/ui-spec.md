@@ -255,13 +255,15 @@ Bootstrap breakpoints are used unless a screen documents a stronger need.
 
 Completed against real screenshots, not memory, and compared with this document plus the labsheet illustrations.
 
-**Candidate inspection (2 September 2026):** All sixteen checks below pass
-against the checked-in RESP captures and the state-specific figures indexed in
+**Final inspection (4 September 2026):** All sixteen checks below pass against
+the nine RESP captures regenerated from the released `main` tree at `189335e`
+and the state-specific figures indexed in
 `_private/evidence/lab-02/figures/INDEX.md`. The tablet My Tickets table is an
 intentional horizontal scroll region rather than page overflow; its right-side
 priority, status, and Last Updated columns were verified in the supplemental
-`my-tickets/tablet-list-right-viewport.png` capture. Re-run this checklist from
-the final `main` release candidate before submission.
+`my-tickets/tablet-list-right-viewport.png` capture. The final images were read
+against this contract and the labsheet illustrations, not accepted merely
+because the Playwright test passed.
 
 | # | Check | Desktop | Tablet | Mobile |
 |---|---|---|---|---|
