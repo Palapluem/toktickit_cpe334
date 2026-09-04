@@ -12,18 +12,33 @@ This file is appended to as each Pull Request closes, not reconstructed at the e
 
 ## Summary
 
-### Current status (4 September 2026)
+### Verified GitHub status (read-only audit, 4 September 2026)
 
-| PR | Issue | Current state | Merged by |
-|---|---|---|---|
-| [#36](https://github.com/Palapluem/toktickit_cpe334/pull/36) | [#20](https://github.com/Palapluem/toktickit_cpe334/issues/20) | Merged at `d3c5a25`; Issue CLOSED; card Done | N0TAW00D |
-| [#37](https://github.com/Palapluem/toktickit_cpe334/pull/37) | [#23](https://github.com/Palapluem/toktickit_cpe334/issues/23) | Approved and merged at `3458178`; staging audit passed | N0TAW00D |
-| [#38](https://github.com/Palapluem/toktickit_cpe334/pull/38) | — | Merged at `bf994b6`; post-merge review log synchronized | N0TAW00D |
-| [#40](https://github.com/Palapluem/toktickit_cpe334/pull/40) | — | Merged at `6f71f06`; release-review fixes accepted | N0TAW00D |
-| [#39](https://github.com/Palapluem/toktickit_cpe334/pull/39) | — | Merged at `189335e`; `main` release | N0TAW00D |
-| [#41](https://github.com/Palapluem/toktickit_cpe334/pull/41) | — | Merged at `f9faa0b`; final release evidence synchronized | N0TAW00D |
+The table below is the authoritative merge ledger for this document. `Merge commit` is GitHub's `mergeCommit.oid` (abbreviated to seven characters), and `Merged by` is GitHub's `mergedBy.login`; neither is inferred from the commit author. The reviewer identity is **นัธทวัฒน์ ปริมสิริคุณาวุฒิ (Natthawat Primsirikunawut)**, GitHub `N0TAW00D`.
 
-The original table below is retained as the historical review ledger. The current merge outcomes and post-merge evidence are recorded above and in the detailed sections.
+| PR | Issue | Base ← head | GitHub state | Merge commit | Merged by |
+|---|---|---|---|---|---|
+| [#24](https://github.com/Palapluem/toktickit_cpe334/pull/24) | [#16](https://github.com/Palapluem/toktickit_cpe334/issues/16) | `lab2-staging` ← `feature/5-lab2-spec-and-test-plan` | `MERGED`; Issue CLOSED; card Done | `ec2dc11` | `N0TAW00D` |
+| [#26](https://github.com/Palapluem/toktickit_cpe334/pull/26) | [#25](https://github.com/Palapluem/toktickit_cpe334/issues/25) | `lab2-staging` ← `feature/13-lecture4-contracts` | `MERGED`; Issue CLOSED; card Done | `592c7ba` | `N0TAW00D` |
+| [#27](https://github.com/Palapluem/toktickit_cpe334/pull/27) | [#18](https://github.com/Palapluem/toktickit_cpe334/issues/18) | `lab2-staging` ← `feature/7-prisma-schema-and-reference-data` | `MERGED`; Issue CLOSED; card Done | `c0da7d8` | `N0TAW00D` |
+| [#28](https://github.com/Palapluem/toktickit_cpe334/pull/28) | [#19](https://github.com/Palapluem/toktickit_cpe334/issues/19) | `lab2-staging` ← `feature/8-zen-green-foundation` | `MERGED`; Issue CLOSED; card Done | `a61b29c` | `N0TAW00D` |
+| [#30](https://github.com/Palapluem/toktickit_cpe334/pull/30) | [#29](https://github.com/Palapluem/toktickit_cpe334/issues/29) | `lab2-staging` ← `docs/9-reviewer-log` | `MERGED`; Issue CLOSED; card Done | `a7f96ce` | `N0TAW00D` |
+| [#31](https://github.com/Palapluem/toktickit_cpe334/pull/31) | [#17](https://github.com/Palapluem/toktickit_cpe334/issues/17) | `lab2-staging` ← `feature/6-requester-context` | `MERGED`; Issue CLOSED; card Done | `acb72ae` | `N0TAW00D` |
+| [#32](https://github.com/Palapluem/toktickit_cpe334/pull/32) | [#20](https://github.com/Palapluem/toktickit_cpe334/issues/20) | `lab2-staging` ← `feature/9-ticket-creation` | `MERGED`; Issue CLOSED; card Done | `57cca96` | `N0TAW00D` |
+| [#33](https://github.com/Palapluem/toktickit_cpe334/pull/33) | [#21](https://github.com/Palapluem/toktickit_cpe334/issues/21) | `lab2-staging` ← `feature/10-my-tickets` | `MERGED`; Issue CLOSED; card Done | `97ac295` | `N0TAW00D` |
+| [#34](https://github.com/Palapluem/toktickit_cpe334/pull/34) | [#21](https://github.com/Palapluem/toktickit_cpe334/issues/21) | `lab2-staging` ← `fix/my-tickets-visual-regressions` | `MERGED`; Issue CLOSED; card Done | `3734b5a` | `N0TAW00D` |
+| [#35](https://github.com/Palapluem/toktickit_cpe334/pull/35) | [#22](https://github.com/Palapluem/toktickit_cpe334/issues/22) | `lab2-staging` ← `feature/11-ticket-detail-attachments` | `MERGED`; Issue CLOSED; card Done | `087379a` | `N0TAW00D` |
+| [#36](https://github.com/Palapluem/toktickit_cpe334/pull/36) | [#20](https://github.com/Palapluem/toktickit_cpe334/issues/20) | `lab2-staging` ← `fix/20-ticket-form-alignment` | `MERGED`; Issue CLOSED; card Done | `d3c5a25` | `N0TAW00D` |
+| [#37](https://github.com/Palapluem/toktickit_cpe334/pull/37) | [#23](https://github.com/Palapluem/toktickit_cpe334/issues/23) | `lab2-staging` ← `feature/12-e2e-and-release` | `MERGED`; Issue CLOSED; card Done | `3458178` | `N0TAW00D` |
+| [#38](https://github.com/Palapluem/toktickit_cpe334/pull/38) | — | `lab2-staging` ← `docs/post-merge-review-log` | `MERGED` | `bf994b6` | `N0TAW00D` |
+| [#39](https://github.com/Palapluem/toktickit_cpe334/pull/39) | — | `main` ← `lab2-staging` | `MERGED` | `189335e` | `N0TAW00D` |
+| [#40](https://github.com/Palapluem/toktickit_cpe334/pull/40) | — | `lab2-staging` ← `fix/pr39-review-findings` | `MERGED` | `6f71f06` | `N0TAW00D` |
+| [#41](https://github.com/Palapluem/toktickit_cpe334/pull/41) | — | `main` ← `docs/lab2-final-evidence` | `MERGED` | `f9faa0b` | `N0TAW00D` |
+| [#42](https://github.com/Palapluem/toktickit_cpe334/pull/42) | — | `main` ← `docs/lab2-post-merge-evidence` | `OPEN`; review requested from `N0TAW00D` | — | — |
+
+Issues #16–#23 plus the supporting documentation Issues #25 and #29 are all `CLOSED` and their Project cards are `Done`. PR #42 is intentionally not described as merged: it is the currently open documentation follow-up, and its merge actor/commit must be added only after GitHub records the merge.
+
+The original table below is retained as the historical review ledger. The verified merge outcomes and post-merge evidence are recorded above and in the detailed sections.
 
 | PR | Issue | Title | Reviewer verdict | Merged by |
 |---|---|---|---|---|
@@ -309,6 +324,16 @@ the six run-dependent canonical screenshots. The reviewer approved and merged
 it into `main`. The remaining submission artifacts are the authenticated
 GitHub Kanban/commit-history screenshots and the assembled PDF; they are
 submission-only private artifacts and are not part of the graded repository.
+
+## PR #42 — Post-merge reviewer-ledger correction
+
+**Branch:** `docs/lab2-post-merge-evidence` → `main` · **Status:** `OPEN` as of 4 September 2026
+
+This documentation-only follow-up corrects the reviewer identity rendering and
+adds the verified GitHub merge metadata for the complete Lab 2 PR chain. Review
+was requested from `N0TAW00D`; no approval, merge commit, or `mergedBy` actor
+exists yet. After the reviewer merges it, update the #42 row above with the
+actual GitHub merge commit and actor before assembling the final PDF.
 
 ---
 
