@@ -34,9 +34,9 @@ The table below is the authoritative merge ledger for this document. `Merge comm
 | [#39](https://github.com/Palapluem/toktickit_cpe334/pull/39) | — | `main` ← `lab2-staging` | `MERGED` | `189335e` | `N0TAW00D` |
 | [#40](https://github.com/Palapluem/toktickit_cpe334/pull/40) | — | `lab2-staging` ← `fix/pr39-review-findings` | `MERGED` | `6f71f06` | `N0TAW00D` |
 | [#41](https://github.com/Palapluem/toktickit_cpe334/pull/41) | — | `main` ← `docs/lab2-final-evidence` | `MERGED` | `f9faa0b` | `N0TAW00D` |
-| [#42](https://github.com/Palapluem/toktickit_cpe334/pull/42) | — | `main` ← `docs/lab2-post-merge-evidence` | `OPEN`; review requested from `N0TAW00D` | — | — |
+| [#42](https://github.com/Palapluem/toktickit_cpe334/pull/42) | — | `main` ← `docs/lab2-post-merge-evidence` | `MERGED` | `9157923` | `N0TAW00D` |
 
-Issues #16–#23 plus the supporting documentation Issues #25 and #29 are all `CLOSED` and their Project cards are `Done`. PR #42 is intentionally not described as merged: it is the currently open documentation follow-up, and its merge actor/commit must be added only after GitHub records the merge.
+Issues #16–#23 plus the supporting documentation Issues #25 and #29 are all `CLOSED` and their Project cards are `Done`. PR #42 was merged by `N0TAW00D` at `9157923`. GitHub's current metadata returns no formal review object or `APPROVED` decision for #42, so this ledger records the verified merge proof without claiming an approval that is not present in the API result.
 
 The original table below is retained as the historical review ledger. The verified merge outcomes and post-merge evidence are recorded above and in the detailed sections.
 
@@ -327,13 +327,14 @@ submission-only private artifacts and are not part of the graded repository.
 
 ## PR #42 — Post-merge reviewer-ledger correction
 
-**Branch:** `docs/lab2-post-merge-evidence` → `main` · **Status:** `OPEN` as of 4 September 2026
+**Branch:** `docs/lab2-post-merge-evidence` → `main` · **Merged:** 4 September 2026 at `9157923` by `N0TAW00D`
 
-This documentation-only follow-up corrects the reviewer identity rendering and
-adds the verified GitHub merge metadata for the complete Lab 2 PR chain. Review
-was requested from `N0TAW00D`; no approval, merge commit, or `mergedBy` actor
-exists yet. After the reviewer merges it, update the #42 row above with the
-actual GitHub merge commit and actor before assembling the final PDF.
+This documentation-only follow-up corrected the reviewer identity rendering
+and added the verified GitHub merge metadata for the complete Lab 2 PR chain.
+The current GitHub API result identifies `N0TAW00D` as `mergedBy` and
+`9157923` as the merge commit, but returns no formal review object or
+`APPROVED` decision for #42. The record therefore claims only the proof that
+GitHub exposes: the PR was merged by the peer reviewer.
 
 ---
 
