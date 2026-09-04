@@ -104,7 +104,7 @@ classDiagram
 
 ## 2. Activity Diagram — Create Ticket
 
-Control flow for `POST /api/tickets` (FR-05 … FR-11). The partitions separate what the client owns from what the server owns, which is the point the diagram exists to make: no validation result the client produces is trusted, and every decision that matters is re-made server-side.
+Control flow for `POST /api/tickets` (FR-10 … FR-15). The partitions separate what the client owns from what the server owns, which is the point the diagram exists to make: no validation result the client produces is trusted, and every decision that matters is re-made server-side.
 
 ```mermaid
 flowchart TD
@@ -151,6 +151,6 @@ The sequence-number allocation sits *inside* the transaction, between `BEGIN` an
 
 Validation appears twice, once per partition, and the two are not equivalent. The client copy exists to give fast feedback; the server copy exists because the client can be bypassed entirely. Every rejection path returns before `BEGIN TRANSACTION`, so a rejected request cannot leave a partial row — the property TC-007 verifies by reading back rather than trusting the status code.
 
-The submit button is disabled on the client before the request is issued and re-enabled only on a terminal outcome. That is what BR-13 requires and STY-022 enforces: it makes double submission impossible from the UI, while the transaction makes it harmless if it happens anyway.
+The submit button is disabled on the client before the request is issued and re-enabled only on a terminal outcome. That is what BR-24 requires and STY-022 enforces: it makes double submission impossible from the UI, while the transaction makes it harmless if it happens anyway.
 
 Every failure path returns to the form with the entered values intact. Discarding the requester's typing on a server error would satisfy the letter of the specification and fail its intent (AC-30).

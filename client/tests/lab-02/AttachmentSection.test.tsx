@@ -1,6 +1,5 @@
 // UI-19/UI-20/UI-21/UI-22 · AC-29/AC-30/AC-32/AC-33 · BR-28/BR-32/BR-33.
-// TDT-02 covers the five-active boundary; TDT-03 covers attachment state and
-// requested-action combinations; TDT-04 covers the active-to-removed flow.
+// TDT-02 boundary, TDT-03 decision table, and TDT-04 attachment transitions.
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -76,6 +75,36 @@ describe('UI-19 · AC-29 · attachment upload state', () => {
 
     expect(await screen.findByText('new-image.png')).toBeInTheDocument()
   })
+
+  it('shows an uploading row while the attachment request is in flight', async () => {
+    let resolveUpload!: (attachment: AttachmentFixture) => void
+    const onAdd = vi.fn(
+      () => new Promise<AttachmentFixture>((resolve) => { resolveUpload = resolve }),
+    )
+    const user = userEvent.setup()
+    render(
+      <AttachmentSection
+        ticketId="ticket-1"
+        requesterId="r-jennifer"
+        attachments={[]}
+        activeCount={0}
+        activeLimit={5}
+        onAdd={onAdd}
+        onRemove={vi.fn(async () => REMOVED)}
+        onDownload={vi.fn(async () => {})}
+      />,
+    )
+
+    await user.upload(
+      screen.getByLabelText('Attachment file'),
+      new File(['new image'], 'new-image.png', { type: 'image/png' }),
+    )
+
+    expect(
+      screen.getByRole('progressbar', { name: 'Uploading new-image.png' }),
+    ).toBeInTheDocument()
+    resolveUpload({ ...ACTIVE, originalFilename: 'new-image.png' })
+  })
 })
 
 describe('UI-20 · AC-32/AC-33 · removed attachment presentation', () => {
@@ -113,7 +142,9 @@ describe('UI-21 · BR-32 · removal confirmation', () => {
 
     expect(screen.queryByRole('button', { name: /remove.*screen\.png/i })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /remove.*screen\.png/i }))
-    expect(screen.queryByRole('dialog')).toBeInTheDocument()
+    const dialog = screen.queryByRole('dialog')
+    expect(dialog).toBeInTheDocument()
+    expect(dialog?.previousElementSibling).toHaveAttribute('aria-hidden', 'true')
     expect(screen.queryByLabelText('Removal reason')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Remove' })).toBeDisabled()
 

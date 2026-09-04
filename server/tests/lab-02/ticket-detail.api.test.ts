@@ -1,6 +1,5 @@
 // API-19/API-20 · AC-27/AC-28 · BR-15/BR-16/TC-002/TC-003.
-// TDT-01 equivalence partitioning covers owned versus cross-requester access;
-// TDT-05 error guessing checks direct access through a forged requester header.
+// TDT-01 owned/cross-requester partition; TDT-05 forged-header access check.
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import request from 'supertest'
 import { createApp } from '../../src/app.js'
@@ -94,6 +93,22 @@ describe('API-19 · AC-27 · owned Ticket Detail', () => {
       status: 'NEW',
       owner: null,
     })
+    expect(Object.keys(response.body.data).sort()).toEqual([
+      'attachments',
+      'category',
+      'createdAt',
+      'description',
+      'id',
+      'itPriority',
+      'owner',
+      'relatedSystem',
+      'requestedPriority',
+      'requester',
+      'status',
+      'summary',
+      'ticketNo',
+      'updatedAt',
+    ])
     expect(response.body.data.attachments).toHaveLength(2)
     expect(response.body.data.attachments).toEqual(
       expect.arrayContaining([
@@ -105,6 +120,17 @@ describe('API-19 · AC-27 · owned Ticket Detail', () => {
         }),
       ]),
     )
+    for (const attachment of response.body.data.attachments) {
+      expect(Object.keys(attachment).sort()).toEqual([
+        'createdAt',
+        'id',
+        'mimeType',
+        'originalFilename',
+        'removedAt',
+        'removedReason',
+        'sizeBytes',
+      ])
+    }
   })
 })
 
@@ -115,6 +141,20 @@ describe('API-20 · AC-28 · BR-16 · cross-requester Ticket Detail', () => {
     const response = await request(createApp())
       .get(`/api/tickets/${ticketId}`)
       .set('X-Requester-Id', references.otherRequesterId)
+
+    expect(response.status).toBe(404)
+    expect(response.body.error).toMatchObject({
+      code: 'TICKET_NOT_FOUND',
+      fieldErrors: [],
+    })
+  })
+})
+
+describe('route parameter validation', () => {
+  it('returns the ticket not-found envelope for a malformed Ticket id', async () => {
+    const response = await request(createApp())
+      .get('/api/tickets/not-a-uuid')
+      .set('X-Requester-Id', references.requesterId)
 
     expect(response.status).toBe(404)
     expect(response.body.error).toMatchObject({

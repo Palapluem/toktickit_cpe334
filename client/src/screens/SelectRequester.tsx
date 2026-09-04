@@ -37,7 +37,15 @@ export function SelectRequester() {
   }
 
   return (
-    <div className="zen-card mx-auto" style={{ maxWidth: 560 }}>
+    <div className="zen-card requester-selection-card mx-auto">
+      <div className="requester-selection__intro-icon" aria-hidden="true">
+        <svg viewBox="0 0 64 64" role="presentation">
+          <circle cx="25" cy="22" r="9" />
+          <path d="M9 49c1.6-8.4 7.2-13 16-13s14.4 4.6 16 13" />
+          <path d="m48 28 2.1 2.2 3-.5 1.2 2.9 2.8 1.1-.5 3 2.1 2.1-2.1 2.2.5 3-2.8 1.1-1.2 2.9-3-.5L48 50l-2.1-2.2-3 .5-1.2-2.9-2.8-1.1.5-3-2.1-2.2 2.1-2.1-.5-3 2.8-1.1 1.2-2.9 3 .5L48 28Z" />
+          <circle cx="48" cy="39" r="4" />
+        </svg>
+      </div>
       <h1 className="zen-state__title">Select Development Requester</h1>
       <p className="zen-field__hint">
         Choose a development requester to simulate the current requester context
@@ -82,17 +90,26 @@ export function SelectRequester() {
             </select>
           </FormField>
 
-          <p className="zen-state" style={{ textAlign: 'left' }}>
-            Only active development requesters are shown.
-          </p>
+          <div className="requester-selection__callout requester-selection__callout--info" role="note">
+            <span aria-hidden="true">i</span>
+            <p>Only active development requesters are shown.</p>
+          </div>
         </>
       ) : null}
 
-      <p className="zen-state" style={{ textAlign: 'left' }}>
-        Authentication coming in Lab 3 — in Lab 3 this selection will be replaced
-        with secure authentication so you can access the system with your own
-        account.
-      </p>
+      <div className="requester-selection__callout requester-selection__callout--shield" role="note">
+        <span aria-hidden="true">
+          <svg viewBox="0 0 24 24" role="presentation">
+            <path d="M12 3 5 6v5c0 4.5 2.8 8.2 7 10 4.2-1.8 7-5.5 7-10V6l-7-3Z" />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
+        </span>
+        <p>
+          Authentication coming in Lab 3 — in Lab 3 this selection will be replaced
+          with secure authentication so you can access the system with your own
+          account.
+        </p>
+      </div>
 
       <div className="d-flex justify-content-end gap-2">
         <Button variant="secondary" onClick={() => setChosenId('')}>

@@ -12,12 +12,14 @@ This file is appended to as each Pull Request closes, not reconstructed at the e
 
 ## Summary
 
-### Current status (3 September 2026)
+### Current status (4 September 2026)
 
 | PR | Issue | Current state | Merged by |
 |---|---|---|---|
 | [#36](https://github.com/Palapluem/toktickit_cpe334/pull/36) | [#20](https://github.com/Palapluem/toktickit_cpe334/issues/20) | Merged at `d3c5a25`; Issue CLOSED; card Done | N0TAW00D |
 | [#37](https://github.com/Palapluem/toktickit_cpe334/pull/37) | [#23](https://github.com/Palapluem/toktickit_cpe334/issues/23) | Approved and merged at `3458178`; staging audit passed | N0TAW00D |
+| [#38](https://github.com/Palapluem/toktickit_cpe334/pull/38) | — | Merged at `bf994b6`; post-merge review log synchronized | N0TAW00D |
+| [#39](https://github.com/Palapluem/toktickit_cpe334/pull/39) | — | Open; release review received; follow-up [#40](https://github.com/Palapluem/toktickit_cpe334/pull/40) open | — |
 
 The original table below is retained as the historical review ledger. The current merge outcomes and post-merge evidence are recorded above and in the detailed sections.
 
@@ -33,7 +35,9 @@ The original table below is retained as the historical review ledger. The curren
 | [#33](https://github.com/Palapluem/toktickit_cpe334/pull/33) | [#21](https://github.com/Palapluem/toktickit_cpe334/issues/21) | My Tickets listing | Commented → responses/fixes → merged | N0TAW00D |
 | [#34](https://github.com/Palapluem/toktickit_cpe334/pull/34) | [#21](https://github.com/Palapluem/toktickit_cpe334/issues/21) | My Tickets visual regressions | Commented → response/fix → merged | N0TAW00D |
 | [#35](https://github.com/Palapluem/toktickit_cpe334/pull/35) | [#22](https://github.com/Palapluem/toktickit_cpe334/issues/22) | Ticket Detail attachment lifecycle | Commented → accepted → merged | N0TAW00D |
-| [#36](https://github.com/Palapluem/toktickit_cpe334/pull/36) | [#20](https://github.com/Palapluem/toktickit_cpe334/issues/20) | Create Ticket form-control alignment follow-up | Open; review pending | — |
+| [#38](https://github.com/Palapluem/toktickit_cpe334/pull/38) | — | Post-merge review log synchronization | Merged | N0TAW00D |
+| [#39](https://github.com/Palapluem/toktickit_cpe334/pull/39) | — | Lab 2 release | Review feedback received; follow-up #40 open | — |
+| [#40](https://github.com/Palapluem/toktickit_cpe334/pull/40) | — | PR #39 release review follow-up | Open; review requested | — |
 
 ---
 
@@ -220,7 +224,7 @@ No changes were requested. The reviewer merged the PR after the targeted/full te
 
 ## PR #36 — Create Ticket form-control alignment follow-up
 
-**Issue:** #20 · **Branch:** `fix/20-ticket-form-alignment` → `lab2-staging` · **Open as of 2 September 2026**
+**Issue:** #20 · **Branch:** `fix/20-ticket-form-alignment` → `lab2-staging` · **Merged:** 2 September 2026 at `d3c5a25`
 
 The reviewer commented `lgtm` and merged this follow-up on 2 September 2026 at `d3c5a25`. Issue #20 was then closed by hand and its project card moved to **Done**. The alignment evidence is now included in the staging tree.
 
@@ -228,7 +232,7 @@ The reviewer commented `lgtm` and merged this follow-up on 2 September 2026 at `
 
 ## PR #37 — E2E, responsive evidence, and release integration
 
-**Issue:** #23 · **Branch:** `feature/12-e2e-and-release` → `lab2-staging` · **Open as of 2 September 2026**
+**Issue:** #23 · **Branch:** `feature/12-e2e-and-release` → `lab2-staging` · **Merged:** 3 September 2026 at `3458178`
 
 ### Comment received
 
@@ -242,7 +246,43 @@ Follow-up commit `f7fb8ce` was pushed with these dispositions. The reviewer rech
 
 ### Post-merge verification
 
-The merged staging tree passed the full server regression (**109/109**) and build, the full client regression (**107/107**) and build/lint, the style/security audits, and the E2E/responsive suite (**6/6**). The dedicated E2E database ended at **0 Tickets / 0 Attachments**. The nine fresh staging screenshots were visually checked and retained as private evidence; the tracked candidate screenshots remain unchanged. Issue #23 still needs to be closed by hand and its card moved from **PR Review** to **Done**.
+The merged staging tree passed the full server regression (**109/109**) and build, the full client regression (**107/107**) and build/lint, the style/security audits, and the E2E/responsive suite (**6/6**). The dedicated E2E database ended at **0 Tickets / 0 Attachments**. The nine fresh staging screenshots were visually checked and retained as private evidence; the tracked candidate screenshots remain unchanged. Issue #23 was then closed by hand and its card moved from **PR Review** to **Done**.
+
+## PR #38 — Post-merge review-log synchronization
+
+**Branch:** `docs/post-merge-review-log` → `lab2-staging` · **Merged:** 3 September 2026 at `bf994b6`
+
+The reviewer log was synchronized with the merged #36 and #37 outcomes and the staging verification record. This was documentation-only; no product code changed.
+
+## PR #39 — Lab 2 release review
+
+**Branch:** `lab2-staging` → `main` · **Open**
+
+The reviewer identified contract, accessibility, UI hierarchy, documentation, and traceability gaps in the release candidate. A follow-up branch is addressing the confirmed findings before the release PR is approved; the reviewer remains responsible for merging both the follow-up and #39.
+
+### Comment received
+
+On 4 September 2026, [N0TAW00D's release review](https://github.com/Palapluem/toktickit_cpe334/pull/39#issuecomment-5529224614) identified eleven actionable gaps: stale final-test traceability and paths, an inconsistent screenshot tree, missing requester-selection shell elements, stale Lab 1 README workflow, malformed resource IDs returning 500, the wrong active-nav token, duplicate primary actions, non-idempotent repeated removal, oversized response shapes, and missing accessibility states. The reviewer also noted minor mobile touch-target, filename, MIME, and documentation concerns.
+
+### Follow-up disposition
+
+Branch `fix/pr39-review-findings` adds regression coverage and fixes the confirmed contract issues, including atomic active-attachment limits, exact response mapping, UUID route validation, requester-selection shell/callouts, accessible sort/required/dialog states, and the release documentation. The final `tests.md` §6 table remains intentionally reserved for the post-merge verification run from `main` required by `specification.md` §11.25.
+
+## PR #40 — PR #39 release review follow-up
+
+**Branch:** `fix/pr39-review-findings` → `lab2-staging` · **Open; review requested:** 4 September 2026
+
+This follow-up contains the test-first fixes for the release review. Verification on the branch is server **114/114**, client **110/110**, Playwright **6/6**, and both builds pass; client lint exits successfully with two existing Fast Refresh warnings. The reviewer remains responsible for reviewing and merging #40, after which #39 can be rechecked and merged.
+
+### Follow-up comment and disposition
+
+On 4 September 2026, N0TAW00D noted that the final `tests.md` §6 table, mobile input/select height, and the AI-use reflection heading still needed attention, while the remaining code observations were minor design notes.
+
+- `tests.md` §6 remains intentionally empty until the final verification run from `main`, as required by `specification.md` §11.25.
+- **Revisited.** On reflection this held for buttons but not for inputs and selects — `ui-spec.md` §11 only ever named buttons for the ≥44px mobile target, which is a gap the spec was silent on rather than a rule that was satisfied. Recorded as `specification.md` §11.26 and fixed: `.zen-field__control` now matches the button's 44px below 768px. Desktop keeps 40px, where a pointer has pixel precision a finger does not.
+- `ai-use.md` now uses the required `My Reflection` heading and retains ten selected prompt rows, within the labsheet's 6–10 range. **Revisited again** after direct feedback that the "Prompt used" cells read as paraphrases rather than the actual prompts: the table keeps its original shape, but each cell that maps to a phase template now holds that template's exact multi-line text (indentation preserved) rather than a summary sentence — the same text as `_private/lab-02/prompts/01-contract-review.md` and its siblings, filled in per Issue.
+- The global Prisma dependency, DOM requester identifier, redundant success announcement attributes, status-badge styling, and strict MIME/extension match remain deferred design observations; none is a release acceptance gap or an approved scope change for this follow-up.
+- While rechecking this branch, `tests.md`'s `RESP-01`–`RESP-03` and `E2E-01`–`E2E-03` rows were found still marked open despite Issue #23 having shipped the suites that prove them. Reran the full E2E suite directly (6/6) before marking them, rather than trusting the stale marks; the run also refreshed the nine canonical screenshots at their fixed paths to reflect the touch-target fix above.
 
 ---
 

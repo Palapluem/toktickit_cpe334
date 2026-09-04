@@ -171,8 +171,10 @@ Page title **My Tickets** with the line *"View and track all of your support req
 
 **Filter bar** — search box (*"Search by ticket number or summary…"*) plus selects for Category, Requested Priority, IT Priority, and Current Status, each defaulting to an "All …" option.
 
-**Desktop table columns** (sortable columns carry a sort indicator): Ticket No. ↕, Created Date ↕, Summary, Category, Requested Priority, IT Priority, Current Status, Last Updated ↕.
+**Desktop table columns** (sortable columns carry a sort indicator): Ticket No. ↕, Created Date ↕, Summary ↕, Category, Requested Priority, IT Priority, Current Status, Last Updated ↕.
 Ticket No. is the link into Ticket Detail. Attachment count appears as a small paperclip badge beside Summary when greater than zero.
+
+Summary is sortable because it is included in the API sort whitelist in `api-spec.md` §3; the indicator and accessible sort state are present in the rendered table.
 
 **Column justification:** the Requester needs to identify the ticket (Ticket No., Summary), know how it was classified (Category), know how urgently it is being treated (Requested and IT Priority), know where it stands (Current Status), and know what is recent (Created, Last Updated). Ticket Owner is present in the labsheet's illustration but is always empty in this sprint, so it is omitted rather than shown as a column of blanks.
 
@@ -294,29 +296,20 @@ Captured by Playwright at desktop 1280×900, tablet 834×1112, mobile 390×844.
 artifacts/lab-02/screenshots/
 ├── create-ticket/
 │   ├── desktop-initial.png
-│   ├── desktop-validation-failure.png
-│   ├── desktop-submitting.png
-│   ├── desktop-success.png
-│   ├── desktop-api-failure.png
-│   ├── desktop-invalid-attachment.png
-│   ├── tablet-initial.png
-│   └── mobile-initial.png
+│   ├── mobile-initial.png
+│   └── tablet-initial.png
 ├── my-tickets/
 │   ├── desktop-list.png
-│   ├── desktop-filtered.png
-│   ├── desktop-empty.png
-│   ├── desktop-no-results.png
-│   ├── tablet-list.png
-│   └── mobile-cards.png
+│   ├── mobile-cards.png
+│   └── tablet-list.png
 ├── ticket-detail/
 │   ├── desktop-detail.png
-│   ├── desktop-attachment-removed.png
-│   ├── tablet-detail.png
-│   └── mobile-detail.png
-└── requester-selection/
-    ├── desktop-select.png
-    └── mobile-select.png
+│   ├── mobile-detail.png
+│   └── tablet-detail.png
 ```
+
+These nine files are the tracked canonical captures. State-specific captures
+remain supplemental private evidence under `_private/evidence/lab-02/figures/`.
 
 ## 15. Open questions for review
 

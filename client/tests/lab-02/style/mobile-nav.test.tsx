@@ -1,6 +1,5 @@
-// RESP-00 (#19). ui-spec §5, §11; AC "responsive mobile navigation ... keyboard operable".
-// Viewport rendering is Playwright's job (#23). What jsdom can prove is the
-// behaviour behind the breakpoint: the toggle's contract and its keyboard path.
+// Mobile navigation contract (#19). AC-35, AC-37, STY-007, STY-023.
+// Playwright owns viewport layout; jsdom proves the toggle and keyboard path.
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'

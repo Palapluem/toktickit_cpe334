@@ -1,6 +1,5 @@
 // UNIT-01, UNIT-02 (#18). BR-04, AC-14, §11.6, §11.13.
-// TDT-02 boundaries on sequence width and the year edge; TDT-04 annual reset.
-// Instants are injected — no system clock, no global Date mock.
+// TDT-02 width/year boundaries; TDT-04 annual reset with injected instants.
 import { describe, expect, it } from 'vitest'
 import {
   bangkokYear,

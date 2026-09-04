@@ -123,6 +123,15 @@ describe('UI-12 · AC-18 · My Tickets list', () => {
     )
     expect(screen.getByRole('button', { name: 'Create Ticket' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Clear Filters' })).toBeInTheDocument()
+    expect(screen.getByRole('columnheader', { name: /Created Date/i })).toHaveAttribute(
+      'aria-sort',
+      'descending',
+    )
+    expect(screen.getByRole('columnheader', { name: /Summary/i })).toHaveAttribute(
+      'aria-sort',
+      'none',
+    )
+    expect(document.querySelectorAll('.zen-button--primary')).toHaveLength(1)
   })
 
   it('keeps the wide result table in its own scrollable container', async () => {
@@ -180,6 +189,7 @@ describe('UI-14/UI-15 · AC-25/AC-26 · empty and no-results', () => {
       'href',
       '/tickets/new',
     )
+    expect(document.querySelectorAll('.zen-button--primary')).toHaveLength(1)
   })
 
   it('shows a distinct no-results state with Clear Filters', async () => {

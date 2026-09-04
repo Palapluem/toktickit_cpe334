@@ -1,6 +1,5 @@
-// Current requester, held in sessionStorage for the life of the tab (§11.20).
-// Only the identifier is stored; name and email are refetched, so a renamed
-// requester is never shown from a stale copy.
+// Current requester lives in sessionStorage for the tab (§11.20); only its id is stored.
+// Name and email are refetched so a renamed requester is never shown from stale data.
 import {
   createContext,
   useCallback,

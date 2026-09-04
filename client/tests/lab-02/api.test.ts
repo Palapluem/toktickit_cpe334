@@ -1,7 +1,5 @@
-// api.ts contract (#17). §11.3, api-spec.md §1.
-// Lab 1's client tests mock fetch and were never updated when #18 introduced the
-// { data: [...] } envelope and UUID identifiers, so they stayed green against a
-// shape the server no longer returns. These assert the real contract.
+// API client contract (#17). FR-01, FR-16, BR-14, TC-008; api-spec.md §1.
+// These tests assert the current { data: [...] } envelope and UUID contract.
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import { fetchCategories, fetchRequesters, fetchTickets } from '../../src/api.js'
 

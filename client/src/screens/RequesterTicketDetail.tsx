@@ -222,15 +222,6 @@ export function RequesterTicketDetail({
         </div>
       </section>
 
-      {ticket.attachmentFailures.length > 0 ? (
-        <div className="zen-state zen-state--error ticket-detail-page__alert" role="alert">
-          <p className="zen-state__title">Some attachments were not stored</p>
-          <p className="zen-state__detail">
-            You can try adding them again from this Ticket.
-          </p>
-        </div>
-      ) : null}
-
       <div className="zen-card ticket-detail-card">
         <AttachmentSection
           ticketId={ticket.id}

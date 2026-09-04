@@ -17,7 +17,7 @@ Structure and norms follow the Spec-Driven Development model taught in CPE334 Le
 | `docs/lab-02/style-contract.md` | UI compliance gate | The short checklist enforced on every UI diff |
 | `docs/lab-02/testing-contract.md` | STS | Test families, identifiers, authoring standards |
 | `docs/lab-02/diagrams.md` | Design models | Class and Activity diagrams |
-| `docs/lab-02/tests.md` | Test plan | The 70 planned tests and AC traceability |
+| `docs/lab-02/tests.md` | Test plan | The planned tests and AC traceability |
 
 `specification.md` is the source of truth. `style-contract.md` and `testing-contract.md` are enforcement gates: short enough to run against a diff without re-reading the full specifications.
 

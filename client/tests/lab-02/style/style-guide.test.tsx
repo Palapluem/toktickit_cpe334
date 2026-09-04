@@ -1,6 +1,5 @@
-// Smoke test for the component state gallery (#19 Required Evidence).
-// It is the Part 9 capture surface, so a state missing from it is a state that
-// never gets photographed.
+// Component state gallery smoke test (#19). STY-001, STY-003, STY-020.
+// It is the Part 9 capture surface, so every required state must be rendered.
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { StyleGuide } from '../../../src/screens/StyleGuide.js'

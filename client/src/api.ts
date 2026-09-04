@@ -61,10 +61,15 @@ export interface Ticket {
   relatedSystem: RelatedSystem
   owner: null
   attachments: TicketAttachment[]
-  attachmentFailures: Array<{
-    originalFilename: string
-    reason: string
-  }>
+}
+
+export type AttachmentFailure = {
+  originalFilename: string
+  reason: string
+}
+
+export type CreatedTicket = Ticket & {
+  attachmentFailures: AttachmentFailure[]
 }
 
 export type TicketListQuery = {
@@ -222,7 +227,7 @@ export function fetchRequesters(): Promise<Requester[]> {
 export async function createTicket(
   payload: CreateTicketPayload,
   requesterId: string,
-): Promise<Ticket> {
+): Promise<CreatedTicket> {
   const headers: Record<string, string> = {
     'X-Requester-Id': requesterId,
   }
@@ -258,7 +263,7 @@ export async function createTicket(
     await throwApiRequestError(response, 'Could not create the ticket.')
   }
 
-  const responseBody = (await response.json()) as { data: Ticket }
+  const responseBody = (await response.json()) as { data: CreatedTicket }
   return responseBody.data
 }
 

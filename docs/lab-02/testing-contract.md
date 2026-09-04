@@ -4,7 +4,7 @@
 
 The Software Test Specification for this sprint: what must be proved, how tests are authored, and where the evidence comes from.
 
-`tests.md` is the *plan and the results* — the 70 enumerated tests and their traceability. This file is the *standard those tests are written to*. A test that violates this contract is rejected in review even when it passes.
+`tests.md` is the *plan and the results* — the enumerated tests and their traceability. This file is the *standard those tests are written to*. A test that violates this contract is rejected in review even when it passes.
 
 ---
 

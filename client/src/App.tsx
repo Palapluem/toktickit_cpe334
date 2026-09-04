@@ -28,12 +28,20 @@ function ShellLayout() {
   )
 }
 
+function RequesterSelectionLayout() {
+  return (
+    <AppShell showNavigation={false} breadcrumb={['Development Requester Selection']}>
+      <SelectRequester />
+    </AppShell>
+  )
+}
+
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/tickets" replace />} />
 
-      <Route path="/select-requester" element={<SelectRequester />} />
+      <Route path="/select-requester" element={<RequesterSelectionLayout />} />
 
       <Route
         element={<ShellLayout />}

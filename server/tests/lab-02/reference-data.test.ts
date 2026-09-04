@@ -1,6 +1,5 @@
 // Reference-data endpoints (#18). FR-01, FR-08, FR-09, BR-10, BR-22, §11.15.
-// TDT-01 active/inactive partition; TDT-05 the unfiltered-list failure.
-// Asserts names and order, never identifiers — UUIDs regenerate per migration.
+// TDT-01 active/inactive partition; TDT-05 unfiltered-list failure; names/order only.
 import { describe, expect, it } from 'vitest'
 import request from 'supertest'
 import app from '../../src/app.js'

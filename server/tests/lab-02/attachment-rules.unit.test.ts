@@ -1,6 +1,5 @@
 // UNIT-04 (#20). BR-26/BR-27; TC-013/TC-015/TC-022.
-// TDT-01 equivalence partitions for permitted and rejected file types.
-// TDT-02 boundary-value analysis for the 5 MB size limit.
+// TDT-01 permitted/rejected partitions; TDT-02 5 MB boundary analysis.
 import { describe, expect, it } from 'vitest'
 import {
   MAX_ATTACHMENT_SIZE_BYTES,

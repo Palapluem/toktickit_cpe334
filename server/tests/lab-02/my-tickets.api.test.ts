@@ -1,6 +1,5 @@
 // API-11…API-17 (#21). AC-18…AC-24; BR-15, BR-16, BR-36…BR-41.
-// TDT-01 partitions query values, TDT-02 checks pagination boundaries, and
-// TDT-03 proves search, filters, sort, and pagination compose as one decision table.
+// TDT-01/02 query partitions and boundaries; TDT-03 composes the list decision table.
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import request from 'supertest'
 import app from '../../src/app.js'

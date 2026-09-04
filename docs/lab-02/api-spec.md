@@ -301,7 +301,7 @@ One Ticket owned by the current Requester, with attachment metadata.
 
 **Headers:** `X-Requester-Id` required.
 
-**200** — same object shape as the `POST` response `data`, with `attachments` including removed entries:
+**200** — the ticket fields from the `POST` response `data`, with `attachments` including removed entries. The creation-only `attachmentFailures` field is not returned here:
 
 ```json
 {

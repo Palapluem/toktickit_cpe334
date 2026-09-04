@@ -13,6 +13,7 @@ describe('STYLE-01 · required-field marker', () => {
     )
 
     expect(screen.getByText('*')).toBeInTheDocument()
+    expect(screen.getByLabelText(/^Summary/)).toHaveAttribute('aria-required', 'true')
   })
 
   // The asterisk never replaces the message (ui-spec §3).

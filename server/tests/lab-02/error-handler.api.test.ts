@@ -1,5 +1,4 @@
-// Review follow-up for PR #31. Express's error middleware flow must preserve
-// the API envelope rather than returning the framework's stack/HTML response.
+// Error middleware follow-up for PR #31. TC-008, BR-14; preserve the JSON envelope.
 import request from 'supertest'
 import express from 'express'
 import { afterEach, describe, expect, it, vi } from 'vitest'

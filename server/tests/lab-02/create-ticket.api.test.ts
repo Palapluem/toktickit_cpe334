@@ -1,6 +1,5 @@
 // API-03…API-07 (#20). AC-06…AC-14; BR-04…BR-08, BR-18…BR-25.
-// TC-005/007/009/010/012/024: exercise the HTTP boundary and read PostgreSQL back.
-// TDT-01 equivalence partitions; TDT-02 boundary-value analysis; TDT-05 error guessing for concurrency.
+// TC-005/007/009/010/012/024; TDT-01/02 partitions and TDT-05 concurrency.
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import request from 'supertest'
 import app, { createApp } from '../../src/app.js'

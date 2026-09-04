@@ -120,12 +120,12 @@ is a PostgreSQL URI, so percent-encode reserved credential characters such as
 ## Branch and Pull Request Rules
 
 - `main` — stable release branch. Never develop directly on it.
-- `lab1-staging` — Lab 1 integration branch. Never develop directly on it.
-- Each Issue is implemented on its own branch, created from the latest
-  `lab1-staging`: `feature/1-project-foundation`, `feature/2-health-check`,
-  `feature/3-category-seed`, `feature/4-category-list`.
-- Every feature Pull Request targets `lab1-staging`, links its Issue with
-  `Closes #<number>`, and requires real peer review and passing tests before
-  merge (merge commit, not squash/rebase).
-- After all four feature PRs are merged, one release Pull Request
-  (`lab1-staging` → `main`) closes out Lab 1.
+- `lab2-staging` — Lab 2 integration branch. Never develop directly on it.
+- Each Issue is implemented on its own branch from the latest `lab2-staging`,
+  including follow-up branches when peer review finds a release-candidate gap.
+- Every feature Pull Request targets `lab2-staging`, links its Issue through
+  the Development panel, and requires peer review and passing tests before
+  the reviewer merges it (merge commit, not squash/rebase).
+- After all Lab 2 feature and follow-up PRs are merged, Issues are closed and
+  cards are moved to Done, one release Pull Request promotes `lab2-staging`
+  to `main`.
