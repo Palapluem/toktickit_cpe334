@@ -1,8 +1,0 @@
-database: toktickit_dev  (.env)
-  Attachment             4
-  Category               4
-  RelatedSystem          7
-  RequesterUser          5
-  Ticket                 7
-  TicketNumberSequence   1
-  _prisma_migrations     2

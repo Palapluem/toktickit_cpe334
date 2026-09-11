@@ -1,0 +1,43 @@
+=== Lab 3 tests (npm run test:only -- tests/lab-03), reporter=verbose ===
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > MIG-01 · Lab 2 identifiers survive (BR-40) > resolves every Lab 2 requester to a User holding the Requester role 26ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > MIG-02 · Ticket and Attachment data survive (BR-42) > leaves no row pointing at a user that is not there 4ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > MIG-02 · Ticket and Attachment data survive (BR-42) > keeps the foreign keys that make an orphan impossible 5ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > MIG-02 · Ticket and Attachment data survive (BR-42) > keeps every Ticket Owner an active IT Staff or Administrator (BR-16) 11ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > MIG-03 · every account must change its password (BR-41, SEC-011) > sets mustChangePassword on every user 2ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > SEED-06 · no plaintext password is reachable (SEC-006) > stores a bcrypt hash rather than the password itself 2ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > SEED-06 · no plaintext password is reachable (SEC-006) > stores a hash that verifies, so the column holds the real credential 159ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > SEED-06 · no plaintext password is reachable (SEC-006) > never returns a hash from the reference-data endpoint 24ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > SEED-07 · the seed is idempotent > changes no row count on a repeated run 0ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > SEED-07 · the seed is idempotent > seeds the roster composition the specification states 6ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > SEED-07 · the seed is idempotent > gives the queue a Ticket in every status (BR-20) 2ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > SEED-07 · the seed is idempotent > leaves the Ticket Number sequence untouched, so the reserved band holds 5ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-01 · password hashing (BR-04, SEC-006, SEC-007) > never returns the plaintext 82ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-01 · password hashing (BR-04, SEC-006, SEC-007) > produces a different hash each time, so the salt is per-password 142ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-01 · password hashing (BR-04, SEC-006, SEC-007) > verifies the password that produced the hash 143ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-01 · password hashing (BR-04, SEC-006, SEC-007) > refuses a wrong password against a real hash 211ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-01 · password hashing (BR-04, SEC-006, SEC-007) > refuses a malformed hash instead of throwing 140ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > holds four active Requesters 2ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > holds one inactive Requester, so BR-01 can be proved 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > holds three active IT Staff 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > holds one inactive IT Staff, so BR-16 ownership can be proved 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > holds exactly one active Administrator and no inactive one 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > assigns every user exactly one of the three named roles (BR-11, BR-34) 1ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-02 · emails are unique and comparable (BR-33) > has no duplicate address 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-02 · emails are unique and comparable (BR-33) > stores every address already lowercased, so the unique index is the rule 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-03 · the Lab 2 requesters survive the migration (BR-40) > names all five Lab 2 requesters 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-03 · the Lab 2 requesters survive the migration (BR-40) > carries each Lab 2 requester forward in the roster, so the upsert matches by email 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-04 · the development password is a bridge, not a credential > meets the length floor the server enforces (BR-05) 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > reaches every one of the eight statuses (BR-20) 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > includes both assigned and unassigned Tickets (BR-17) 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > spreads across more than one priority 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > keeps every Ticket Number inside the reserved band, so runtime allocation cannot collide 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > gives every Ticket Number the BR-04 shape 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > carries Public Comments and Internal Notes, each with an author (BR-30) 1ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > gives every comment and note a distinct identifier, so the seed is idempotent 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > never lets a Requester-resolved Ticket sit in a terminal status (BR-23) 0ms
+ Test Files  3 passed (3)
+      Tests  36 passed (36)
+
+=== Full server suite (npm test) ===
+ Test Files  17 passed (17)
+      Tests  150 passed (150)
