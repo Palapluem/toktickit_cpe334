@@ -1,15 +1,22 @@
 // Password hashing behind one module so the algorithm can change in one place (§11.2).
-// Stub: tests/lab-03/password.unit.test.ts drives out the behaviour.
+import bcrypt from 'bcryptjs'
 
-/** Hash a plaintext password with a unique per-password salt (SEC-007). */
-export async function hashPassword(_plain: string): Promise<string> {
-  return ''
+// bcrypt work factor. Raise it, never lower it; the stored hash records its own.
+const COST = 10
+
+/** Hash a plaintext password. bcrypt generates a unique salt per call (SEC-007). */
+export async function hashPassword(plain: string): Promise<string> {
+  return bcrypt.hash(plain, COST)
 }
 
-/** Verify an attempt against a stored hash. Never compares plaintext (SEC-007). */
+/** Verify an attempt against a stored hash. A malformed hash is a failed match, not a crash. */
 export async function verifyPassword(
-  _plain: string,
-  _hash: string,
+  plain: string,
+  hash: string,
 ): Promise<boolean> {
-  return false
+  try {
+    return await bcrypt.compare(plain, hash)
+  } catch {
+    return false
+  }
 }
