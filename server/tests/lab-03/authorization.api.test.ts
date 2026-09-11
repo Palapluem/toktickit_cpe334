@@ -10,6 +10,7 @@ import {
   REQUESTER_EMAIL,
   STAFF_EMAIL,
   matrixApp,
+  operationPath,
   restoreSeededCredentials,
   signIn,
 } from './auth-fixtures.js'
@@ -37,7 +38,7 @@ describe('SEC-T01 · an unauthenticated caller reaches nothing (AC-12)', () => {
   it('refuses every operation with 401, never 403', async () => {
     expect(OPERATIONS.length).toBeGreaterThan(0)
     for (const operation of OPERATIONS) {
-      const response = await request(matrixApp()).get(`/ops/${operation}`)
+      const response = await request(matrixApp()).get(operationPath(operation))
       expect(response.status, `${operation} unauthenticated`).toBe(401)
       expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED')
     }
@@ -57,7 +58,7 @@ describe('SEC-T07 … SEC-T09 · every refused cell refuses over the wire', () =
 
       for (const operation of denied) {
         const response = await request(matrixApp())
-          .get(`/ops/${operation}`)
+          .get(operationPath(operation))
           .set('Cookie', cookie)
         expect(response.status, `${role} → ${operation}`).toBe(403)
         expect(response.body.error.code).toBe('FORBIDDEN')
@@ -71,7 +72,7 @@ describe('SEC-T07 … SEC-T09 · every refused cell refuses over the wire', () =
 
       for (const operation of granted) {
         const response = await request(matrixApp())
-          .get(`/ops/${operation}`)
+          .get(operationPath(operation))
           .set('Cookie', cookie)
         expect(response.status, `${role} → ${operation}`).toBe(200)
         expect(response.body.data.grant).toBe(grantFor(role, operation))
@@ -88,16 +89,16 @@ describe('SEC-T11 · a role sent by the client decides nothing (BR-13, SEC-005)'
     expect(
       (
         await request(matrixApp())
-          .get(`/ops/${ADMIN_ONLY}`)
+          .get(operationPath(ADMIN_ONLY))
           .set('Cookie', await cookieFor('ADMINISTRATOR'))
       ).status,
     ).toBe(200)
 
     const cookie = await cookieFor('REQUESTER')
     const attempts = [
-      request(matrixApp()).get(`/ops/${ADMIN_ONLY}`).set('Cookie', cookie).set('X-Role', 'ADMINISTRATOR'),
-      request(matrixApp()).get(`/ops/${ADMIN_ONLY}`).set('Cookie', `${cookie}; role=ADMINISTRATOR`),
-      request(matrixApp()).get(`/ops/${ADMIN_ONLY}`).set('Cookie', cookie).send({ role: 'ADMINISTRATOR' }),
+      request(matrixApp()).get(operationPath(ADMIN_ONLY)).set('Cookie', cookie).set('X-Role', 'ADMINISTRATOR'),
+      request(matrixApp()).get(operationPath(ADMIN_ONLY)).set('Cookie', `${cookie}; role=ADMINISTRATOR`),
+      request(matrixApp()).get(operationPath(ADMIN_ONLY)).set('Cookie', cookie).send({ role: 'ADMINISTRATOR' }),
     ]
 
     for (const attempt of attempts) {
@@ -108,7 +109,7 @@ describe('SEC-T11 · a role sent by the client decides nothing (BR-13, SEC-005)'
 
   it('refuses a forged session cookie', async () => {
     const response = await request(matrixApp())
-      .get(`/ops/${ADMIN_ONLY}`)
+      .get(operationPath(ADMIN_ONLY))
       .set('Cookie', 'toktickit_session=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
     expect(response.status).toBe(401)
   })
@@ -117,7 +118,7 @@ describe('SEC-T11 · a role sent by the client decides nothing (BR-13, SEC-005)'
 describe('SEC-T13 · a refusal body carries nothing internal (SEC-025)', () => {
   it('answers with the envelope and no stack trace, SQL, or file path', async () => {
     const response = await request(matrixApp())
-      .get('/ops/user:list')
+      .get(operationPath('user:list'))
       .set('Cookie', await cookieFor('REQUESTER'))
 
     expect(response.status).toBe(403)
@@ -139,7 +140,7 @@ describe('SEC-T13 · a refusal body carries nothing internal (SEC-025)', () => {
     const cookie = await cookieFor('REQUESTER')
     const bodies = await Promise.all(
       ['user:list', 'note:read', 'staffQueue:read'].map(async (operation) => {
-        const response = await request(matrixApp()).get(`/ops/${operation}`).set('Cookie', cookie)
+        const response = await request(matrixApp()).get(operationPath(operation)).set('Cookie', cookie)
         expect(response.status, operation).toBe(403)
         return { code: response.body.error.code, message: response.body.error.message }
       }),
@@ -162,7 +163,7 @@ describe('SEC-T14 · injection-shaped input is handled safely (SEC-027)', () => 
 
     for (const operation of hostile) {
       const response = await request(matrixApp())
-        .get(`/ops/${encodeURIComponent(operation)}`)
+        .get(`/ops/${encodeURIComponent(operation.replace(/:/g, '-'))}`)
         .set('Cookie', cookie)
       // No such route: a 404 from Express, never a 500 carrying a driver error.
       expect([403, 404]).toContain(response.status)

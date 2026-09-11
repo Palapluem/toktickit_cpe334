@@ -117,6 +117,15 @@ export function guardedApp() {
 }
 
 /**
+ * Operation names carry a colon, and Express 5 reads a colon in a route path as
+ * the start of a parameter — `/ops/ticket:read` would match `/ops/ticketANY`.
+ * The slug keeps each route literal.
+ */
+export function operationPath(operation: string): string {
+  return `/ops/${operation.replace(/:/g, '-')}`
+}
+
+/**
  * One route per operation in the matrix, behind the real middleware chain.
  * The refusal tests call these directly, never through a screen — the only way
  * to tell an enforced rule from a hidden button (security-contract.md §9).
@@ -127,7 +136,7 @@ export function matrixApp() {
   guarded.use(cookieParser())
   for (const operation of OPERATIONS) {
     guarded.get(
-      `/ops/${operation}`,
+      operationPath(operation),
       requireAuth,
       requirePasswordChanged,
       requireOperation(operation),
