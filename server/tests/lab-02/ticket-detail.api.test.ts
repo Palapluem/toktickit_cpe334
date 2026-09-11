@@ -19,8 +19,8 @@ let references: DetailReferences
 
 beforeAll(async () => {
   const base = await loadTicketReferences()
-  const other = await prisma.requesterUser.findFirstOrThrow({
-    where: { isActive: true, id: { not: base.requesterId } },
+  const other = await prisma.user.findFirstOrThrow({
+    where: { isActive: true, role: 'REQUESTER', id: { not: base.requesterId } },
     select: { id: true },
   })
   references = { ...base, otherRequesterId: other.id }

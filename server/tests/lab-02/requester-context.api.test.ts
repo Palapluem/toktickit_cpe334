@@ -15,11 +15,11 @@ let activeId = ''
 let inactiveId = ''
 
 beforeAll(async () => {
-  const active = await prisma.requesterUser.findFirstOrThrow({
-    where: { isActive: true },
+  const active = await prisma.user.findFirstOrThrow({
+    where: { isActive: true, role: 'REQUESTER' },
   })
-  const inactive = await prisma.requesterUser.findFirstOrThrow({
-    where: { isActive: false },
+  const inactive = await prisma.user.findFirstOrThrow({
+    where: { isActive: false, role: 'REQUESTER' },
   })
   activeId = active.id
   inactiveId = inactive.id

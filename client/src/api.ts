@@ -26,11 +26,12 @@ export interface Requester {
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 export type TicketStatus =
   | 'NEW'
-  | 'ASSIGNED'
+  | 'OPEN'
   | 'IN_PROGRESS'
-  | 'PENDING_REQUESTER'
+  | 'WAITING_FOR_REQUESTER'
   | 'RESOLVED'
   | 'CLOSED'
+  | 'REOPENED'
   | 'CANCELLED'
 
 export interface TicketAttachment {

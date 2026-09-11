@@ -15,7 +15,7 @@ export type TicketReferences = {
 
 export async function loadTicketReferences(): Promise<TicketReferences> {
   const [requester, category, relatedSystem] = await Promise.all([
-    prisma.requesterUser.findFirstOrThrow({ where: { isActive: true } }),
+    prisma.user.findFirstOrThrow({ where: { isActive: true, role: 'REQUESTER' } }),
     prisma.category.findFirstOrThrow({ where: { isActive: true } }),
     prisma.relatedSystem.findFirstOrThrow({ where: { isActive: true } }),
   ])
@@ -29,6 +29,9 @@ export async function loadTicketReferences(): Promise<TicketReferences> {
 
 export async function resetTicketData(): Promise<void> {
   await prisma.attachment.deleteMany()
+  // Comments and notes hold RESTRICT keys to Ticket, so they clear first.
+  await prisma.publicComment.deleteMany()
+  await prisma.internalNote.deleteMany()
   await prisma.ticket.deleteMany()
   await prisma.ticketNumberSequence.deleteMany()
 }

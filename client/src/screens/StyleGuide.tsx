@@ -18,11 +18,12 @@ import {
 const PRIORITIES: Priority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
 const STATUSES: TicketStatus[] = [
   'NEW',
-  'ASSIGNED',
+  'OPEN',
   'IN_PROGRESS',
-  'PENDING_REQUESTER',
+  'WAITING_FOR_REQUESTER',
   'RESOLVED',
   'CLOSED',
+  'REOPENED',
   'CANCELLED',
 ]
 

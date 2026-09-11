@@ -18,8 +18,8 @@ let otherRequesterId: string
 
 beforeAll(async () => {
   references = await loadTicketReferences()
-  const other = await prisma.requesterUser.findFirstOrThrow({
-    where: { isActive: true, id: { not: references.requesterId } },
+  const other = await prisma.user.findFirstOrThrow({
+    where: { isActive: true, role: 'REQUESTER', id: { not: references.requesterId } },
     select: { id: true },
   })
   otherRequesterId = other.id
