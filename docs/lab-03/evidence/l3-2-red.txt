@@ -1,0 +1,40 @@
+ FAIL  tests/lab-03/password.unit.test.ts > UNIT-01 · password hashing (BR-04, SEC-006, SEC-007) > never returns the plaintext
+AssertionError: expected 0 to be greater than 0
+ FAIL  tests/lab-03/password.unit.test.ts > UNIT-01 · password hashing (BR-04, SEC-006, SEC-007) > produces a different hash each time, so the salt is per-password
+AssertionError: expected 0 to be greater than 0
+ FAIL  tests/lab-03/password.unit.test.ts > UNIT-01 · password hashing (BR-04, SEC-006, SEC-007) > verifies the password that produced the hash
+AssertionError: expected false to be true // Object.is equality
+ FAIL  tests/lab-03/password.unit.test.ts > UNIT-01 · password hashing (BR-04, SEC-006, SEC-007) > refuses a wrong password against a real hash
+AssertionError: expected false to be true // Object.is equality
+ FAIL  tests/lab-03/password.unit.test.ts > UNIT-01 · password hashing (BR-04, SEC-006, SEC-007) > refuses a malformed hash instead of throwing
+AssertionError: expected false to be true // Object.is equality
+ FAIL  tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > holds four active Requesters
+AssertionError: expected [] to have a length of 4 but got +0
+ FAIL  tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > holds one inactive Requester, so BR-01 can be proved
+AssertionError: expected [] to have a length of 1 but got +0
+ FAIL  tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > holds three active IT Staff
+AssertionError: expected [] to have a length of 3 but got +0
+ FAIL  tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > holds one inactive IT Staff, so BR-16 ownership can be proved
+AssertionError: expected [] to have a length of 1 but got +0
+ FAIL  tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > holds exactly one active Administrator and no inactive one
+AssertionError: expected [] to have a length of 1 but got +0
+ FAIL  tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > assigns every user exactly one of the three named roles (BR-11, BR-34)
+AssertionError: expected 0 to be greater than 0
+ FAIL  tests/lab-03/seed-roster.unit.test.ts > SEED-02 · emails are unique and comparable (BR-33) > has no duplicate address
+AssertionError: expected 0 to be greater than 0
+ FAIL  tests/lab-03/seed-roster.unit.test.ts > SEED-02 · emails are unique and comparable (BR-33) > stores every address already lowercased, so the unique index is the rule
+AssertionError: expected 0 to be greater than 0
+ FAIL  tests/lab-03/seed-roster.unit.test.ts > SEED-03 · the Lab 2 requesters survive the migration (BR-40) > names all five Lab 2 requesters
+AssertionError: expected [] to have a length of 5 but got +0
+ FAIL  tests/lab-03/seed-roster.unit.test.ts > SEED-03 · the Lab 2 requesters survive the migration (BR-40) > carries each Lab 2 requester forward in the roster, so the upsert matches by email
+AssertionError: expected 0 to be greater than 0
+ FAIL  tests/lab-03/seed-roster.unit.test.ts > SEED-04 · the development password is a bridge, not a credential > meets the length floor the server enforces (BR-05)
+AssertionError: expected 0 to be greater than or equal to 10
+ FAIL  tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > reaches every one of the eight statuses (BR-20)
+AssertionError: expected [] to include 'NEW'
+ FAIL  tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > includes both assigned and unassigned Tickets (BR-17)
+AssertionError: expected false to be true // Object.is equality
+ FAIL  tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > spreads across more than one priority
+AssertionError: expected 0 to be greater than 1
+ FAIL  tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > keeps every Ticket Number inside the reserved band, so runtime allocation cannot collide
+AssertionError: expected 0 to be greater than 0
