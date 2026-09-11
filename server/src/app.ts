@@ -1,9 +1,18 @@
 import express, { type NextFunction, type Request, type Response } from 'express'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
 import multer from 'multer'
 import prisma from './prisma.js'
 import { ApiError, errorHandler, sendError } from './http/errors.js'
 import { requireRequesterContext } from './middleware/requesterContext.js'
+import { requireAuth } from './middleware/authContext.js'
+import { authenticate, changePassword } from './auth/service.js'
+import {
+  SESSION_COOKIE,
+  endSession,
+  sessionCookieOptions,
+  startSession,
+} from './auth/session.js'
 import {
   createTicket,
   type CreateTicketOptions,
@@ -190,8 +199,11 @@ function attachmentParameter(value: string | string[] | undefined): string {
 export function createApp(options: CreateTicketOptions = {}) {
   const app = express()
 
-  app.use(cors())
+  // credentials: the session cookie must travel on cross-origin XHR in dev,
+  // where the client is served from a different port (api-spec.md §1).
+  app.use(cors({ origin: process.env.CLIENT_ORIGIN ?? true, credentials: true }))
   app.use(express.json())
+  app.use(cookieParser())
 
   // Minimal placeholder proving the server starts (Issue 1 scope only).
   app.get('/', (_req, res) => {
@@ -200,6 +212,52 @@ export function createApp(options: CreateTicketOptions = {}) {
 
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', service: 'TokTickIT API' })
+  })
+
+  // Authentication (api-spec.md §3). The session cookie is the only identity
+  // these endpoints accept; nothing reads a role from the request.
+
+  app.post('/api/auth/login', async (req, res) => {
+    const user = await authenticate(req.body?.email, req.body?.password)
+    if (user === null) {
+      // One body for unknown email, wrong password, and inactive (SEC-002).
+      sendError(
+        res,
+        401,
+        'INVALID_CREDENTIALS',
+        'Email or password is incorrect.',
+      )
+      return
+    }
+
+    const { token, expiresAt } = await startSession(user.id)
+    res.cookie(SESSION_COOKIE, token, sessionCookieOptions(expiresAt))
+    res.json({ data: user })
+  })
+
+  // No requireAuth: logging out of nothing is not an error, and reporting one
+  // would confirm whether a token was valid (api-spec.md §3).
+  app.post('/api/auth/logout', async (req, res) => {
+    const token = req.cookies?.[SESSION_COOKIE]
+    if (typeof token === 'string' && token.length > 0) await endSession(token)
+    res.clearCookie(SESSION_COOKIE, { path: '/' })
+    res.json({ data: { loggedOut: true } })
+  })
+
+  // Exempt from the must-change gate, so the client can discover why it is
+  // being refused without a special case (api-spec.md §4).
+  app.get('/api/auth/me', requireAuth, (req, res) => {
+    res.json({ data: req.user })
+  })
+
+  app.post('/api/auth/change-password', requireAuth, async (req, res) => {
+    await changePassword(
+      req.user!.id,
+      req.body?.currentPassword,
+      req.body?.newPassword,
+      req.sessionToken!,
+    )
+    res.json({ data: { passwordChanged: true } })
   })
 
   // Reference data (api-spec.md §2). All three: data envelope, isActive filter,
