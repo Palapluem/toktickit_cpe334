@@ -273,6 +273,56 @@ body {
   color: var(--zen-primary);
 }
 
+/* Status treatments (lab-03 ui-spec §3). Every badge carries its text; these
+   are the supporting cue (STY-019). */
+
+.zen-badge--status-new {
+  background: var(--zen-pale);
+  color: var(--zen-primary);
+}
+
+.zen-badge--status-open {
+  background: var(--zen-pale);
+  color: var(--zen-secondary);
+}
+
+.zen-badge--status-active {
+  background: var(--zen-warning-bg);
+  color: var(--zen-warning);
+}
+
+.zen-badge--status-resolved {
+  background: var(--zen-success-bg);
+  color: var(--zen-success);
+}
+
+.zen-badge--status-quiet {
+  background: var(--zen-disabled-bg);
+  color: var(--zen-disabled-text);
+}
+
+.zen-badge--status-reopened {
+  background: var(--zen-error-bg);
+  color: var(--zen-error);
+}
+
+/* Role badges (lab-03 ui-spec §2). The three darken in order of privilege. */
+
+.zen-badge--role-requester {
+  background: var(--zen-pale);
+  color: var(--zen-primary);
+}
+
+.zen-badge--role-staff {
+  background: var(--zen-secondary);
+  color: var(--zen-surface);
+}
+
+.zen-badge--role-administrator {
+  background: var(--zen-primary);
+  color: var(--zen-surface);
+}
+
 /* ---- States ---- */
 
 .zen-state {
@@ -1162,4 +1212,57 @@ body {
   .my-tickets__pagination-controls {
     justify-content: space-between;
   }
+}
+
+/* ---- Authentication screens (lab-03 ui-spec §6, §7) ---- */
+
+.zen-auth {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: var(--zen-space-8) var(--zen-space-4);
+}
+
+/* Login renders without the shell, so "centred" there means centred in the
+   viewport. Change Password sits inside the shell and keeps the top alignment. */
+.zen-auth--standalone {
+  min-height: 100vh;
+  align-items: center;
+}
+
+.zen-auth__card {
+  width: 100%;
+  /* 420px above 768px, full width with 16px margins below it (§11) */
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--zen-space-3);
+}
+
+.zen-auth__brand {
+  margin: 0;
+  font-weight: 700;
+  color: var(--zen-primary);
+}
+
+.zen-auth__heading {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.zen-auth__detail {
+  margin: 0;
+  color: var(--zen-text-muted);
+}
+
+.zen-auth__error {
+  margin: 0;
+  padding: var(--zen-space-2) var(--zen-space-3);
+  border-radius: var(--zen-radius);
+  background: var(--zen-error-bg);
+  color: var(--zen-error);
+}
+
+.zen-auth__submit {
+  width: 100%;
 }
