@@ -3,14 +3,20 @@ import { Link, useParams } from 'react-router-dom'
 import {
   downloadAttachment,
   fetchTicket,
+  indicateRequesterResolution,
   removeAttachment,
   uploadAttachment,
   type Ticket,
   type TicketAttachment,
+  type TicketStatus,
 } from '../api.js'
 import { AttachmentSection } from '../components/AttachmentSection.js'
+import { Button } from '../components/Button.js'
 import { PriorityBadge, StatusBadge } from '../components/Badge.js'
 import { ErrorState, LoadingState } from '../components/States.js'
+
+/** Nothing is owed on a Ticket in these, so there is nothing to report about. */
+const CLOSED_STATUSES: TicketStatus[] = ['CLOSED', 'CANCELLED']
 
 export type RequesterTicketDetailProps = {
   ticket?: Ticket
@@ -72,6 +78,26 @@ export function RequesterTicketDetail({
     initialTicket ? 'ready' : 'loading',
   )
   const [reloadToken, setReloadToken] = useState(0)
+  const [resolving, setResolving] = useState(false)
+  const [resolutionError, setResolutionError] = useState('')
+
+  async function indicateResolution() {
+    if (!ticket || resolving) return
+    setResolving(true)
+    setResolutionError('')
+    try {
+      const result = await indicateRequesterResolution(ticket.id)
+      setTicket((current) =>
+        current
+          ? { ...current, requesterResolvedAt: result.requesterResolvedAt }
+          : current,
+      )
+    } catch {
+      setResolutionError('That could not be recorded. Try again.')
+    } finally {
+      setResolving(false)
+    }
+  }
 
   useEffect(() => {
     if (initialTicket) {
@@ -184,10 +210,33 @@ export function RequesterTicketDetail({
           <h1>Ticket Details</h1>
           <p>Review the information and attachments for this Ticket.</p>
         </div>
-        <Link className="zen-button zen-button--secondary" to="/tickets">
-          Back to My Tickets
-        </Link>
+        <div className="ticket-detail-page__header-actions">
+          {/* The Requester cannot declare a problem solved (BR-22), but is the
+              only person who knows it still is not. This records that. */}
+          {ticket.requesterResolvedAt ? (
+            <p className="staff-queue__resolved-marker">
+              You reported this as appearing resolved
+            </p>
+          ) : CLOSED_STATUSES.includes(ticket.status) ? null : (
+            <Button
+              variant="secondary"
+              busy={resolving}
+              onClick={indicateResolution}
+            >
+              The problem appears resolved
+            </Button>
+          )}
+          <Link className="zen-button zen-button--secondary" to="/tickets">
+            Back to My Tickets
+          </Link>
+        </div>
       </div>
+
+      {resolutionError ? (
+        <p className="zen-auth__error" role="alert">
+          {resolutionError}
+        </p>
+      ) : null}
 
       <section className="zen-card ticket-detail-card" aria-labelledby="ticket-information-heading">
         <h2 id="ticket-information-heading">Ticket Information</h2>

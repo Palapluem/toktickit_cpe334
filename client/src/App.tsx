@@ -8,6 +8,7 @@ import { CreateTicket } from './screens/CreateTicket.js'
 import { MyTickets } from './screens/MyTickets.js'
 import { RequesterTicketDetail } from './screens/RequesterTicketDetail.js'
 import { StaffTicketQueue } from './screens/StaffTicketQueue.js'
+import { StaffTicketDetail } from './screens/StaffTicketDetail.js'
 import { Login } from './screens/Login.js'
 import { ChangePassword } from './screens/ChangePassword.js'
 import { RequireSession } from './components/RequireSession.js'
@@ -17,7 +18,9 @@ import { CHANGE_PASSWORD_ROUTE, LOGIN_ROUTE, homeFor } from './routes.js'
 function ShellLayout() {
   const { pathname } = useLocation()
   const breadcrumb =
-    pathname === '/staff/tickets'
+    pathname.startsWith('/staff/tickets/')
+      ? ['Ticket Queue', 'Ticket Details']
+      : pathname === '/staff/tickets'
       ? ['Ticket Queue']
       : pathname === '/tickets/new'
       ? ['My Tickets', 'Create Ticket']
@@ -109,6 +112,14 @@ function App() {
           element={
             <RequireSession>
               <StaffTicketQueue />
+            </RequireSession>
+          }
+        />
+        <Route
+          path="/staff/tickets/:id"
+          element={
+            <RequireSession>
+              <StaffTicketDetail />
             </RequireSession>
           }
         />

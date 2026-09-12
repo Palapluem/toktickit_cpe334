@@ -1286,3 +1286,39 @@ body {
   font-size: 0.75rem;
   color: var(--zen-success);
 }
+
+/* ---- IT Staff Ticket Detail (lab-03 ui-spec §9) ---- */
+
+/* The operational strip is separated from the read-only body, so what can be
+   changed is obvious at a glance. */
+.staff-ticket__operations {
+  border-left: 3px solid var(--zen-secondary);
+}
+
+.staff-ticket__operations-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zen-space-4);
+  align-items: flex-end;
+}
+
+.staff-ticket__owner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--zen-space-1);
+  min-width: 12rem;
+}
+
+/* The owner name is a paragraph; its default bottom margin would open a gap
+   the rest of the strip does not have. */
+.staff-ticket__owner p {
+  margin: 0;
+}
+
+.staff-ticket__header-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--zen-space-2);
+}

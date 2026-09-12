@@ -69,6 +69,8 @@ export interface Ticket {
   requestedPriority: Priority
   itPriority: Priority
   status: TicketStatus
+  /** The Requester's "appears resolved" signal — a timestamp, not a status (§11.7). */
+  requesterResolvedAt: string | null
   requester: Pick<Requester, 'id' | 'displayName'>
   category: Category
   relatedSystem: RelatedSystem
@@ -367,6 +369,78 @@ export async function fetchStaffQueue(
   }
 
   return (await response.json()) as StaffQueueResponse
+}
+
+export interface StaffTicket extends Omit<StaffQueueRow, 'category'> {
+  description: string
+  category: Category
+  relatedSystem: RelatedSystem
+  attachments: TicketAttachment[]
+  permittedTransitions: TicketStatus[]
+}
+
+async function patchJson<T>(path: string, body: unknown, label: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    await throwApiRequestError(response, label)
+  }
+
+  return ((await response.json()) as { data: T }).data
+}
+
+export function fetchStaffTicket(ticketId: string): Promise<StaffTicket> {
+  return get<StaffTicket>(`/api/staff/tickets/${ticketId}`, 'Ticket request failed')
+}
+
+/** `me` is the claim; null unassigns (api-spec.md §8). */
+export function setTicketOwner(
+  ticketId: string,
+  ownerId: string | null,
+): Promise<StaffTicket> {
+  return patchJson<StaffTicket>(
+    `/api/staff/tickets/${ticketId}/owner`,
+    { ownerId },
+    'Could not change the owner.',
+  )
+}
+
+export function setItPriority(
+  ticketId: string,
+  itPriority: Priority,
+): Promise<StaffTicket> {
+  return patchJson<StaffTicket>(
+    `/api/staff/tickets/${ticketId}/it-priority`,
+    { itPriority },
+    'Could not change the IT priority.',
+  )
+}
+
+export function setTicketStatus(
+  ticketId: string,
+  status: TicketStatus,
+): Promise<StaffTicket> {
+  return patchJson<StaffTicket>(
+    `/api/staff/tickets/${ticketId}/status`,
+    { status },
+    'Could not change the status.',
+  )
+}
+
+/** The Requester's signal. A timestamp, never a status (§11.7). */
+export function indicateRequesterResolution(
+  ticketId: string,
+): Promise<{ requesterResolvedAt: string; status: TicketStatus }> {
+  return postJson<{ requesterResolvedAt: string; status: TicketStatus }>(
+    `/api/tickets/${ticketId}/requester-resolution`,
+    {},
+    'Could not record that the problem appears resolved.',
+  )
 }
 
 export async function fetchTickets(

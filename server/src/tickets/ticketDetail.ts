@@ -101,6 +101,7 @@ function mapTicket(ticket: TicketDetailRecord) {
     requestedPriority: ticket.requestedPriority,
     itPriority: ticket.itPriority,
     status: ticket.status,
+    requesterResolvedAt: ticket.requesterResolvedAt,
     requester: ticket.requester,
     category: ticket.category,
     relatedSystem: ticket.relatedSystem,
