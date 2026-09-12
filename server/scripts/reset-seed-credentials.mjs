@@ -20,12 +20,20 @@ if (!databaseName.endsWith('_test')) {
   process.exit(1)
 }
 
+// One account stays behind the must-change gate, so the Change Password screen
+// has a subject to capture. Named here rather than in a spec: a spec cannot
+// reach the database, and a screen that needs a database state needs it set up.
+const KEEP_GATED = ['david.lee@example.ac.th']
+
 const passwordHash = await bcrypt.hash(DEVELOPMENT_PASSWORD, 10)
 const client = new pg.Client({ connectionString: url })
 await client.connect()
 const { rowCount } = await client.query(
-  'UPDATE "User" SET "passwordHash" = $1, "mustChangePassword" = false',
-  [passwordHash],
+  'UPDATE "User" SET "passwordHash" = $1, "mustChangePassword" = ("email" = ANY($2))',
+  [passwordHash, KEEP_GATED],
 )
 await client.end()
-console.log(`Reset credentials on ${rowCount} seeded accounts in ${databaseName}.`)
+console.log(
+  `Reset credentials on ${rowCount} seeded accounts in ${databaseName}; ` +
+    `${KEEP_GATED.length} left behind the must-change gate.`,
+)

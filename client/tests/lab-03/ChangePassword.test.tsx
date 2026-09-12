@@ -38,6 +38,17 @@ function renderScreen() {
   )
 }
 
+/** The error attached to a field, rather than any text that happens to match. */
+async function fieldError(label: RegExp): Promise<string> {
+  const field = await screen.findByLabelText(label)
+  const describedBy = field.getAttribute('aria-describedby') ?? ''
+  const message = describedBy
+    .split(' ')
+    .map((id) => document.getElementById(id))
+    .find((element) => element?.classList.contains('zen-field__error'))
+  return message?.textContent ?? ''
+}
+
 async function fill(current: string, next: string, confirm = next) {
   const user = userEvent.setup()
   await user.type(await screen.findByLabelText(/^Current password/), current)
@@ -72,7 +83,9 @@ describe('UI-05 · AC-06 · validation refuses before the request', () => {
     renderScreen()
     await fill('current-password', 'short')
 
-    expect(await screen.findByText(/at least 10 characters/i)).toBeInTheDocument()
+    await waitFor(async () => {
+      expect(await fieldError(/^New password/)).toMatch(/at least 10 characters/i)
+    })
     expect(changePasswordMock).not.toHaveBeenCalled()
   })
 
