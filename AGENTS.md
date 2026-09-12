@@ -19,7 +19,18 @@ Structure and norms follow the Spec-Driven Development model taught in CPE334 Le
 | `docs/lab-02/diagrams.md` | Design models | Class and Activity diagrams |
 | `docs/lab-02/tests.md` | Test plan | The planned tests and AC traceability |
 
-`specification.md` is the source of truth. `style-contract.md` and `testing-contract.md` are enforcement gates: short enough to run against a diff without re-reading the full specifications.
+### Lab 3 — the current sprint
+
+| Path | SDD stage | What it settles |
+| :--- | :--- | :--- |
+| `docs/lab-03/specification.md` | Feature-Level SDS | Roles, authorization matrix, status transition matrix, migration, AC, Definition of Done |
+| `docs/lab-03/api-spec.md` | API design spec | Session mechanism, auth and staff and admin endpoints, 401/403/404 rules |
+| `docs/lab-03/ui-spec.md` | UI design spec | Only what is new or changed; Lab 2's remains in force |
+| `docs/lab-03/tests.md` | Test plan | Planned tests and AC traceability for this sprint |
+
+`specification.md` for the current lab is the source of truth. `style-contract.md` and `testing-contract.md` are enforcement gates: short enough to run against a diff without re-reading the full specifications.
+
+**Lab 2's gates still bind.** `style-contract.md` STY-001…030 and `testing-contract.md` apply unchanged to Lab 3 work; they were written to outlive the sprint that produced them. Lab 2's `specification.md` remains the record of decisions §11.1–§11.26, which Lab 3 extends rather than replaces — a cross-lab reference is written explicitly, as `lab-02 BR-16`.
 
 ### Reading order
 
@@ -27,6 +38,7 @@ Consult only what the task needs. Reading everything wastes context and dilutes 
 
 | Task | Read |
 | :--- | :--- |
+| **Anything touching auth, roles, or user data** | **`specification.md` §8.1 authorization matrix · `testing-contract.md` §7 audit procedure** |
 | Backend endpoint | `specification.md` §4 §5 §7 §8 · `api-spec.md` · `testing-contract.md` |
 | UI screen | `specification.md` §4 §5 §6 · `ui-spec.md` · `style-contract.md` |
 | Schema or migration | `specification.md` §7 §11 · `diagrams.md` |
