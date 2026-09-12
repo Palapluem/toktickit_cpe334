@@ -103,6 +103,9 @@ describe('API-19 · AC-27 · owned Ticket Detail', () => {
       'relatedSystem',
       'requestedPriority',
       'requester',
+      // Added by lab-03 AC-16: the Requester has to be able to see their own
+      // "appears resolved" signal on the Ticket they reported.
+      'requesterResolvedAt',
       'status',
       'summary',
       'ticketNo',

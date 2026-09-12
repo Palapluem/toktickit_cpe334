@@ -254,6 +254,69 @@ describe('UI-09 · AC-19 · the controls issue the query', () => {
   })
 })
 
+describe('UI-09 · AC-19 · pagination', () => {
+  it('offers no pager when everything fits on one page', async () => {
+    renderQueue()
+    await screen.findByText('TKT-2026-000001')
+
+    expect(screen.queryByRole('navigation', { name: 'Queue pagination' })).toBeNull()
+  })
+
+  it('pages without resetting the page to one', async () => {
+    fetchStaffQueueMock.mockResolvedValue(
+      queueResponse([ASSIGNED], {
+        pagination: {
+          page: 1,
+          pageSize: 20,
+          totalItems: 45,
+          totalPages: 3,
+          hasPreviousPage: false,
+          hasNextPage: true,
+        },
+      }),
+    )
+    renderQueue()
+    await screen.findByText('TKT-2026-000001')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }))
+
+    await waitFor(() => {
+      expect(fetchStaffQueueMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({ page: 2 }),
+      )
+    })
+  })
+
+  it('returns to page one when a filter changes', async () => {
+    fetchStaffQueueMock.mockResolvedValue(
+      queueResponse([ASSIGNED], {
+        pagination: {
+          page: 2,
+          pageSize: 20,
+          totalItems: 45,
+          totalPages: 3,
+          hasPreviousPage: true,
+          hasNextPage: true,
+        },
+      }),
+    )
+    renderQueue()
+    await screen.findByText('TKT-2026-000001')
+    await userEvent.click(screen.getByRole('button', { name: 'Next' }))
+
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Status' }),
+      'OPEN',
+    )
+
+    await waitFor(() => {
+      expect(fetchStaffQueueMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({ status: 'OPEN', page: 1 }),
+      )
+    })
+  })
+})
+
 describe('UI-10 · FR-36 · every state renders', () => {
   it('shows loading feedback while the request is in flight', async () => {
     fetchStaffQueueMock.mockReturnValue(new Promise(() => {}))
