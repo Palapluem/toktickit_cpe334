@@ -350,7 +350,7 @@ Every protected operation against every role. **An operation absent from this ta
 - Every PR linked to its Issue through the Development panel
 - Every review comment answered; changes fixed on the same branch; the reviewer merges
 - One release Pull Request from `lab3-staging` to `main`
-- `docs/lab-03/` contains `specification.md`, `tests.md`, `ui-spec.md`, `api-spec.md`, `security-contract.md`, `reviewer.md`, `ai-use.md`
+- `docs/lab-03/` contains `specification.md`, `tests.md`, `ui-spec.md`, `api-spec.md`, `reviewer.md`, `ai-use.md`
 - Submission PDF prepared in the required "Answer Part 1–9" order
 
 ## 11. Assumptions and Decisions

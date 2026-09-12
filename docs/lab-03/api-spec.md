@@ -19,8 +19,8 @@ Set-Cookie: toktickit_session=<32 random bytes, base64url>;
 |---|---|---|
 | Token | 32 cryptographically random bytes, base64url | Not derived from the user id; not guessable |
 | Storage | `Session` row: `id`, `userId`, `expiresAt`, `createdAt` | SEC-012 |
-| Absolute lifetime | 8 hours | BR-08, SEC-014 |
-| Logout | The row is **deleted** | BR-09, SEC-004 |
+| Absolute lifetime | 8 hours | BR-08 |
+| Logout | The row is **deleted** | BR-09 |
 | Password change | Every *other* session for that user is deleted | BR-07 |
 | Deactivation | Every session for that user is deleted | BR-39 |
 | `httpOnly` | Yes — client JavaScript can never read it | SEC-013 |
@@ -67,7 +67,7 @@ Unchanged from Lab 2:
 
 - *Is there a valid session?* No → **401**.
 - *May this role ever do this?* No → **403**. The operation is refused on its face; nothing is revealed about any particular record.
-- *May this role do this, but not to this record?* → **404**, never 403. A 403 here would confirm the record exists (BR-14, SEC-024).
+- *May this role do this, but not to this record?* → **404**, never 403. A 403 here would confirm the record exists (BR-14).
 
 ### Error codes
 
@@ -100,10 +100,10 @@ Anonymous. Establishes a session.
 ```
 
 **Failures**
-- `401 INVALID_CREDENTIALS` — **identical body for an unknown email, a wrong password, and an inactive account** (BR-03, SEC-002). The three cases must be indistinguishable, including response timing where practical.
+- `401 INVALID_CREDENTIALS` — **identical body for an unknown email, a wrong password, and an inactive account** (BR-03). The three cases must be indistinguishable, including response timing where practical.
 - `400 VALIDATION_FAILED` — missing or malformed email or password.
 
-Never returns a hash, the session token in the body, or any indication of which check failed (SEC-003).
+Never returns a hash, the session token in the body, or any indication of which check failed (AC-07).
 
 ### `POST /api/auth/logout`
 
@@ -130,7 +130,7 @@ Any authenticated user. The safe profile and access state.
 }
 ```
 
-**401** when no valid session exists. This endpoint is how the client learns its role — never from anything it stored (BR-13, SEC-005).
+**401** when no valid session exists. This endpoint is how the client learns its role — never from anything it stored (BR-13).
 
 ### `POST /api/auth/change-password`
 
@@ -153,7 +153,7 @@ Any authenticated user, **including one blocked by `mustChangePassword`** — th
 
 A user with `mustChangePassword = true` is refused **every endpoint except** `POST /api/auth/change-password`, `POST /api/auth/logout`, and `GET /api/auth/me`.
 
-**403 `PASSWORD_CHANGE_REQUIRED`** — 403 rather than 401 because the session is valid; it is the account state that forbids the request. The client uses this code to route to the change-password screen; the server's refusal is the control (BR-02, SEC-008).
+**403 `PASSWORD_CHANGE_REQUIRED`** — 403 rather than 401 because the session is valid; it is the account state that forbids the request. The client uses this code to route to the change-password screen; the server's refusal is the control (BR-02).
 
 `GET /api/auth/me` stays open so the client can discover *why* it is being refused without a special case.
 
@@ -224,7 +224,7 @@ The status is echoed deliberately, so a client that expected a transition can se
 
 Same shape as comments. Author and timestamp are server-set.
 
-**The refusal that matters.** A Requester — even the Ticket's owner — receives **403 `FORBIDDEN`** with an empty `fieldErrors`, and the body carries no count, no empty array, and no indication of whether notes exist (BR-28, SEC-021, AC-09).
+**The refusal that matters.** A Requester — even the Ticket's owner — receives **403 `FORBIDDEN`** with an empty `fieldErrors`, and the body carries no count, no empty array, and no indication of whether notes exist (BR-28, AC-09).
 
 Returning `{ "data": [] }` would be a leak: it distinguishes "you may not see these" from "there are none", and over several tickets that difference maps out where the notes are. The response is identical whether the Ticket has zero notes or fifty.
 
@@ -307,7 +307,7 @@ Requested Priority is never touched (BR-18, AC-22). A body containing `requested
 
 Validated against §5.1 for the current status **and the calling role**.
 
-**Failures:** `400 INVALID_STATUS_TRANSITION` — includes the current status and the permitted set, which is safe to disclose because it is policy rather than data · `403` for a role that may never make this transition — a Requester sending `RESOLVED` lands here (BR-22, SEC-022, AC-24).
+**Failures:** `400 INVALID_STATUS_TRANSITION` — includes the current status and the permitted set, which is safe to disclose because it is policy rather than data · `403` for a role that may never make this transition — a Requester sending `RESOLVED` lands here (BR-22, AC-24).
 
 Both are refusals; the distinction is *why*. An IT Staff member attempting `NEW → CLOSED` is asking for something no one may do, so 400. A Requester attempting `RESOLVED` is asking for something their role may never do, so 403.
 
@@ -328,7 +328,7 @@ No pagination and no sort parameter — the labsheet excludes both (§8.5). Orde
 
 **200** — `{ "data": [ { "id", "displayName", "email", "role", "isActive", "mustChangePassword" } ] }`
 
-**Never** includes `passwordHash` (SEC-003, API-25).
+**Never** includes `passwordHash` (AC-07, API-25).
 
 ### `POST /api/admin/users`
 
@@ -338,7 +338,7 @@ No pagination and no sort parameter — the labsheet excludes both (§8.5). Orde
   "role": "IT_STAFF", "isActive": true, "initialPassword": "..." }
 ```
 
-**201** — the created user, without the hash. `mustChangePassword` is `true`, always (BR-06, SEC-011).
+**201** — the created user, without the hash. `mustChangePassword` is `true`, always (BR-06).
 
 **Failures:** `409 EMAIL_ALREADY_EXISTS` — case-insensitive (BR-33, AC-29); the message names the field and nothing about the existing account (SEC-036) · `400 VALIDATION_FAILED` for an unknown role (BR-34) or a password below the minimum.
 

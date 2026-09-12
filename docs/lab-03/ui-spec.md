@@ -99,7 +99,7 @@ Centred card, max width 420 px:
 | **Authentication failure** | **One callout: "Invalid email or password."** — identical for unknown email, wrong password, and inactive account (BR-03) |
 | API failure | Safe failure callout with Try again |
 
-**The failure message is a requirement, not copy.** It must not vary by cause, must not name the account, and must not hint that the email was recognised (SEC-002). The temptation to be helpful here is exactly the vulnerability.
+**The failure message is a requirement, not copy.** It must not vary by cause, must not name the account, and must not hint that the email was recognised (BR-03). The temptation to be helpful here is exactly the vulnerability.
 
 ## 7. Screen: Change Password (mandatory)
 
