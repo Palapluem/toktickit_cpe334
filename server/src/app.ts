@@ -25,6 +25,7 @@ import {
   MAX_ATTACHMENTS,
 } from './tickets/attachmentRules.js'
 import { listTickets } from './tickets/listTickets.js'
+import { listStaffQueue } from './staff/staffQueue.js'
 import { UUID } from './tickets/validation.js'
 import {
   addTicketAttachment,
@@ -286,6 +287,23 @@ export function createApp(options: CreateTicketOptions = {}) {
       select: { id: true, name: true },
       })
       res.json({ data })
+    },
+  )
+
+  // The staff queue (api-spec.md §8). Not user-scoped, so the role check is
+  // the only thing between a Requester and every Ticket in the system.
+  app.get(
+    '/api/staff/tickets',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('staffQueue:read'),
+    async (req, res) => {
+      const data = await listStaffQueue(
+        req.user!.id,
+        req.query,
+        options.db ?? prisma,
+      )
+      res.json(data)
     },
   )
 

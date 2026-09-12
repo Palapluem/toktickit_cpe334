@@ -307,6 +307,68 @@ export async function createTicket(
   return responseBody.data
 }
 
+export interface StaffQueueRow {
+  id: string
+  ticketNo: string
+  summary: string
+  category: Category
+  requester: Pick<Requester, 'id' | 'displayName'>
+  requestedPriority: Priority
+  itPriority: Priority
+  status: TicketStatus
+  owner: Pick<Requester, 'id' | 'displayName'> | null
+  requesterResolvedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface StaffQueueQuery {
+  search?: string
+  status?: string
+  itPriority?: string
+  categoryId?: string
+  ownerId?: string
+  sort?: string
+  page?: number
+  pageSize?: number
+}
+
+export interface StaffQueueResponse {
+  data: StaffQueueRow[]
+  pagination: TicketListResponse['pagination']
+  appliedFilters: {
+    search: string | null
+    status: string | null
+    itPriority: string | null
+    categoryId: string | null
+    ownerId: string | null
+    sort: string
+  }
+}
+
+export async function fetchStaffQueue(
+  query: StaffQueueQuery = {},
+): Promise<StaffQueueResponse> {
+  const params = new URLSearchParams()
+  for (const [key, raw] of Object.entries(query)) {
+    const value = typeof raw === 'string' ? raw.trim() : raw
+    if (value === undefined || value === '' || value === null) continue
+    params.set(key, String(value))
+  }
+
+  const queryString = params.toString()
+  const response = await fetch(
+    `${API_BASE_URL}/api/staff/tickets${queryString ? `?${queryString}` : ''}`,
+    { credentials: 'include' },
+  )
+
+  if (!response.ok) {
+    await throwApiRequestError(response, 'Queue request failed')
+  }
+
+  return (await response.json()) as StaffQueueResponse
+}
+
 export async function fetchTickets(
   query: TicketListQuery = {},
 ): Promise<TicketListResponse> {

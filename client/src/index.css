@@ -1266,3 +1266,23 @@ body {
 .zen-auth__submit {
   width: 100%;
 }
+
+.zen-state--forbidden {
+  background: var(--zen-forbidden-bg);
+  border-color: var(--zen-forbidden-text);
+  color: var(--zen-forbidden-text);
+}
+
+/* ---- IT Staff Ticket Queue (lab-03 ui-spec §8) ---- */
+
+.staff-queue__unassigned {
+  color: var(--zen-text-muted);
+  font-style: italic;
+}
+
+.staff-queue__resolved-marker {
+  display: block;
+  margin-top: var(--zen-space-1);
+  font-size: 0.75rem;
+  color: var(--zen-success);
+}
