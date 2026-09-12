@@ -4,11 +4,10 @@ import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { AppShell } from './components/AppShell.js'
 import { SystemCheck } from './screens/SystemCheck.js'
 import { StyleGuide } from './screens/StyleGuide.js'
-import { SelectRequester } from './screens/SelectRequester.js'
 import { CreateTicket } from './screens/CreateTicket.js'
 import { MyTickets } from './screens/MyTickets.js'
 import { RequesterTicketDetail } from './screens/RequesterTicketDetail.js'
-import { RequireRequester } from './components/RequireRequester.js'
+import { RequireSession } from './components/RequireSession.js'
 
 function ShellLayout() {
   const { pathname } = useLocation()
@@ -28,20 +27,10 @@ function ShellLayout() {
   )
 }
 
-function RequesterSelectionLayout() {
-  return (
-    <AppShell showNavigation={false} breadcrumb={['Development Requester Selection']}>
-      <SelectRequester />
-    </AppShell>
-  )
-}
-
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/tickets" replace />} />
-
-      <Route path="/select-requester" element={<RequesterSelectionLayout />} />
 
       <Route
         element={<ShellLayout />}
@@ -49,25 +38,25 @@ function App() {
         <Route
           path="/tickets"
           element={
-            <RequireRequester>
+            <RequireSession>
               <MyTickets />
-            </RequireRequester>
+            </RequireSession>
           }
         />
         <Route
           path="/tickets/new"
           element={
-            <RequireRequester>
+            <RequireSession>
               <CreateTicket />
-            </RequireRequester>
+            </RequireSession>
           }
         />
         <Route
           path="/tickets/:id"
           element={
-            <RequireRequester>
+            <RequireSession>
               <RequesterTicketDetail />
-            </RequireRequester>
+            </RequireSession>
           }
         />
         <Route path="/system-check" element={<SystemCheck />} />

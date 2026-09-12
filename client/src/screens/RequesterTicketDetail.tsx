@@ -11,11 +11,9 @@ import {
 import { AttachmentSection } from '../components/AttachmentSection.js'
 import { PriorityBadge, StatusBadge } from '../components/Badge.js'
 import { ErrorState, LoadingState } from '../components/States.js'
-import { useOptionalRequester } from '../context/RequesterContext.js'
 
 export type RequesterTicketDetailProps = {
   ticket?: Ticket
-  requesterId?: string
 }
 
 function formatDate(value: string): string {
@@ -67,11 +65,8 @@ function ReadOnlyBadge({
 
 export function RequesterTicketDetail({
   ticket: initialTicket,
-  requesterId: initialRequesterId,
 }: RequesterTicketDetailProps = {}) {
-  const context = useOptionalRequester()
   const { id: routeTicketId } = useParams<{ id: string }>()
-  const requesterId = initialRequesterId ?? context?.requester?.id ?? ''
   const [ticket, setTicket] = useState<Ticket | null>(initialTicket ?? null)
   const [phase, setPhase] = useState<'loading' | 'ready' | 'error'>(
     initialTicket ? 'ready' : 'loading',
@@ -84,7 +79,7 @@ export function RequesterTicketDetail({
       setPhase('ready')
       return
     }
-    if (!requesterId || !routeTicketId) {
+    if (!routeTicketId) {
       setTicket(null)
       setPhase('error')
       return
@@ -93,7 +88,7 @@ export function RequesterTicketDetail({
     let cancelled = false
     setTicket(null)
     setPhase('loading')
-    fetchTicket(requesterId, routeTicketId)
+    fetchTicket(routeTicketId)
       .then((nextTicket) => {
         if (cancelled) return
         setTicket(nextTicket)
@@ -106,11 +101,11 @@ export function RequesterTicketDetail({
     return () => {
       cancelled = true
     }
-  }, [initialTicket, requesterId, reloadToken, routeTicketId])
+  }, [initialTicket, reloadToken, routeTicketId])
 
   async function addAttachment(file: File): Promise<TicketAttachment> {
     if (!ticket) throw new Error('Ticket is not loaded.')
-    const response = await uploadAttachment(requesterId, ticket.id, file)
+    const response = await uploadAttachment(ticket.id, file)
     setTicket((current) =>
       current
         ? { ...current, attachments: [...current.attachments, response.data] }
@@ -123,7 +118,7 @@ export function RequesterTicketDetail({
     attachmentId: string,
     reason: string,
   ): Promise<TicketAttachment> {
-    const response = await removeAttachment(requesterId, attachmentId, reason)
+    const response = await removeAttachment(attachmentId, reason)
     setTicket((current) =>
       current
         ? {
@@ -140,7 +135,7 @@ export function RequesterTicketDetail({
   async function downloadTicketAttachment(attachmentId: string): Promise<void> {
     const attachment = ticket?.attachments.find(({ id }) => id === attachmentId)
     if (!attachment) throw new Error('Attachment is not available.')
-    const blob = await downloadAttachment(requesterId, attachmentId)
+    const blob = await downloadAttachment(attachmentId)
     const objectUrl = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = objectUrl
@@ -170,7 +165,7 @@ export function RequesterTicketDetail({
         </div>
         <ErrorState
           title="Could not load Ticket details"
-          detail="This Ticket is unavailable in the current requester context."
+          detail="This Ticket is not available to you."
           onRetry={() => setReloadToken((current) => current + 1)}
         />
       </div>
@@ -225,7 +220,6 @@ export function RequesterTicketDetail({
       <div className="zen-card ticket-detail-card">
         <AttachmentSection
           ticketId={ticket.id}
-          requesterId={requesterId}
           attachments={ticket.attachments}
           activeCount={activeCount}
           activeLimit={5}

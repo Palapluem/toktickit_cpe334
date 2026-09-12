@@ -11,7 +11,6 @@ import { Button } from './Button.js'
 
 export type AttachmentSectionProps = {
   ticketId: string
-  requesterId: string
   attachments: TicketAttachment[]
   activeCount: number
   activeLimit: number
@@ -43,7 +42,6 @@ function fileTypeLabel(mimeType: string): string {
 
 export function AttachmentSection({
   ticketId,
-  requesterId,
   attachments,
   activeCount,
   activeLimit,
@@ -177,7 +175,6 @@ export function AttachmentSection({
     <section
       className="attachment-section"
       data-ticket-id={ticketId}
-      data-requester-id={requesterId}
     >
       <div className="attachment-section__header">
         <div>
