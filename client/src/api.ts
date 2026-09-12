@@ -443,6 +443,42 @@ export function indicateRequesterResolution(
   )
 }
 
+export interface ThreadEntry {
+  id: string
+  body: string
+  createdAt: string
+  author: { id: string; displayName: string; role: Role }
+}
+
+export const MAX_ENTRY_LENGTH = 2000
+
+export function fetchComments(ticketId: string): Promise<ThreadEntry[]> {
+  return get<ThreadEntry[]>(`/api/tickets/${ticketId}/comments`, 'Comments request failed')
+}
+
+export function postComment(ticketId: string, body: string): Promise<ThreadEntry> {
+  return postJson<ThreadEntry>(
+    `/api/tickets/${ticketId}/comments`,
+    { body },
+    'The comment could not be posted.',
+  )
+}
+
+export function fetchInternalNotes(ticketId: string): Promise<ThreadEntry[]> {
+  return get<ThreadEntry[]>(
+    `/api/tickets/${ticketId}/internal-notes`,
+    'Internal notes request failed',
+  )
+}
+
+export function postInternalNote(ticketId: string, body: string): Promise<ThreadEntry> {
+  return postJson<ThreadEntry>(
+    `/api/tickets/${ticketId}/internal-notes`,
+    { body },
+    'The note could not be added.',
+  )
+}
+
 export async function fetchTickets(
   query: TicketListQuery = {},
 ): Promise<TicketListResponse> {

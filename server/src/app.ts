@@ -27,6 +27,12 @@ import {
 import { listTickets } from './tickets/listTickets.js'
 import { listStaffQueue } from './staff/staffQueue.js'
 import {
+  createInternalNote,
+  createPublicComment,
+  listInternalNotes,
+  listPublicComments,
+} from './tickets/threads.js'
+import {
   getStaffTicketDetail,
   indicateRequesterResolution,
   setItPriority,
@@ -318,6 +324,77 @@ export function createApp(options: CreateTicketOptions = {}) {
   // Internal Notes the contract says it includes (api-spec.md §8). A Requester
   // holds ticket:read scoped to their own and never holds note:read, so this
   // chain refuses them here while /api/tickets/:id still serves them.
+  // Public Comments (api-spec.md §6). The owning Requester, IT Staff, and
+  // Administrator; a Requester's grant is scoped to their own Ticket.
+  app.get(
+    '/api/tickets/:id/comments',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('comment:read'),
+    async (req, res) => {
+      const data = await listPublicComments(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.grant!,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.post(
+    '/api/tickets/:id/comments',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('comment:create'),
+    async (req, res) => {
+      const data = await createPublicComment(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.grant!,
+        req.body,
+        options.db ?? prisma,
+      )
+      res.status(201).json({ data })
+    },
+  )
+
+  // Internal Notes (api-spec.md §7). A Requester is refused by the role gate
+  // before any query runs, so the response carries no count, no empty array,
+  // and no indication of whether notes exist (BR-28, SEC-021).
+  app.get(
+    '/api/tickets/:id/internal-notes',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('note:read'),
+    async (req, res) => {
+      const data = await listInternalNotes(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.grant!,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.post(
+    '/api/tickets/:id/internal-notes',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('note:create'),
+    async (req, res) => {
+      const data = await createInternalNote(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.grant!,
+        req.body,
+        options.db ?? prisma,
+      )
+      res.status(201).json({ data })
+    },
+  )
+
   app.get(
     '/api/staff/tickets/:id',
     requireAuth,

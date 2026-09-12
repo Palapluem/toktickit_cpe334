@@ -11,6 +11,9 @@ import {
   type TicketStatus,
 } from '../api.js'
 import { AttachmentSection } from '../components/AttachmentSection.js'
+// Public Comments only. The Requester gets no Internal Notes affordance at
+// all — not a disabled one (ui-spec §9, AC-09).
+import { PublicCommentsSection } from '../components/ThreadSection.js'
 import { Button } from '../components/Button.js'
 import { PriorityBadge, StatusBadge } from '../components/Badge.js'
 import { ErrorState, LoadingState } from '../components/States.js'
@@ -277,6 +280,8 @@ export function RequesterTicketDetail({
           onDownload={downloadTicketAttachment}
         />
       </div>
+
+      <PublicCommentsSection ticketId={ticket.id} />
     </div>
   )
 }
