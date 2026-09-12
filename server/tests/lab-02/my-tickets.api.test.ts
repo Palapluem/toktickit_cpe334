@@ -6,6 +6,7 @@ import app from '../../src/app.js'
 import prisma from '../../src/prisma.js'
 import { expectDataArray } from './envelope.js'
 import { resetTicketData } from './ticket-fixtures.js'
+import { signIn } from '../lab-03/auth-fixtures.js'
 
 type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 type Status =
@@ -32,6 +33,8 @@ type TicketOverrides = Partial<{
 }>
 
 let requesterIds: string[] = []
+// One session per seeded Requester, so a test can still say "list as this one".
+const cookieByRequesterId = new Map<string, string>()
 let categoryIds: string[] = []
 let relatedSystemIds: string[] = []
 let ticketSequence = 100
@@ -41,7 +44,7 @@ beforeAll(async () => {
     prisma.user.findMany({
       where: { isActive: true, role: 'REQUESTER' },
       orderBy: { displayName: 'asc' },
-      select: { id: true },
+      select: { id: true, email: true },
     }),
     prisma.category.findMany({ orderBy: { name: 'asc' }, select: { id: true } }),
     prisma.relatedSystem.findMany({
@@ -50,6 +53,9 @@ beforeAll(async () => {
     }),
   ])
   requesterIds = requesters.map(({ id }) => id)
+  for (const { id, email } of requesters) {
+    cookieByRequesterId.set(id, await signIn(email))
+  }
   categoryIds = categories.map(({ id }) => id)
   relatedSystemIds = relatedSystems.map(({ id }) => id)
 })
@@ -109,7 +115,7 @@ async function addAttachment(
 function listTickets(requesterId: string, query: Record<string, string> = {}) {
   return request(app)
     .get('/api/tickets')
-    .set('X-Requester-Id', requesterId)
+    .set('Cookie', cookieByRequesterId.get(requesterId) ?? '')
     .query(query)
 }
 

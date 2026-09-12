@@ -5,11 +5,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import * as api from '../../src/api.js'
-import {
-  RequesterProvider,
-  STORAGE_KEY,
-  useRequester,
-} from '../../src/context/RequesterContext.js'
+import { SessionProvider } from '../../src/context/SessionContext.js'
 import { MyTickets } from '../../src/screens/MyTickets.js'
 
 vi.mock('../../src/api.js', async () => {
@@ -19,7 +15,7 @@ vi.mock('../../src/api.js', async () => {
   return {
     ...actual,
     fetchCategories: vi.fn(),
-    fetchRequesters: vi.fn(),
+    fetchCurrentUser: vi.fn(),
     fetchTickets: vi.fn(),
   }
 })
@@ -77,34 +73,27 @@ const CATEGORIES = [
   { id: 'category-software', name: 'Software' },
 ]
 
-function ContextSwitcher() {
-  const { select } = useRequester()
-  return (
-    <button type="button" onClick={() => select(REQUESTER_B)}>
-      Switch requester
-    </button>
-  )
-}
-
-function renderScreen(withSwitcher = false) {
+function renderScreen() {
   return render(
     <MemoryRouter initialEntries={['/tickets']}>
-      <RequesterProvider>
+      <SessionProvider>
         <MyTickets />
-        {withSwitcher ? <ContextSwitcher /> : null}
-      </RequesterProvider>
+      </SessionProvider>
     </MemoryRouter>,
   )
 }
 
-const fetchRequestersMock = vi.mocked(api.fetchRequesters)
+const fetchCurrentUserMock = vi.mocked(api.fetchCurrentUser)
 const fetchCategoriesMock = vi.mocked(api.fetchCategories)
 const fetchTicketsMock = vi.mocked(api.fetchTickets)
 
 beforeEach(() => {
   window.sessionStorage.clear()
-  window.sessionStorage.setItem(STORAGE_KEY, REQUESTER_A.id)
-  fetchRequestersMock.mockResolvedValue([REQUESTER_A, REQUESTER_B])
+  fetchCurrentUserMock.mockResolvedValue({
+    ...REQUESTER_A,
+    role: 'REQUESTER',
+    mustChangePassword: false,
+  })
   fetchCategoriesMock.mockResolvedValue(CATEGORIES)
   fetchTicketsMock.mockResolvedValue(LIST_RESPONSE)
 })
@@ -156,22 +145,29 @@ describe('UI-12 · loading state', () => {
   })
 })
 
-describe('UI-13 · AC-19 · requester switch', () => {
-  it('clears the previous list immediately and refetches for the new requester', async () => {
-    let resolveB!: (value: typeof LIST_RESPONSE) => void
-    fetchTicketsMock
-      .mockResolvedValueOnce(LIST_RESPONSE)
-      .mockReturnValueOnce(new Promise((resolve) => { resolveB = resolve }))
-    renderScreen(true)
+// Was "requester switch" in Lab 2. The selector is gone (AC-15), so the
+// reachable trigger is a filter change; what the test asserts is unchanged —
+// the stale list clears before the new one arrives.
+describe('UI-13 · AC-19 · a refetch clears the previous list first', () => {
+  it('clears the rendered rows immediately and refetches', async () => {
+    fetchTicketsMock.mockResolvedValue(LIST_RESPONSE)
+    renderScreen()
     expect(await screen.findByText(LIST_ITEM.summary)).toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Switch requester' }))
+    // The second request never settles, so what is on screen during a refetch
+    // is what this asserts.
+    fetchTicketsMock.mockReturnValue(new Promise(() => {}))
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: 'Category' }),
+      'category-software',
+    )
 
     await waitFor(() => {
-      expect(fetchTicketsMock).toHaveBeenLastCalledWith(REQUESTER_B.id, expect.any(Object))
+      expect(fetchTicketsMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({ categoryId: 'category-software' }),
+      )
     })
     expect(screen.queryByText(LIST_ITEM.summary)).not.toBeInTheDocument()
-    resolveB({ ...LIST_RESPONSE, data: [] })
   })
 })
 
@@ -224,7 +220,7 @@ describe('UI-16 · AC-20/AC-21/AC-22 · query wiring', () => {
     await user.click(screen.getByRole('button', { name: /sort by summary/i }))
 
     await waitFor(() => {
-      expect(fetchTicketsMock).toHaveBeenLastCalledWith(REQUESTER_A.id, {
+      expect(fetchTicketsMock).toHaveBeenLastCalledWith({
         search: 'printer',
         categoryId: 'category-hardware',
         requestedPriority: 'HIGH',
@@ -250,7 +246,7 @@ describe('UI-16 · AC-20/AC-21/AC-22 · query wiring', () => {
     expect(fetchTicketsMock).toHaveBeenCalledTimes(initialCallCount)
 
     await waitFor(() => {
-      expect(fetchTicketsMock).toHaveBeenLastCalledWith(REQUESTER_A.id, {
+      expect(fetchTicketsMock).toHaveBeenLastCalledWith({
         search: 'printer',
         sort: 'createdAt:desc',
         page: 1,
@@ -281,7 +277,6 @@ describe('UI-17 · AC-23 · pagination controls', () => {
 
     await waitFor(() => {
       expect(fetchTicketsMock).toHaveBeenLastCalledWith(
-        REQUESTER_A.id,
         expect.objectContaining({ page: 2, pageSize: 1 }),
       )
     })

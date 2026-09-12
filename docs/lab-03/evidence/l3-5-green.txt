@@ -1,0 +1,26 @@
+=== AC-15 · X-Requester-Id is gone ===
+$ grep -rn "X-Requester-Id" client/src server/src e2e
+(no matches)
+
+$ grep -rn "X-Requester-Id" client/tests server/tests
+client/tests/lab-02/CreateTicket.test.tsx:326:    expect(Object.keys(init.headers ?? {})).not.toContain('X-Requester-Id')
+
+The remaining hits are assertions that the header is absent. A case-insensitive
+sweep finds one more, in client/tests/lab-02/api.test.ts, also an absence check.
+
+=== Server ===
+ Test Files  22 passed (22)
+      Tests  287 passed (287)
+
+=== Client ===
+ Test Files  15 passed (15)
+      Tests  93 passed (93)
+
+=== E2E ===
+  ok 1 [chromium] › e2e\lab-02\attachment-lifecycle.spec.ts:11:5 › E2E-03 covers add, download, soft-remove, and blocked attachment (4.7s)
+  ok 2 [chromium] › e2e\lab-02\requester-isolation.spec.ts:5:5 › E2E-02 isolates tickets between signed-in users (5.0s)
+  ok 3 [chromium] › e2e\lab-02\requester-ticket-flow.spec.ts:5:5 › E2E-01 completes requester creation and My Tickets journey (4.2s)
+  ok 4 [chromium] › e2e\lab-02\responsive.spec.ts:11:5 › RESP-01 renders Create Ticket at desktop, tablet, and mobile (2.1s)
+  ok 5 [chromium] › e2e\lab-02\responsive.spec.ts:24:5 › RESP-02 renders My Tickets at desktop, tablet, and mobile (5.3s)
+  ok 6 [chromium] › e2e\lab-02\responsive.spec.ts:48:5 › RESP-03 renders Ticket Detail at desktop, tablet, and mobile (4.5s)
+  6 passed (40.3s)

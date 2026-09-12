@@ -1,9 +1,18 @@
 // Reference-data endpoints (#18). FR-01, FR-08, FR-09, BR-10, BR-22, §11.15.
 // TDT-01 active/inactive partition; TDT-05 unfiltered-list failure; names/order only.
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import request from 'supertest'
 import app from '../../src/app.js'
 import { expectDataArray } from './envelope.js'
+// Reference data now requires authentication (api-spec.md §5). What these tests
+// assert is unchanged; only the way they reach the endpoint is.
+import { REQUESTER_EMAIL, signIn } from '../lab-03/auth-fixtures.js'
+
+let cookie: string
+
+beforeAll(async () => {
+  cookie = await signIn(REQUESTER_EMAIL)
+})
 
 const CATEGORY_NAMES = ['Account and Access', 'Hardware', 'Network', 'Software']
 
@@ -29,7 +38,7 @@ const UUID_PATTERN =
 
 describe('FR-08 · GET /api/categories', () => {
   it('returns the seeded categories inside the data envelope, ordered by name', async () => {
-    const categories = expectDataArray(await request(app).get('/api/categories'))
+    const categories = expectDataArray(await request(app).get('/api/categories').set('Cookie', cookie))
 
     expect(categories.map((c) => (c as { name: string }).name)).toEqual(
       CATEGORY_NAMES,
@@ -37,7 +46,7 @@ describe('FR-08 · GET /api/categories', () => {
   })
 
   it('identifies each category by UUID rather than by an integer (§11.1)', async () => {
-    const categories = expectDataArray(await request(app).get('/api/categories'))
+    const categories = expectDataArray(await request(app).get('/api/categories').set('Cookie', cookie))
 
     for (const category of categories) {
       expect((category as { id: string }).id).toMatch(UUID_PATTERN)
@@ -45,7 +54,7 @@ describe('FR-08 · GET /api/categories', () => {
   })
 
   it('exposes only id and name, so no internal column leaks into the client', async () => {
-    const categories = expectDataArray(await request(app).get('/api/categories'))
+    const categories = expectDataArray(await request(app).get('/api/categories').set('Cookie', cookie))
 
     for (const category of categories) {
       expect(Object.keys(category as object).sort()).toEqual(['id', 'name'])
@@ -56,7 +65,7 @@ describe('FR-08 · GET /api/categories', () => {
 describe('FR-09 · GET /api/related-systems', () => {
   it('returns the seven seeded related systems inside the data envelope, ordered by name', async () => {
     const systems = expectDataArray(
-      await request(app).get('/api/related-systems'),
+      await request(app).get('/api/related-systems').set('Cookie', cookie),
     )
 
     expect(systems.map((s) => (s as { name: string }).name)).toEqual(
@@ -66,7 +75,7 @@ describe('FR-09 · GET /api/related-systems', () => {
 
   it('exposes only id and name', async () => {
     const systems = expectDataArray(
-      await request(app).get('/api/related-systems'),
+      await request(app).get('/api/related-systems').set('Cookie', cookie),
     )
 
     for (const system of systems) {
@@ -75,34 +84,22 @@ describe('FR-09 · GET /api/related-systems', () => {
   })
 })
 
-describe('FR-01 · GET /api/requesters', () => {
-  it('returns the active development requesters, ordered by display name', async () => {
-    const requesters = expectDataArray(await request(app).get('/api/requesters'))
-
+describe('FR-01 · the development requester selector is gone (AC-15)', () => {
+  it('no longer answers, so no second identity path exists', async () => {
+    // The positive control: an endpoint that does still exist answers.
     expect(
-      requesters.map((r) => (r as { displayName: string }).displayName),
-    ).toEqual(ACTIVE_REQUESTER_NAMES)
+      (await request(app).get('/api/categories').set('Cookie', cookie)).status,
+    ).toBe(200)
+
+    expect((await request(app).get('/api/requesters').set('Cookie', cookie)).status).toBe(404)
   })
+})
 
-  // Naming the absent row: asserting four names would pass with no filter at all.
-  it('BR-10 · never returns the inactive requester', async () => {
-    const requesters = expectDataArray(await request(app).get('/api/requesters'))
-
-    const names = requesters.map(
-      (r) => (r as { displayName: string }).displayName,
-    )
-    expect(names).not.toContain('Robert Wilson')
-  })
-
-  it('exposes id, displayName, and email, and never an isActive flag', async () => {
-    const requesters = expectDataArray(await request(app).get('/api/requesters'))
-
-    for (const requester of requesters) {
-      expect(Object.keys(requester as object).sort()).toEqual([
-        'displayName',
-        'email',
-        'id',
-      ])
+describe('AC-12 · reference data is behind the session', () => {
+  it('refuses an unauthenticated caller', async () => {
+    for (const path of ['/api/categories', '/api/related-systems']) {
+      const response = await request(app).get(path)
+      expect(response.status, path).toBe(401)
     }
   })
 })
