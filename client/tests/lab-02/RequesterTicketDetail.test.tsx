@@ -1,7 +1,7 @@
 // UI-18 · AC-27 · BR-08/BR-15; TDT-01 equivalence partitioning for the
 // read-only owned-ticket presentation.
 import { describe, expect, it } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RequesterTicketDetail } from '../../src/screens/RequesterTicketDetail.js'
 
@@ -44,7 +44,13 @@ describe('UI-18 · AC-27 · owned Ticket Detail', () => {
     expect(screen.queryByText('Corporate Laptop')).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Attachments' })).toBeInTheDocument()
 
-    const editableTextboxes = screen
+    // Scoped to the Ticket Information card. lab-03 AC-17 adds a Public
+    // Comments composer to this screen, which is editable by design; what this
+    // asserts — that no *ticket field* can be edited here — is unchanged.
+    const information = screen
+      .getByRole('heading', { name: 'Ticket Information' })
+      .closest('section')!
+    const editableTextboxes = within(information)
       .queryAllByRole('textbox')
       .filter((control) => !control.hasAttribute('readonly') && !control.hasAttribute('disabled'))
     expect(editableTextboxes).toHaveLength(0)
