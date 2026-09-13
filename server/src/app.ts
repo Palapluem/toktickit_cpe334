@@ -212,6 +212,13 @@ export function createApp(options: CreateTicketOptions = {}) {
 
   // credentials: the session cookie must travel on cross-origin XHR in dev,
   // where the client is served from a different port (api-spec.md §1).
+  // Reflecting the request's own origin is a documented dev convenience
+  // (.env.example) — never something a real deployment should inherit
+  // silently, since combined with credentials:true it accepts a
+  // cookie-carrying request from any site.
+  if (!process.env.CLIENT_ORIGIN && process.env.NODE_ENV === 'production') {
+    throw new Error('CLIENT_ORIGIN must be set outside local development.')
+  }
   app.use(cors({ origin: process.env.CLIENT_ORIGIN ?? true, credentials: true }))
   app.use(express.json())
   app.use(cookieParser())
