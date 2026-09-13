@@ -4,6 +4,7 @@ import type { NextFunction, Request, Response } from 'express'
 import { sendError } from '../http/errors.js'
 import { logSecurityEvent } from '../http/securityLog.js'
 import { grantFor, type Operation, type Scope } from '../auth/matrix.js'
+import { logInternalNoteRefusal } from '../tickets/threads.js'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -27,7 +28,14 @@ export function requireOperation(operation: Operation) {
     const grant = role === undefined ? null : grantFor(role, operation)
 
     if (grant === null) {
-      logSecurityEvent('FORBIDDEN', { operation, role })
+      // A Requester reaching for Internal Notes is the access this system
+      // most needs to notice (SEC-026) — logged with its own signal rather
+      // than folded into every other forbidden call.
+      if (role !== undefined && (operation === 'note:read' || operation === 'note:create')) {
+        logInternalNoteRefusal(role, req.params.id)
+      } else {
+        logSecurityEvent('FORBIDDEN', { operation, role })
+      }
       sendError(
         res,
         403,

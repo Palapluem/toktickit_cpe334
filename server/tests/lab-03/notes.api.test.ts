@@ -3,7 +3,7 @@
 // The refusal that matters: returning an empty array to a Requester would
 // distinguish "you may not see these" from "there are none", and across several
 // Tickets that difference maps out where the notes are.
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import request from 'supertest'
 import app from '../../src/app.js'
 import prisma from '../../src/prisma.js'
@@ -191,6 +191,21 @@ describe('SEC-T05 · AC-09 · a Requester is refused Internal Notes, and learns 
   it('refuses an unauthenticated caller with 401 before anything else', async () => {
     const response = await request(app).get(`/api/tickets/${ticketId}/internal-notes`)
     expect(response.status).toBe(401)
+  })
+
+  it('logs INTERNAL_NOTE_REFUSED, its own signal rather than the generic FORBIDDEN', async () => {
+    // logInternalNoteRefusal existed unwired before this — the refusal above
+    // was carrying the same generic FORBIDDEN log as every other 403.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      await notes(cookies.REQUESTER)
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('INTERNAL_NOTE_REFUSED'),
+      )
+      expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('FORBIDDEN'))
+    } finally {
+      warn.mockRestore()
+    }
   })
 })
 
