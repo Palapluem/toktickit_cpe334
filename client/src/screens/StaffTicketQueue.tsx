@@ -1,8 +1,11 @@
 // IT Staff Ticket Queue (ui-spec §8).
 //
 // Columns are chosen against the labsheet's warning about an unreadable
-// mega-grid: Category and Requested Priority are filterable but not columns,
-// and Created Date loses to Updated because a queue asks what has gone quiet.
+// mega-grid: Category is filterable through the API (`categoryId` in
+// queueQuery.ts) but has no select here yet, and Created Date loses to
+// Updated because a queue asks what has gone quiet. Requested Priority is
+// not a queue filter at all — IT Priority governs the queue, and the
+// Requester's value is visible in Ticket Detail.
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
