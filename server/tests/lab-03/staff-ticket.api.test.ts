@@ -330,6 +330,28 @@ describe('API-16 · AC-23 · every transition cell, over the wire', () => {
     expect(forbidden.body.error.code).toBe('FORBIDDEN')
   })
 
+  it('answers 404 for a Requester changing the status of a Ticket they do not own', async () => {
+    // Reviewer finding, PR #62: a Requester's grant on this operation is
+    // `own` (they may cancel or reopen their own Ticket), but the handler
+    // never scoped the lookup by requesterId — so any signed-in Requester
+    // could drive any other Requester's Ticket through this same endpoint,
+    // with no UI needed to reach it.
+    await makeTicket('NEW')
+    const response = await patch(
+      `/api/staff/tickets/${ticketId}/status`,
+      otherRequesterCookie,
+      { status: 'CANCELLED' },
+    )
+    expect(response.status).toBe(404)
+    expect(response.body.error.code).toBe('TICKET_NOT_FOUND')
+
+    const stored = await prisma.ticket.findUniqueOrThrow({
+      where: { id: ticketId },
+      select: { status: true },
+    })
+    expect(stored.status).toBe('NEW')
+  })
+
   it('discloses the permitted set, which is policy rather than data', async () => {
     await makeTicket('NEW')
     const response = await patch(
