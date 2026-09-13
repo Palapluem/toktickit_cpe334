@@ -1,7 +1,7 @@
 // Login (ui-spec §6). Anonymous, no shell.
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ApiRequestError, login } from '../api.js'
+import { login } from '../api.js'
 import { Button } from '../components/Button.js'
 import { FormField } from '../components/FormField.js'
 import { useSession } from '../context/SessionContext.js'
@@ -55,10 +55,9 @@ export function Login() {
         user.mustChangePassword ? CHANGE_PASSWORD_ROUTE : homeFor(user.role),
         { replace: true },
       )
-    } catch (error) {
+    } catch {
       // Every failure reads the same, including one that is not the server's
       // refusal — a different message would leak which is which.
-      void (error instanceof ApiRequestError)
       setFailed(true)
       setSubmitting(false)
     }
