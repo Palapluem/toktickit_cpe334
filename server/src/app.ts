@@ -382,7 +382,9 @@ export function createApp(options: CreateTicketOptions = {}) {
     async (req, res) => {
       const data = await setTicketStatus(
         ticketParameter(req.params.id),
+        req.user!.id,
         req.user!.role,
+        req.grant!,
         req.body,
         options.db ?? prisma,
       )

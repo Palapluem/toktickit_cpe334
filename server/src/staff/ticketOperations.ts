@@ -14,6 +14,7 @@ import {
   type TicketStatus,
 } from '../tickets/transitions.js'
 import type { Role } from '../auth/types.js'
+import type { Scope } from '../auth/matrix.js'
 
 type Priority = (typeof PRIORITIES)[number]
 
@@ -63,9 +64,20 @@ function rejectUnknownFields(body: unknown, allowed: string[]): FieldError[] {
     .map((key) => ({ field: key, message: 'This field is not accepted.' }))
 }
 
-async function loadTicket(ticketId: string, db: PrismaClient) {
-  const ticket = await db.ticket.findUnique({
-    where: { id: ticketId },
+/**
+ * `scope` narrows the lookup to a Requester's own Ticket when the caller's
+ * grant is `own` (SEC-019) — an `any` caller needs no filter. Passing no
+ * scope at all is only safe when the route's own authorization already
+ * excludes Requester (as `getStaffTicketDetail` does by also requiring
+ * `note:read`), since this function has no other way to tell.
+ */
+async function loadTicket(
+  ticketId: string,
+  db: PrismaClient,
+  scope?: { requesterId: string },
+) {
+  const ticket = await db.ticket.findFirst({
+    where: scope ? { id: ticketId, requesterId: scope.requesterId } : { id: ticketId },
     include: STAFF_DETAIL_INCLUDE,
   })
   if (!ticket) throw ticketNotFound()
@@ -197,7 +209,9 @@ const ALL_ROLES: Role[] = ['REQUESTER', 'IT_STAFF', 'ADMINISTRATOR']
 
 export async function setTicketStatus(
   ticketId: string,
+  callerId: string,
   role: Role,
+  grant: Scope,
   body: unknown,
   db: PrismaClient,
 ) {
@@ -211,7 +225,15 @@ export async function setTicketStatus(
     ])
   }
 
-  const ticket = await loadTicket(ticketId, db)
+  // A Requester's grant is `own` (§5.1 lets them cancel or reopen their own
+  // Ticket) — without this filter loadTicket would resolve any ticket id at
+  // all, letting a Requester drive another Requester's Ticket through this
+  // same endpoint.
+  const ticket = await loadTicket(
+    ticketId,
+    db,
+    grant === 'own' ? { requesterId: callerId } : undefined,
+  )
   const from = ticket.status as TicketStatus
   const to = raw as TicketStatus
 
