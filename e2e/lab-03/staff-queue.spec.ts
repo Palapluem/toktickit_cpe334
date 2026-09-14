@@ -31,7 +31,7 @@ test('QUEUE-01 captures the queue at three viewports', async ({ page }) => {
     await page.setViewportSize(viewport)
     await page.goto('/staff/tickets')
     await expect(page.getByRole('heading', { name: 'Ticket Queue' })).toBeVisible()
-    await expect(page.getByText('TKT-2026-900001')).toBeVisible()
+    await expect(page.locator('tbody tr').first()).toBeVisible()
 
     await captureLab3Screenshot(
       page,
@@ -60,7 +60,7 @@ test('QUEUE-03 captures the no-results state', async ({ page }) => {
   await signIn(page, STAFF)
   await page.setViewportSize(VIEWPORTS[0])
   await page.goto('/staff/tickets')
-  await expect(page.getByText('TKT-2026-900001')).toBeVisible()
+  await expect(page.locator('tbody tr').first()).toBeVisible()
 
   await page
     .getByPlaceholder('Search by ticket number or summary…')
@@ -70,7 +70,7 @@ test('QUEUE-03 captures the no-results state', async ({ page }) => {
   await captureLab3Screenshot(page, 'staff-queue', 'no-results.png')
 
   await page.getByRole('button', { name: 'Clear Filters' }).click()
-  await expect(page.getByText('TKT-2026-900001')).toBeVisible()
+  await expect(page.locator('tbody tr').first()).toBeVisible()
 })
 
 test('QUEUE-04 captures the empty state', async ({ page }) => {

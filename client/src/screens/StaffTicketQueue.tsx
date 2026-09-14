@@ -171,6 +171,11 @@ export function StaffTicketQueue() {
     setFilters((current) => ({ ...current, ...patch, page: 1 }))
   }, [])
 
+  // Paging is the one change that must not reset the page.
+  const goToPage = useCallback((page: number) => {
+    setFilters((current) => ({ ...current, page }))
+  }, [])
+
   /** What produced this result set — the server's word, for empty vs no-results. */
   const serverFiltered = useMemo(() => {
     const applied = response?.appliedFilters
@@ -348,6 +353,31 @@ export function StaffTicketQueue() {
               ))}
             </tbody>
           </table>
+        </div>
+      ) : null}
+
+      {phase === 'ready' && response && response.pagination.totalPages > 1 ? (
+        <div className="my-tickets__pagination">
+          <p>
+            Page {response.pagination.page} of {response.pagination.totalPages},{' '}
+            {response.pagination.totalItems} tickets
+          </p>
+          <nav aria-label="Queue pagination" className="my-tickets__pagination-controls">
+            <Button
+              variant="secondary"
+              disabled={!response.pagination.hasPreviousPage}
+              onClick={() => goToPage(response.pagination.page - 1)}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={!response.pagination.hasNextPage}
+              onClick={() => goToPage(response.pagination.page + 1)}
+            >
+              Next
+            </Button>
+          </nav>
         </div>
       ) : null}
     </div>

@@ -26,6 +26,13 @@ import {
 } from './tickets/attachmentRules.js'
 import { listTickets } from './tickets/listTickets.js'
 import { listStaffQueue } from './staff/staffQueue.js'
+import {
+  getStaffTicketDetail,
+  indicateRequesterResolution,
+  setItPriority,
+  setTicketOwner,
+  setTicketStatus,
+} from './staff/ticketOperations.js'
 import { UUID } from './tickets/validation.js'
 import {
   addTicketAttachment,
@@ -311,6 +318,93 @@ export function createApp(options: CreateTicketOptions = {}) {
         options.db ?? prisma,
       )
       res.json(data)
+    },
+  )
+
+  // Two grants because the response carries two things: the Ticket, and the
+  // Internal Notes the contract says it includes (api-spec.md §8). A Requester
+  // holds ticket:read scoped to their own and never holds note:read, so this
+  // chain refuses them here while /api/tickets/:id still serves them.
+  app.get(
+    '/api/staff/tickets/:id',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:read'),
+    requireOperation('note:read'),
+    async (req, res) => {
+      const data = await getStaffTicketDetail(
+        ticketParameter(req.params.id),
+        req.user!.role,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.patch(
+    '/api/staff/tickets/:id/owner',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:setOwner'),
+    async (req, res) => {
+      const data = await setTicketOwner(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.user!.role,
+        req.body,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.patch(
+    '/api/staff/tickets/:id/it-priority',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:setItPriority'),
+    async (req, res) => {
+      const data = await setItPriority(
+        ticketParameter(req.params.id),
+        req.user!.role,
+        req.body,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.patch(
+    '/api/staff/tickets/:id/status',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:setStatus'),
+    async (req, res) => {
+      const data = await setTicketStatus(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.user!.role,
+        req.grant!,
+        req.body,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.post(
+    '/api/tickets/:id/requester-resolution',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:requesterResolution'),
+    async (req, res) => {
+      const data = await indicateRequesterResolution(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        options.now?.() ?? new Date(),
+        options.db ?? prisma,
+      )
+      res.json({ data })
     },
   )
 
