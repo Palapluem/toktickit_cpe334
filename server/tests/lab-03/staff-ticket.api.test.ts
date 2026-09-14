@@ -93,7 +93,7 @@ afterAll(async () => {
   await restoreSeededCredentials()
 })
 
-describe('API-13 · AC-20 · claiming and reassigning ownership', () => {
+describe('API-14 · AC-20 · claiming and reassigning ownership', () => {
   it('claims an unassigned Ticket and moves NEW to OPEN in the same call (BR-24)', async () => {
     const response = await patch(
       `/api/staff/tickets/${ticketId}/owner`,
@@ -155,7 +155,7 @@ describe('API-13 · AC-20 · claiming and reassigning ownership', () => {
   })
 })
 
-describe('API-14 · AC-21 · only an active IT Staff or Administrator may own', () => {
+describe('API-15 · AC-21 · only an active IT Staff or Administrator may own', () => {
   it('refuses an inactive IT Staff user', async () => {
     // The positive control: the active colleague is accepted.
     expect(
@@ -208,7 +208,7 @@ describe('API-14 · AC-21 · only an active IT Staff or Administrator may own', 
   })
 })
 
-describe('API-15 · AC-22 · IT Priority moves, Requested Priority never does', () => {
+describe('API-16 · AC-22 · IT Priority moves, Requested Priority never does', () => {
   it('sets IT Priority and leaves Requested Priority untouched (BR-18)', async () => {
     const response = await patch(
       `/api/staff/tickets/${ticketId}/it-priority`,
@@ -262,7 +262,7 @@ describe('API-15 · AC-22 · IT Priority moves, Requested Priority never does', 
   })
 })
 
-describe('API-16 · AC-23 · every transition cell, over the wire', () => {
+describe('API-17 · API-18 · AC-23 · every transition cell, over the wire', () => {
   const ROLES: Role[] = ['REQUESTER', 'IT_STAFF', 'ADMINISTRATOR']
 
   for (const role of ROLES) {
@@ -403,7 +403,7 @@ describe('SEC-T10 · AC-24 · a Requester can never declare a problem solved', (
   }, 120_000)
 })
 
-describe('API-17 · the Requester resolution signal is a timestamp (§11.7)', () => {
+describe('API-24 · AC-17 · the Requester resolution signal is a timestamp (§11.7)', () => {
   it('records it without changing the status', async () => {
     await makeTicket('IN_PROGRESS')
     const response = await request(app)
@@ -450,7 +450,7 @@ describe('API-17 · the Requester resolution signal is a timestamp (§11.7)', ()
   })
 })
 
-describe('API-13 · the staff detail carries the policy the screen renders', () => {
+describe('API-18 · §5.1 · the staff detail carries the policy the screen renders', () => {
   it('returns permittedTransitions for the calling role', async () => {
     await makeTicket('OPEN')
     const asStaff = await request(app)

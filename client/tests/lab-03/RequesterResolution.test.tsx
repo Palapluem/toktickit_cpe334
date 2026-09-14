@@ -49,7 +49,7 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
-describe('AC-16 · the Requester may say the problem appears resolved', () => {
+describe('AC-17 · the Requester may say the problem appears resolved', () => {
   it('offers the action on an open Ticket', async () => {
     renderDetail()
 

@@ -265,7 +265,7 @@ describe('API-12 · AC-19 · query composition', () => {
   })
 })
 
-describe('API-12 · an invalid parameter is a failure, never a silent fallback', () => {
+describe('API-13 · AC-19 · an invalid parameter is a failure, never a silent fallback', () => {
   const INVALID: Array<[string, Record<string, string>]> = [
     ['unknown sort field', { sort: 'summary:asc' }],
     ['unknown sort direction', { sort: 'itPriority:sideways' }],

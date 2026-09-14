@@ -121,7 +121,7 @@ describe('UI-13 · AC-37 · the two sections are told apart at a glance', () => 
   })
 })
 
-describe('UI-13 · AC-17 · entries carry their author and role', () => {
+describe('UI-13 · BR-30 · entries carry their author and role', () => {
   it('shows the author name and a role badge on each entry', async () => {
     render(<PublicCommentsSection ticketId="t-1" />)
 
@@ -207,7 +207,7 @@ describe('UI-13 · posting', () => {
   })
 })
 
-describe('UI-14 · AC-09 · the Requester sees no Internal Notes affordance', () => {
+describe('UI-14 · AC-25 · the Requester sees no Internal Notes affordance', () => {
   it('renders nothing at all when the notes are refused', async () => {
     fetchInternalNotesMock.mockRejectedValue(
       new api.ApiRequestError('Internal notes request failed', [], 403, 'FORBIDDEN'),

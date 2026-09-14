@@ -65,7 +65,7 @@ beforeEach(() => {
   fetchUsersMock.mockResolvedValue([SELF, OTHER, INACTIVE])
 })
 
-describe('UI-15 · AC-28 · the user list', () => {
+describe('UI-15 · AC-26 · the user list', () => {
   it('shows name, email, role, status, and an edit action per row', async () => {
     renderScreen()
 
@@ -121,7 +121,7 @@ describe('UI-15 · AC-28 · the user list', () => {
   })
 })
 
-describe('UI-16 · AC-29 · creating a user', () => {
+describe('UI-16 · AC-28 · AC-29 · creating a user', () => {
   it('opens a dialogue with Name, Email, Role, Active, and an initial password', async () => {
     renderScreen()
     await userEvent.click(await screen.findByRole('button', { name: 'New User' }))
@@ -190,7 +190,7 @@ describe('UI-16 · AC-29 · creating a user', () => {
   })
 })
 
-describe('UI-16 · AC-30 · editing a user', () => {
+describe('FR-31 · editing a user', () => {
   it('opens with Name, Email, Role, and Active, and no password field', async () => {
     renderScreen()
     const row = (await screen.findByText('Jennifer Anderson')).closest('tr')!
@@ -245,7 +245,7 @@ describe('UI-16 · AC-30 · editing a user', () => {
   })
 })
 
-describe('UI-16 · the two safety rules, as the interface presents them', () => {
+describe('UI-17 · AC-31 · AC-32 · the two safety rules, as the interface presents them', () => {
   it('disables Active on the current user own row, with the reason stated', async () => {
     renderScreen()
     const row = (await screen.findByText('Margaret Hale')).closest('tr')!
