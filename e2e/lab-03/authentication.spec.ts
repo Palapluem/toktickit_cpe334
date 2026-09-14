@@ -1,10 +1,11 @@
-// Part 5 evidence for Issue #49: the authentication screens at desktop and
-// mobile, and the refusal capture ui-spec §12 names explicitly — a happy-path
-// capture session will not produce it.
+// Part 5 evidence for Issue #49: the authentication screens at all three
+// viewports AC-34 names, and the refusal capture ui-spec §12 names explicitly
+// — a happy-path capture session will not produce it.
 import { expect, test } from '../lab-02/fixtures'
 import { DEVELOPMENT_PASSWORD, captureLab3Screenshot } from '../lab-02/helpers'
 
 const DESKTOP = { width: 1280, height: 900 }
+const TABLET = { width: 834, height: 1112 }
 const MOBILE = { width: 390, height: 844 }
 
 // The one seeded account left behind the must-change gate (see
@@ -22,9 +23,10 @@ async function signInThroughTheScreen(
   await page.getByRole('button', { name: 'Sign in' }).click()
 }
 
-test('AUTH-01 captures the sign-in screen at desktop and mobile', async ({ page }) => {
+test('AUTH-01 captures the sign-in screen at three viewports', async ({ page }) => {
   for (const [name, viewport] of [
     ['desktop', DESKTOP],
+    ['tablet', TABLET],
     ['mobile', MOBILE],
   ] as const) {
     await page.setViewportSize(viewport)
@@ -66,6 +68,7 @@ test('AUTH-04 captures the mandatory Change Password screen', async ({ page }) =
 
   for (const [name, viewport] of [
     ['desktop', DESKTOP],
+    ['tablet', TABLET],
     ['mobile', MOBILE],
   ] as const) {
     await page.setViewportSize(viewport)

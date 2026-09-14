@@ -75,7 +75,7 @@ afterAll(async () => {
   await restoreSeededCredentials()
 })
 
-describe('API-22 · AC-28 · the user list', () => {
+describe('API-25 · API-26 · AC-26 · AC-27 · the user list', () => {
   it('returns every user with the fields the screen shows', async () => {
     const response = await users(cookies.ADMINISTRATOR)
 
@@ -127,7 +127,7 @@ describe('API-22 · AC-28 · the user list', () => {
   })
 })
 
-describe('API-23 · AC-29 · creating a user', () => {
+describe('API-27 · AC-28 · creating a user', () => {
   it('creates one that must change its password (BR-06, SEC-011)', async () => {
     const response = await createUser(cookies.ADMINISTRATOR, madeUser('create'))
 
@@ -152,7 +152,7 @@ describe('API-23 · AC-29 · creating a user', () => {
     expect(await verifyPassword(PASSWORD, stored.passwordHash)).toBe(true)
   })
 
-  it('AC-29 · refuses a duplicate email, compared case-insensitively (BR-33)', async () => {
+  it('API-28 · AC-29 · refuses a duplicate email, compared case-insensitively (BR-33)', async () => {
     expect((await createUser(cookies.ADMINISTRATOR, madeUser('dupe'))).status).toBe(201)
 
     const response = await createUser(
@@ -166,7 +166,7 @@ describe('API-23 · AC-29 · creating a user', () => {
     expect(JSON.stringify(response.body)).not.toContain('Test User dupe')
   })
 
-  it('AC-30 · refuses an unknown role rather than defaulting (BR-34, SEC-037)', async () => {
+  it('API-29 · AC-30 · refuses an unknown role rather than defaulting (BR-34, SEC-037)', async () => {
     for (const role of ['SUPERUSER', 'requester', '', 42, null]) {
       const response = await createUser(cookies.ADMINISTRATOR, madeUser('role', { role }))
       expect(response.status, String(role)).toBe(400)
@@ -193,7 +193,7 @@ describe('API-23 · AC-29 · creating a user', () => {
   })
 })
 
-describe('API-24 · AC-30 · editing a user', () => {
+describe('FR-31 · editing a user', () => {
   async function make(suffix: string, overrides: Record<string, unknown> = {}) {
     const response = await createUser(cookies.ADMINISTRATOR, madeUser(suffix, overrides))
     expect(response.status).toBe(201)
@@ -246,7 +246,7 @@ describe('API-24 · AC-30 · editing a user', () => {
         categoryId: category.id,
         relatedSystemId: relatedSystem.id,
         summary: 'Survives deactivation',
-        description: 'Created by admin-users.api.test.ts.',
+        description: 'Created by users-admin.api.test.ts.',
         requestedPriority: 'LOW',
         itPriority: 'LOW',
       },
@@ -307,7 +307,7 @@ describe('API-24 · AC-30 · editing a user', () => {
   })
 })
 
-describe('AC-31 · AC-32 · the two safety refusals', () => {
+describe('API-30 · API-31 · AC-31 · AC-32 · the two safety refusals', () => {
   // Every test here restores the seeded Administrator through Prisma rather
   // than the API: a caller who has just demoted themselves no longer holds
   // user:write, so the API cannot undo what it was told to do.
@@ -399,7 +399,7 @@ describe('AC-31 · AC-32 · the two safety refusals', () => {
   })
 })
 
-describe('API-26 · AC-33 · setting an initial password', () => {
+describe('API-32 · AC-33 · setting an initial password', () => {
   it('sets the hash, sets the gate, and never echoes the password', async () => {
     const created = await createUser(cookies.ADMINISTRATOR, madeUser('reset'))
     const id = created.body.data.id

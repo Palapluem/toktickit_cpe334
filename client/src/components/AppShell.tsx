@@ -33,6 +33,9 @@ export function AppShell({
   async function signOut() {
     try {
       await logout()
+    } catch {
+      // Swallowed deliberately: this runs from a click handler nobody awaits,
+      // so a rethrow would surface as an unhandled rejection and change nothing.
     } finally {
       // The session ends on screen either way: the server is the authority and
       // will refuse the next request regardless of what this call did.

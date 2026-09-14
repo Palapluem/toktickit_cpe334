@@ -247,18 +247,39 @@ The three refusal captures — `login-failure`, `duplicate-email`, `last-adminis
 
 Run before the release, in addition to Lab 2's §13 checklist which still applies.
 
-- [ ] Every new screen uses only `--zen-*` tokens; the audit grep returns nothing
-- [ ] No Bootstrap colour utility on any new themed surface
-- [ ] Role badge renders text on all three roles
-- [ ] All eight status badges render text
-- [ ] Forbidden state is distinguishable from not-found and from failure
-- [ ] Forbidden state does not offer Try again
-- [ ] Login failure message is identical for all three causes
-- [ ] Public Comments and Internal Notes are unmistakably distinct
-- [ ] Requester Ticket Detail shows no Internal Notes affordance
-- [ ] Navigation shows no unauthorised destination for any role
-- [ ] Change Password screen shows no navigation
-- [ ] Unassigned tickets read as unassigned, not as a loading failure
-- [ ] Every new input has a programmatic label
-- [ ] Focus is visible on every new interactive control
-- [ ] All four new screens at three viewports: no clipping, no overlap, no horizontal page scroll
+**Completed 14 September 2026** on `feature/23-e2e-and-release`, against the merged
+feature set. Each row names what was checked, so the tick is auditable rather than
+asserted.
+
+- [x] Every new screen uses only `--zen-*` tokens; the audit grep returns nothing
+      — `grep -rE "#[0-9a-fA-F]{3,6}" client/src/screens client/src/components` is empty
+- [x] No Bootstrap colour utility on any new themed surface
+      — grep for `bg-|text-|btn-` + Bootstrap colour names is empty
+- [x] Role badge renders text on all three roles
+      — `RoleBadge` renders `{value}` unconditionally; colour is never the only signal
+- [x] All eight status badges render text
+      — `StatusBadge` renders `{value}`; `IN_PROGRESS` and `WAITING_FOR_REQUESTER`
+      deliberately share a palette, and their labels carry the difference
+- [x] Forbidden state is distinguishable from not-found and from failure
+      — three separate components; `StaffTicketQueue.test.tsx` asserts each renders distinctly
+- [x] Forbidden state does not offer Try again
+      — `ForbiddenState` takes no `onRetry`; retrying a refusal cannot change its outcome
+- [x] Login failure message is identical for all three causes
+      — one constant, `Login.test.tsx`; the server side is `API-02` byte-for-byte
+- [x] Public Comments and Internal Notes are unmistakably distinct
+      — `ThreadSection.test.tsx` UI-13: own surface, own heading, own composer, private marker
+- [x] Requester Ticket Detail shows no Internal Notes affordance
+      — capture `staff-ticket-detail/requester-view-no-notes.png`; server side is `SEC-T05`
+- [x] Navigation shows no unauthorised destination for any role
+      — `AppShell.test.tsx` UI-07 asserts absent, not merely disabled
+- [x] Change Password screen shows no navigation
+      — `authentication.spec.ts`: `getByRole('navigation', { name: 'Main' })` has count 0
+- [x] Unassigned tickets read as unassigned, not as a loading failure
+      — `OwnerCell` renders the literal "Unassigned"; an empty cell would read as a failure
+- [x] Every new input has a programmatic label
+      — every new screen test addresses its fields through `getByLabelText`
+- [x] Focus is visible on every new interactive control
+      — five `:focus-visible` rules in `index.css`; no rule removes an outline without replacing it
+- [x] All four new screens at three viewports: no clipping, no overlap, no horizontal page scroll
+      — desktop, tablet and mobile captures committed for all four; authentication and
+      user-management gained their tablet captures in the release audit

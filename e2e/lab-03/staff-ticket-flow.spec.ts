@@ -1,9 +1,5 @@
-// Part 7 evidence for Issue #51. Three viewports plus a refused action.
-//
-// The status control only ever offers permitted transitions, so a refusal
-// cannot be produced through it — which is the point. The refusals are made
-// directly against the API, as the wrong role and with an impossible move,
-// and the one refusal a user can actually see is captured.
+// Parts 6–7 evidence: Queue, Ticket Detail, and their required E2E journey.
+// Refused operations are exercised directly against the API as the wrong role.
 import { expect, test } from '../lab-02/fixtures'
 import { DEVELOPMENT_PASSWORD, captureLab3Screenshot } from '../lab-02/helpers'
 
@@ -43,6 +39,78 @@ async function openFirstQueueTicket(
   await page.goto(href!)
   return href!.split('/').pop()!
 }
+
+test('QUEUE-01 captures the queue at three viewports', async ({ page }) => {
+  await signIn(page, STAFF)
+
+  for (const viewport of VIEWPORTS) {
+    await page.setViewportSize(viewport)
+    await page.goto('/staff/tickets')
+    await expect(page.getByRole('heading', { name: 'Ticket Queue' })).toBeVisible()
+    await expect(page.locator('tbody tr').first()).toBeVisible()
+
+    await captureLab3Screenshot(
+      page,
+      'staff-queue',
+      viewport.name === 'mobile' ? 'mobile-cards.png' : `${viewport.name}-list.png`,
+    )
+  }
+})
+
+test('QUEUE-02 shows ownership and the resolution marker', async ({ page }) => {
+  await signIn(page, STAFF)
+  await page.setViewportSize(VIEWPORTS[0])
+  await page.goto('/staff/tickets')
+
+  // Seeded: TKT-2026-900001 is unassigned, 900005 is WAITING_FOR_REQUESTER.
+  await expect(
+    page.locator('td[data-label="Owner"]').getByText('Unassigned').first(),
+  ).toBeVisible()
+  await page.getByRole('combobox', { name: 'Status' }).selectOption('WAITING_FOR_REQUESTER')
+  await expect(page.getByText('Requester says resolved').first()).toBeVisible()
+})
+
+test('QUEUE-03 captures the no-results state', async ({ page }) => {
+  await signIn(page, STAFF)
+  await page.setViewportSize(VIEWPORTS[0])
+  await page.goto('/staff/tickets')
+  await expect(page.locator('tbody tr').first()).toBeVisible()
+
+  await page
+    .getByPlaceholder('Search by ticket number or summary…')
+    .fill('nothing-matches-this-search')
+
+  await expect(page.getByText('No tickets match these filters.')).toBeVisible()
+  await captureLab3Screenshot(page, 'staff-queue', 'no-results.png')
+
+  await page.getByRole('button', { name: 'Clear Filters' }).click()
+  await expect(page.locator('tbody tr').first()).toBeVisible()
+})
+
+test('QUEUE-04 captures the empty state', async ({ page }) => {
+  await signIn(page, STAFF)
+  await page.setViewportSize(VIEWPORTS[0])
+  await page.goto('/staff/tickets')
+  await page.getByRole('combobox', { name: 'Status' }).selectOption('CANCELLED')
+  await page.getByRole('combobox', { name: 'Owner' }).selectOption('me')
+
+  await expect(page.getByText('No tickets match these filters.')).toBeVisible()
+  await captureLab3Screenshot(page, 'staff-queue', 'empty.png')
+})
+
+test('QUEUE-05 refuses a Requester with the forbidden state', async ({ page }) => {
+  await signIn(page, REQUESTER)
+  await page.setViewportSize(VIEWPORTS[0])
+  await page.goto('/staff/tickets')
+
+  const refusal = page.getByRole('alert')
+  await expect(refusal).toContainText('IT Staff and Administrators')
+  await expect(page.getByRole('button', { name: 'Try again' })).toHaveCount(0)
+  await captureLab3Screenshot(page, 'staff-queue', 'forbidden.png')
+
+  const direct = await page.request.get(`${API}/api/staff/tickets`)
+  expect(direct.status()).toBe(403)
+})
 
 test('DETAIL-01 captures the staff Ticket Detail at three viewports', async ({ page }) => {
   await signIn(page, STAFF)

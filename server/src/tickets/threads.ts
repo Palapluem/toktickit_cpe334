@@ -156,10 +156,7 @@ export async function createInternalNote(
   })
 }
 
-/**
- * Logged separately from an ordinary forbidden: a Requester reaching for
- * Internal Notes is the access this system most needs to notice (SEC-026).
- */
-export function logInternalNoteRefusal(role: Role, ticketId: string): void {
-  logSecurityEvent('INTERNAL_NOTE_REFUSED', { role, ticketId })
+/** Dedicated signal for Requester access attempts to Internal Notes (SEC-026). */
+export function logInternalNoteRefusal(role: Role): void {
+  logSecurityEvent('INTERNAL_NOTE_REFUSED', { role })
 }

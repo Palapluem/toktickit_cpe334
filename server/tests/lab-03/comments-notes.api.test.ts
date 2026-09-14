@@ -53,7 +53,7 @@ async function makeTicket(): Promise<void> {
       categoryId: category.id,
       relatedSystemId: relatedSystem.id,
       summary: 'Threads fixture',
-      description: 'Created by notes.api.test.ts.',
+      description: 'Created by comments-notes.api.test.ts.',
       requestedPriority: 'MEDIUM',
       itPriority: 'MEDIUM',
       status: 'IN_PROGRESS',
@@ -99,7 +99,7 @@ afterAll(async () => {
   await restoreSeededCredentials()
 })
 
-describe('API-18 · AC-17 · Public Comments reach all three roles (BR-26)', () => {
+describe('API-19 · AC-16 · Public Comments reach all three roles (BR-26)', () => {
   it('lets every role read the thread on this Ticket', async () => {
     await postComment(cookies.REQUESTER, { body: 'I restarted it and it still fails.' })
 
@@ -209,7 +209,7 @@ describe('SEC-T05 · AC-09 · a Requester is refused Internal Notes, and learns 
   })
 })
 
-describe('API-19 · Internal Notes serve IT Staff and Administrator (BR-27)', () => {
+describe('API-21 · AC-25 · Internal Notes serve IT Staff and Administrator (BR-27)', () => {
   it('lets both read and write, and records the author', async () => {
     for (const role of ['IT_STAFF', 'ADMINISTRATOR'] as Role[]) {
       const response = await postNote(cookies[role], { body: `Note from ${role}.` })
@@ -234,7 +234,7 @@ describe('API-19 · Internal Notes serve IT Staff and Administrator (BR-27)', ()
   })
 })
 
-describe('UNIT-05 · AC-17 · content validation (BR-31, SEC-030)', () => {
+describe('UNIT-05 · API-22 · content validation (BR-31, SEC-030)', () => {
   const REJECTED: Array<[string, unknown]> = [
     ['an empty string', ''],
     ['whitespace only', '   \n\t  '],
@@ -270,7 +270,7 @@ describe('UNIT-05 · AC-17 · content validation (BR-31, SEC-030)', () => {
   })
 })
 
-describe('SEC-T14 · AC-17 · content is stored as text, never interpreted (SEC-029)', () => {
+describe('BR-32 · content is stored as text, never interpreted (SEC-029)', () => {
   const HOSTILE = [
     '<script>alert(1)</script>',
     "'; DROP TABLE \"PublicComment\"; --",
@@ -296,7 +296,7 @@ describe('SEC-T14 · AC-17 · content is stored as text, never interpreted (SEC-
   })
 })
 
-describe('API-20 · both threads are append-only (BR-29)', () => {
+describe('API-23 · both threads are append-only (BR-29)', () => {
   it('offers no edit or delete route on either', async () => {
     const created = await postComment(cookies.REQUESTER, { body: 'Cannot be edited.' })
     const commentId = created.body.data.id

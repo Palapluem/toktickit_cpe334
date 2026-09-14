@@ -1,4 +1,4 @@
-# TokTickIT — CPE334 Labs 1–2
+# TokTickIT — CPE334 Labs 1–3
 
 ## Purpose
 
@@ -10,9 +10,44 @@ backend health and the four IT request categories stored in the database.
 
 **Lab 2** builds the Requester-facing ticketing MVP on that foundation — Create
 Ticket, My Tickets, Ticket Detail, and attachments — against the engineering
-contract in [`docs/lab-02/`](docs/lab-02/). Start with
-[`AGENTS.md`](AGENTS.md), which names each contract document and the order to
-read them in.
+contract in [`docs/lab-02/`](docs/lab-02/).
+
+**Lab 3** replaces the Development Requester selector with real authentication
+and server-enforced authorization, then adds the IT Staff and Administrator
+workflows, against [`docs/lab-03/`](docs/lab-03/):
+
+- **Sign in, sign out, forced first-login password change.** Identity comes from
+  a session cookie; the client can no longer assert who it is.
+- **Three roles** — Requester, IT Staff, Administrator — enforced on the server
+  by the authorization matrix in
+  [`specification.md` §8.1](docs/lab-03/specification.md). A hidden button is
+  feedback, never the control.
+- **IT Staff Ticket Queue and Ticket Detail** — ownership, IT Priority, and only
+  the status transitions §5.1 permits.
+- **Public Comments and Internal Notes** — two tables and two components, so a
+  private note cannot be posted publicly by mistake.
+- **Administrator User Management** — create, edit, activate/deactivate, set a
+  new initial password, with the two safety rules that stop the system locking
+  everyone out.
+
+Start with [`AGENTS.md`](AGENTS.md), which names each contract document and the
+order to read them in.
+
+## Signing in
+
+The seed creates accounts for every role, all sharing one documented
+local-development password — see `server/prisma/seed.ts`. They are local-only
+and grant access to nothing outside your own machine.
+
+| Role | Seeded account |
+|---|---|
+| Requester | `jennifer.anderson@example.ac.th` |
+| IT Staff | `patricia.evans@example.ac.th` |
+| Administrator | `margaret.hale@example.ac.th` |
+
+One seeded account (`david.lee@example.ac.th`) is deliberately left behind the
+must-change-password gate so that screen can be exercised without creating a
+user first.
 
 ## Prerequisites
 
@@ -37,6 +72,14 @@ has its own `.env.example` to copy from. Never commit the real `.env` files:
 cp server/.env.example server/.env   # DATABASE_URL, PORT
 cp client/.env.example client/.env   # VITE_API_BASE_URL
 ```
+
+Lab 3 adds two session variables, both documented in
+[`.env.example`](.env.example):
+
+| Variable | Purpose |
+|---|---|
+| `SESSION_COOKIE_SECURE` | `false` locally. A `Secure` cookie is never sent over plain HTTP, so setting it on a local server silently loses every session. |
+| `CLIENT_ORIGIN` | The origin allowed to send the session cookie. Unset means "reflect the request's origin", which is what the split-port local setup needs — the server refuses to boot without it when `NODE_ENV=production`. |
 
 ## Running the Backend
 
@@ -94,9 +137,16 @@ reproducible from a clean clone rather than depending on a database somebody
 prepared by hand. Use `npm run test:only` to skip that step when the test
 database is already current.
 
-Server tests live in `server/tests/lab-01/` and `server/tests/lab-02/`; every
-test cites the `FR`/`BR`/`AC`/`TC`/`STY` identifier it proves
+Server tests live in `server/tests/lab-01/`, `lab-02/` and `lab-03/`; client
+tests under `client/tests/`. Every test cites the
+`FR`/`BR`/`AC`/`TC`/`STY`/`SEC-T` identifier it proves
 (`docs/lab-02/testing-contract.md` TCS-01).
+
+Lab 3's authorization tests call the API **directly with the wrong role**,
+never through the UI — a test that drives the interface proves the button is
+hidden, not that the boundary holds. Before requesting review on anything
+touching auth, roles or user data, run the audit in
+`docs/lab-02/testing-contract.md` §7.
 
 ## E2E and responsive evidence
 
@@ -111,8 +161,10 @@ npm run test:e2e
 
 The runner applies migrations and the idempotent seed automatically. It uses
 the non-watch API command `tsx src/server.ts`, Vite's strict port 5174, and
-the isolated API port 3002. It writes the nine reproducible viewport captures
-to `artifacts/lab-02/screenshots/`. Set `E2E_DATABASE_URL` to override the
+the isolated API port 3002. Lab 2's captures go to
+`artifacts/lab-02/screenshots/` and Lab 3's to `artifacts/lab-03/screenshots/`
+through a separate helper, so a Lab 3 run cannot overwrite submitted Lab 2
+evidence. Set `E2E_DATABASE_URL` to override the
 `.env.test` value, but never point it at a development database. `DATABASE_URL`
 is a PostgreSQL URI, so percent-encode reserved credential characters such as
 `@`, `:`, `/`, and `%`.
@@ -120,12 +172,19 @@ is a PostgreSQL URI, so percent-encode reserved credential characters such as
 ## Branch and Pull Request Rules
 
 - `main` — stable release branch. Never develop directly on it.
-- `lab2-staging` — Lab 2 integration branch. Never develop directly on it.
-- Each Issue is implemented on its own branch from the latest `lab2-staging`,
+- `lab2-staging`, `lab3-staging` — per-sprint integration branches. Never
+  develop directly on them.
+- Each Issue is implemented on its own branch from the latest staging branch,
   including follow-up branches when peer review finds a release-candidate gap.
-- Every feature Pull Request targets `lab2-staging`, links its Issue through
-  the Development panel, and requires peer review and passing tests before
-  the reviewer merges it (merge commit, not squash/rebase).
-- After all Lab 2 feature and follow-up PRs are merged, Issues are closed and
-  cards are moved to Done, one release Pull Request promotes `lab2-staging`
-  to `main`.
+- Every feature Pull Request targets the sprint's staging branch, links its
+  Issue through the Development panel, and requires peer review and passing
+  tests before the reviewer merges it (merge commit, not squash/rebase).
+- After all of a sprint's PRs are merged, Issues are closed and cards moved to
+  Done, one release Pull Request promotes the staging branch to `main`.
+
+**Stacked branches.** Where one Issue's branch is cut from the previous one
+rather than from staging, either delete each branch on merge so GitHub
+retargets the next Pull Request, or merge in **descending** order. Merging a
+stack in ascending order without deleting branches lands each PR in its
+already-merged parent, and nothing reaches staging — see
+`docs/lab-03/reviewer.md` §1.1.
