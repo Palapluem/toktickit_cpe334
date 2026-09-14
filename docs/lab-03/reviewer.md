@@ -28,7 +28,7 @@ Unlike Lab 2, review in Lab 3 ran **in both directions** — §4 records the com
 | [#64](https://github.com/Palapluem/toktickit_cpe334/pull/64) | [#53](https://github.com/Palapluem/toktickit_cpe334/issues/53) | `feature/21-…` ← `feature/22-user-management` | `MERGED` | `d727d28` | `N0TAW00D` |
 | [#65](https://github.com/Palapluem/toktickit_cpe334/pull/65) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/22-user-management` | open at time of writing | — | — |
 
-Every PR received a substantive `COMMENTED` review before its `APPROVED` one. No PR was approved on first read without a finding.
+Every PR received a substantive `COMMENTED` review before its `APPROVED` one.
 
 ### 1.1 The stacked-branch merge defect, and PR #65
 

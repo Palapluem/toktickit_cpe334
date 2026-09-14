@@ -190,16 +190,15 @@ so the column now names where each test actually lives.
 **LLM used:** Claude Code in a VS Code-based IDE — Claude Sonnet 5 for the
 implementation Issues, Claude Opus 5 for the release audit.
 
-Ten selected prompts, each with what the agent produced and what I took from it. They
-are the phase templates actually issued — contract review, red, green, audit,
-review-response — plus the authorization-audit template Lab 3 added, because this is the
-first sprint where a wrong answer is a vulnerability rather than a defect.
+Ten selected prompts, each with what the agent produced and what I took from it: the red,
+green, security-audit and review-response phase templates, and the judgment prompts used
+between phases and at release.
 
 The reflection is under the literal heading **My Reflection**. Its short form: the most
 valuable clause in a prompt is the one that tells the agent to attack its own output.
 *"Would a stub that refuses everything also pass this test?"* caught a red phase that was
-theatre. *"Report what is NOT satisfied"* caught two endpoints shipped without a
-wrong-role test. *"Do not assume a merged PR reached staging"* caught the branch defect
+theatre. *"Read the AC text, not the label"* found 26 test names citing the wrong
+criterion. *"Do not assume a merged PR reached staging"* caught the branch defect
 in Part 1. *"Reproduce it before you fix it"* turned a reported vulnerability into a
 permanent regression test.
 
