@@ -1,5 +1,6 @@
 // Every endpoint returns { data: ... } (api-spec.md §1) and identifies rows by
-// UUID (§11.1). The requester context travels in a header, never a body (§11.3).
+// UUID (lab-02 §11.1). Identity travels in the session cookie, which is why every
+// request sets credentials: 'include' — nothing here names a user (BR-10).
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001'
 
 export interface HealthResponse {
@@ -21,6 +22,17 @@ export interface Requester {
   id: string
   displayName: string
   email: string
+}
+
+export type Role = 'REQUESTER' | 'IT_STAFF' | 'ADMINISTRATOR'
+
+/** The safe profile /api/auth/me returns. Never carries a hash or a token (SEC-003). */
+export interface SessionUser {
+  id: string
+  displayName: string
+  email: string
+  role: Role
+  mustChangePassword: boolean
 }
 
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
@@ -179,15 +191,10 @@ async function throwApiRequestError(
   throw new ApiRequestError(message, fieldErrors, response.status, code)
 }
 
-async function get<T>(
-  path: string,
-  label: string,
-  requesterId?: string,
-): Promise<T> {
-  const headers: Record<string, string> = {}
-  if (requesterId) headers['X-Requester-Id'] = requesterId
-
-  const response = await fetch(`${API_BASE_URL}${path}`, { headers })
+async function get<T>(path: string, label: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: 'include',
+  })
 
   if (!response.ok) {
     await throwApiRequestError(response, `${label} request failed`)
@@ -207,31 +214,23 @@ export async function fetchHealth(): Promise<HealthResponse> {
   return response.json()
 }
 
-export function fetchCategories(requesterId?: string): Promise<Category[]> {
-  return get<Category[]>('/api/categories', 'Categories', requesterId)
+export function fetchCategories(): Promise<Category[]> {
+  return get<Category[]>('/api/categories', 'Categories')
 }
 
-export function fetchRelatedSystems(
-  requesterId?: string,
-): Promise<RelatedSystem[]> {
-  return get<RelatedSystem[]>(
-    '/api/related-systems',
-    'Related systems',
-    requesterId,
-  )
+export function fetchRelatedSystems(): Promise<RelatedSystem[]> {
+  return get<RelatedSystem[]>('/api/related-systems', 'Related systems')
 }
 
-export function fetchRequesters(): Promise<Requester[]> {
-  return get<Requester[]>('/api/requesters', 'Requesters')
+/** The authenticated user. How the client learns its role — never from storage (SEC-005). */
+export function fetchCurrentUser(): Promise<SessionUser> {
+  return get<SessionUser>('/api/auth/me', 'Current user')
 }
 
 export async function createTicket(
   payload: CreateTicketPayload,
-  requesterId: string,
 ): Promise<CreatedTicket> {
-  const headers: Record<string, string> = {
-    'X-Requester-Id': requesterId,
-  }
+  const headers: Record<string, string> = {}
   let requestBody: BodyInit
 
   if (payload.attachments?.length) {
@@ -256,6 +255,7 @@ export async function createTicket(
 
   const response = await fetch(`${API_BASE_URL}/api/tickets`, {
     method: 'POST',
+    credentials: 'include',
     headers,
     body: requestBody,
   })
@@ -269,7 +269,6 @@ export async function createTicket(
 }
 
 export async function fetchTickets(
-  requesterId: string,
   query: TicketListQuery = {},
 ): Promise<TicketListResponse> {
   const params = new URLSearchParams()
@@ -291,7 +290,7 @@ export async function fetchTickets(
   const queryString = params.toString()
   const response = await fetch(
     `${API_BASE_URL}/api/tickets${queryString ? `?${queryString}` : ''}`,
-    { headers: { 'X-Requester-Id': requesterId } },
+    { credentials: 'include' },
   )
 
   if (!response.ok) {
@@ -301,12 +300,9 @@ export async function fetchTickets(
   return (await response.json()) as TicketListResponse
 }
 
-export async function fetchTicket(
-  requesterId: string,
-  ticketId: string,
-): Promise<Ticket> {
+export async function fetchTicket(ticketId: string): Promise<Ticket> {
   const response = await fetch(`${API_BASE_URL}/api/tickets/${ticketId}`, {
-    headers: { 'X-Requester-Id': requesterId },
+    credentials: 'include',
   })
   if (!response.ok) {
     await throwApiRequestError(response, 'Ticket request failed')
@@ -315,7 +311,6 @@ export async function fetchTicket(
 }
 
 export async function uploadAttachment(
-  requesterId: string,
   ticketId: string,
   file: File,
 ): Promise<AttachmentMutationResponse> {
@@ -325,7 +320,7 @@ export async function uploadAttachment(
     `${API_BASE_URL}/api/tickets/${ticketId}/attachments`,
     {
       method: 'POST',
-      headers: { 'X-Requester-Id': requesterId },
+      credentials: 'include',
       body: form,
     },
   )
@@ -336,7 +331,6 @@ export async function uploadAttachment(
 }
 
 export async function removeAttachment(
-  requesterId: string,
   attachmentId: string,
   reason: string,
 ): Promise<AttachmentMutationResponse> {
@@ -344,10 +338,8 @@ export async function removeAttachment(
     `${API_BASE_URL}/api/attachments/${attachmentId}`,
     {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requester-Id': requesterId,
-      },
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ reason }),
     },
   )
@@ -357,13 +349,10 @@ export async function removeAttachment(
   return (await response.json()) as AttachmentMutationResponse
 }
 
-export async function downloadAttachment(
-  requesterId: string,
-  attachmentId: string,
-): Promise<Blob> {
+export async function downloadAttachment(attachmentId: string): Promise<Blob> {
   const response = await fetch(
     `${API_BASE_URL}/api/attachments/${attachmentId}/download`,
-    { headers: { 'X-Requester-Id': requesterId } },
+    { credentials: 'include' },
   )
   if (!response.ok) {
     await throwApiRequestError(response, 'Attachment download failed')

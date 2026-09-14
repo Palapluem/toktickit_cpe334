@@ -9,7 +9,7 @@ import { AppShell } from '../../../src/components/AppShell.js'
 function renderShell() {
   return render(
     <MemoryRouter initialEntries={['/tickets']}>
-      <AppShell requesterName="Jennifer Anderson" />
+      <AppShell userName="Jennifer Anderson" />
     </MemoryRouter>,
   )
 }
@@ -90,9 +90,9 @@ describe('mobile navigation · keyboard operable', () => {
   })
 })
 
-describe('mobile navigation · the requester stays visible', () => {
-  // ui-spec §5: the current requester remains visible on mobile, collapsed or not.
-  it('shows the requester without opening the menu', () => {
+describe('mobile navigation · the signed-in user stays visible', () => {
+  // ui-spec §5: the current user remains visible on mobile, collapsed or not.
+  it('shows the user without opening the menu', () => {
     renderShell()
 
     expect(screen.getByText('Jennifer Anderson')).toBeInTheDocument()

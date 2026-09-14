@@ -48,7 +48,6 @@ function renderSection(
   return render(
     <AttachmentSection
       ticketId="ticket-1"
-      requesterId="r-jennifer"
       attachments={overrides.attachments ?? [ACTIVE]}
       activeCount={overrides.activeCount ?? 1}
       activeLimit={overrides.activeLimit ?? 5}
@@ -85,8 +84,7 @@ describe('UI-19 · AC-29 · attachment upload state', () => {
     render(
       <AttachmentSection
         ticketId="ticket-1"
-        requesterId="r-jennifer"
-        attachments={[]}
+          attachments={[]}
         activeCount={0}
         activeLimit={5}
         onAdd={onAdd}
@@ -130,8 +128,7 @@ describe('UI-21 · BR-32 · removal confirmation', () => {
     render(
       <AttachmentSection
         ticketId="ticket-1"
-        requesterId="r-jennifer"
-        attachments={[ACTIVE]}
+          attachments={[ACTIVE]}
         activeCount={1}
         activeLimit={5}
         onAdd={vi.fn(async () => ACTIVE)}

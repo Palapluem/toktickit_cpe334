@@ -1,7 +1,11 @@
 // API client contract (#17). FR-01, FR-16, BR-14, TC-008; api-spec.md §1.
 // These tests assert the current { data: [...] } envelope and UUID contract.
 import { describe, expect, it, vi, afterEach } from 'vitest'
-import { fetchCategories, fetchRequesters, fetchTickets } from '../../src/api.js'
+import {
+  fetchCategories,
+  fetchCurrentUser,
+  fetchTickets,
+} from '../../src/api.js'
 
 function mockJson(body: unknown, ok = true, status = 200) {
   return vi.fn().mockResolvedValue({
@@ -49,21 +53,27 @@ describe('api · the data envelope is unwrapped', () => {
   })
 })
 
-describe('api · requesters', () => {
-  it('returns the active requesters from inside data', async () => {
+// The selector's endpoint is gone (AC-15). /api/auth/me is how the client
+// learns who it is, and its role, now.
+describe('api · the authenticated user', () => {
+  it('returns the safe profile from inside data', async () => {
     vi.stubGlobal(
       'fetch',
       mockJson({
-        data: [
-          { id: 'r1', displayName: 'Jennifer Anderson', email: 'j@example.ac.th' },
-        ],
+        data: {
+          id: 'r1',
+          displayName: 'Jennifer Anderson',
+          email: 'j@example.ac.th',
+          role: 'REQUESTER',
+          mustChangePassword: false,
+        },
       }),
     )
 
-    const requesters = await fetchRequesters()
+    const user = await fetchCurrentUser()
 
-    expect(requesters).toHaveLength(1)
-    expect(requesters[0].displayName).toBe('Jennifer Anderson')
+    expect(user.displayName).toBe('Jennifer Anderson')
+    expect(user.role).toBe('REQUESTER')
   })
 })
 
@@ -92,7 +102,7 @@ describe('api · My Tickets list request', () => {
     const fetchMock = mockJson(responseBody)
     vi.stubGlobal('fetch', fetchMock)
 
-    const result = await fetchTickets('req-42', {
+    const result = await fetchTickets({
       search: '  battery  ',
       categoryId: '11111111-1111-4111-8111-111111111111',
       requestedPriority: 'HIGH',
@@ -116,32 +126,38 @@ describe('api · My Tickets list request', () => {
       page: '2',
       pageSize: '25',
     })
-    expect(new Headers(init?.headers).get('X-Requester-Id')).toBe('req-42')
+    expect(init?.credentials).toBe('include')
     expect(result).toEqual(responseBody)
   })
 })
 
-describe('api · the requester context travels in a header (§11.3)', () => {
-  it('sends X-Requester-Id on a requester-scoped request', async () => {
-    const fetchMock = mockJson({ data: [] })
-    vi.stubGlobal('fetch', fetchMock)
-
-    await fetchCategories('req-42')
-
-    const [, init] = fetchMock.mock.calls[0]
-    expect(new Headers(init?.headers).get('X-Requester-Id')).toBe('req-42')
-  })
-
-  it('omits the header entirely when there is no context', async () => {
+// Replaces "the requester context travels in a header" (lab-02 §11.3).
+// Identity is the session cookie, which the browser attaches — so the only
+// thing the client has to get right is asking for it to be sent (AC-15).
+describe('api · identity travels in the session cookie', () => {
+  it('sends credentials on a scoped request', async () => {
     const fetchMock = mockJson({ data: [] })
     vi.stubGlobal('fetch', fetchMock)
 
     await fetchCategories()
 
-    // The call is asserted first: "no header" is also true of a request that
-    // was never made.
     expect(fetchMock).toHaveBeenCalledOnce()
     const [, init] = fetchMock.mock.calls[0]
-    expect(new Headers(init?.headers).get('X-Requester-Id')).toBeNull()
+    expect(init?.credentials).toBe('include')
+  })
+
+  it('names no user in the request it sends', async () => {
+    const fetchMock = mockJson({ data: [] })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await fetchCategories()
+
+    // The call is asserted first: "no identifier" is also true of a request
+    // that was never made.
+    expect(fetchMock).toHaveBeenCalledOnce()
+    const [url, init] = fetchMock.mock.calls[0]
+    const headerNames = [...new Headers(init?.headers).keys()]
+    expect(headerNames).not.toContain('x-requester-id')
+    expect(String(url)).not.toMatch(/requesterId/i)
   })
 })

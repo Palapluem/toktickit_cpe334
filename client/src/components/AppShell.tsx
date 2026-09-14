@@ -1,13 +1,11 @@
 // Application shell (ui-spec §5). NavLink supplies aria-current="page"; the
 // underline in --zen-secondary means active state is not colour alone (STY-007).
 import { useRef, useState, type ReactNode } from 'react'
-import { NavLink, Link, useNavigate } from 'react-router-dom'
-import { Button } from './Button.js'
-import { useOptionalRequester } from '../context/RequesterContext.js'
+import { NavLink, Link } from 'react-router-dom'
+import { useOptionalSession } from '../context/SessionContext.js'
 
 export type AppShellProps = {
-  requesterName?: string
-  onChangeRequester?: () => void
+  userName?: string
   breadcrumb?: string[]
   showNavigation?: boolean
   children?: ReactNode
@@ -19,25 +17,15 @@ const NAV = [
 ]
 
 export function AppShell({
-  requesterName,
-  onChangeRequester,
+  userName,
   breadcrumb,
   showNavigation = true,
   children,
 }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const context = useOptionalRequester()
-  const navigate = useNavigate()
+  const session = useOptionalSession()
 
-  const name = requesterName ?? context?.requester?.displayName
-  const changeRequester =
-    onChangeRequester ??
-    (context
-      ? () => {
-          context.clear()
-          navigate('/select-requester', { replace: true })
-        }
-      : undefined)
+  const name = userName ?? session?.user?.displayName
   const toggleRef = useRef<HTMLButtonElement>(null)
 
   // Escape returns focus to the toggle. Without this a keyboard user who
@@ -96,13 +84,6 @@ export function AppShell({
         {name ? (
           <div className="ms-auto d-flex align-items-center gap-2">
             <span>{name}</span>
-            <Button
-              variant="tertiary"
-              className="zen-shell__header-action"
-              onClick={changeRequester}
-            >
-              Change Requester
-            </Button>
           </div>
         ) : null}
       </header>

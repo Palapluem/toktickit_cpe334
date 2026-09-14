@@ -1,73 +1,82 @@
-// UI-05 (#17). AC-03, FR-04, FR-05; ui-spec §5.
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
+// UI-05 (#17), migrated in #48. AC-03 becomes "the shell shows the authenticated
+// user"; the Change Requester action is gone with the selector (AC-15), and
+// Logout arrives with L3-6.
+import { describe, expect, it, vi, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { AppShell } from '../../src/components/AppShell.js'
-import { RequesterProvider } from '../../src/context/RequesterContext.js'
+import { SessionProvider } from '../../src/context/SessionContext.js'
 
-const REQUESTERS = [
-  {
-    id: 'r-jennifer',
-    displayName: 'Jennifer Anderson',
-    email: 'jennifer.anderson@example.ac.th',
-  },
-]
+const USER = {
+  id: 'r-jennifer',
+  displayName: 'Jennifer Anderson',
+  email: 'jennifer.anderson@example.ac.th',
+  role: 'REQUESTER',
+  mustChangePassword: false,
+}
 
-function mockFetch(body: unknown) {
-  return vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => body })
+function mockFetch(ok: boolean, body: unknown) {
+  return vi.fn().mockResolvedValue({
+    ok,
+    status: ok ? 200 : 401,
+    json: async () => body,
+  })
 }
 
 function renderShell() {
   return render(
     <MemoryRouter initialEntries={['/tickets']}>
-      <RequesterProvider>
+      <SessionProvider>
         <Routes>
-          <Route path="/select-requester" element={<p>Selection screen</p>} />
           <Route path="/tickets" element={<AppShell />} />
         </Routes>
-      </RequesterProvider>
+      </SessionProvider>
     </MemoryRouter>,
   )
 }
-
-beforeEach(() => {
-  window.sessionStorage.clear()
-  window.sessionStorage.setItem('toktickit.requesterId', 'r-jennifer')
-})
 
 afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('UI-05 · AC-03 · the shell shows the current requester', () => {
-  it('displays the selected requester by name', async () => {
-    vi.stubGlobal('fetch', mockFetch({ data: REQUESTERS }))
+describe('UI-05 · AC-03 · the shell shows the authenticated user', () => {
+  it('displays the name the server reports', async () => {
+    vi.stubGlobal('fetch', mockFetch(true, { data: USER }))
     renderShell()
 
     expect(await screen.findByText('Jennifer Anderson')).toBeInTheDocument()
   })
 
-  it('offers a Change Requester action', async () => {
-    vi.stubGlobal('fetch', mockFetch({ data: REQUESTERS }))
+  it('takes the name from the server rather than from anything stored', async () => {
+    window.sessionStorage.setItem('toktickit.requesterId', 'someone-else')
+    vi.stubGlobal('fetch', mockFetch(true, { data: USER }))
     renderShell()
 
-    expect(
-      await screen.findByRole('button', { name: /change requester/i }),
-    ).toBeInTheDocument()
+    expect(await screen.findByText('Jennifer Anderson')).toBeInTheDocument()
+    window.sessionStorage.clear()
   })
 })
 
-describe('FR-05, FR-06 · changing requester clears the context', () => {
-  it('returns to selection and forgets the stored identifier', async () => {
-    vi.stubGlobal('fetch', mockFetch({ data: REQUESTERS }))
+describe('AC-15 · the Change Requester action is gone', () => {
+  it('offers no way to become a different user', async () => {
+    vi.stubGlobal('fetch', mockFetch(true, { data: USER }))
     renderShell()
 
-    await userEvent.click(
-      await screen.findByRole('button', { name: /change requester/i }),
-    )
+    // The positive control: the shell did render, so a missing button is not
+    // just a component that failed to mount.
+    expect(await screen.findByText('Jennifer Anderson')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /change requester/i }),
+    ).not.toBeInTheDocument()
+  })
+})
 
-    expect(await screen.findByText('Selection screen')).toBeInTheDocument()
-    expect(window.sessionStorage.getItem('toktickit.requesterId')).toBeNull()
+describe('AC-12 · no session, no name', () => {
+  it('shows no user when the server refuses', async () => {
+    vi.stubGlobal('fetch', mockFetch(false, { error: { code: 'AUTHENTICATION_REQUIRED' } }))
+    renderShell()
+
+    expect(await screen.findByRole('link', { name: 'TokTickIT' })).toBeInTheDocument()
+    expect(screen.queryByText('Jennifer Anderson')).not.toBeInTheDocument()
   })
 })

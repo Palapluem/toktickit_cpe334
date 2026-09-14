@@ -32,7 +32,7 @@ describe('UI-18 · AC-27 · owned Ticket Detail', () => {
   it('renders all ticket information as read-only and separates attachment actions', () => {
     render(
       <MemoryRouter initialEntries={['/tickets/ticket-1']}>
-        <RequesterTicketDetail ticket={TICKET} requesterId={REQUESTER.id} />
+        <RequesterTicketDetail ticket={TICKET} />
       </MemoryRouter>,
     )
 

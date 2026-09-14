@@ -4,12 +4,12 @@ import {
   captureScreenshot,
   createTicket,
   expectNoPageOverflow,
-  selectRequester,
+  signIn,
 } from './helpers'
 
 // RESP-01 · AC-35 · STY-023, STY-024 · TDT-01 equivalence partitioning.
 test('RESP-01 renders Create Ticket at desktop, tablet, and mobile', async ({ page }) => {
-  await selectRequester(page, 'Jennifer Anderson')
+  await signIn(page, 'Jennifer Anderson')
 
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport)
@@ -25,7 +25,7 @@ test('RESP-02 renders My Tickets at desktop, tablet, and mobile', async ({
   page,
   e2eSummaries,
 }) => {
-  await selectRequester(page, 'Jennifer Anderson')
+  await signIn(page, 'Jennifer Anderson')
   await page.goto('/tickets/new')
   const summary = `E2E responsive list ${Date.now()}`
   e2eSummaries.add(summary)
@@ -49,7 +49,7 @@ test('RESP-03 renders Ticket Detail at desktop, tablet, and mobile', async ({
   page,
   e2eSummaries,
 }) => {
-  await selectRequester(page, 'Jennifer Anderson')
+  await signIn(page, 'Jennifer Anderson')
   const summary = `E2E responsive detail ${Date.now()}`
   e2eSummaries.add(summary)
   const created = await createTicket(page, summary)

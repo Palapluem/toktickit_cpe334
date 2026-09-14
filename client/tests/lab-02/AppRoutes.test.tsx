@@ -1,10 +1,18 @@
 // UI-06/UI-07 (#20). AC-06, AC-11; ui-spec §5; TDT-01 route-shell partition.
-// Create Ticket and requester selection must render the required shell context.
+// Migrated in #48: the selection route is gone with the selector (AC-15).
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import App from '../../src/App.js'
-import { RequesterProvider, STORAGE_KEY } from '../../src/context/RequesterContext.js'
+import { SessionProvider } from '../../src/context/SessionContext.js'
+
+const USER = {
+  id: 'r-jennifer',
+  displayName: 'Jennifer Anderson',
+  email: 'jennifer.anderson@example.ac.th',
+  role: 'REQUESTER' as const,
+  mustChangePassword: false,
+}
 
 vi.mock('../../src/api.js', async () => {
   const actual = await vi.importActual<typeof import('../../src/api.js')>(
@@ -12,13 +20,7 @@ vi.mock('../../src/api.js', async () => {
   )
   return {
     ...actual,
-    fetchRequesters: vi.fn(async () => [
-      {
-        id: 'r-jennifer',
-        displayName: 'Jennifer Anderson',
-        email: 'jennifer.anderson@example.ac.th',
-      },
-    ]),
+    fetchCurrentUser: vi.fn(async () => USER),
     fetchCategories: vi.fn(async () => [
       { id: 'category-hardware', name: 'Hardware' },
     ]),
@@ -28,24 +30,17 @@ vi.mock('../../src/api.js', async () => {
   }
 })
 
-const REQUESTER = {
-  id: 'r-jennifer',
-  displayName: 'Jennifer Anderson',
-  email: 'jennifer.anderson@example.ac.th',
-}
-
 beforeEach(() => {
   window.sessionStorage.clear()
-  window.sessionStorage.setItem(STORAGE_KEY, REQUESTER.id)
 })
 
 describe('Create Ticket route shell contract', () => {
   it('renders the Create Ticket breadcrumb inside the application shell', async () => {
     render(
       <MemoryRouter initialEntries={['/tickets/new']}>
-        <RequesterProvider>
+        <SessionProvider>
           <App />
-        </RequesterProvider>
+        </SessionProvider>
       </MemoryRouter>,
     )
 
@@ -53,25 +48,5 @@ describe('Create Ticket route shell contract', () => {
     expect(screen.getByLabelText('Breadcrumb')).toHaveTextContent(
       'My Tickets › Create Ticket',
     )
-  })
-})
-
-describe('Requester Selection route shell contract', () => {
-  it('shows the TokTickIT identity and breadcrumb without ticket navigation', async () => {
-    window.sessionStorage.clear()
-
-    render(
-      <MemoryRouter initialEntries={['/select-requester']}>
-        <RequesterProvider>
-          <App />
-        </RequesterProvider>
-      </MemoryRouter>,
-    )
-
-    expect(screen.getByRole('link', { name: 'TokTickIT' })).toBeInTheDocument()
-    expect(screen.getByLabelText('Breadcrumb')).toHaveTextContent(
-      'Development Requester Selection',
-    )
-    expect(screen.queryByRole('navigation', { name: 'Main' })).not.toBeInTheDocument()
   })
 })

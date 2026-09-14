@@ -13,7 +13,7 @@ import {
 import { Button } from '../components/Button.js'
 import { FormField } from '../components/FormField.js'
 import { ErrorState, LoadingState } from '../components/States.js'
-import { useRequester } from '../context/RequesterContext.js'
+import { useSession } from '../context/SessionContext.js'
 
 const PRIORITIES: Priority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
 const MAX_ATTACHMENTS = 5
@@ -103,7 +103,7 @@ function mapServerErrors(
 }
 
 export function CreateTicket() {
-  const { requester } = useRequester()
+  const { user } = useSession()
   const navigate = useNavigate()
   const [categories, setCategories] = useState<Category[]>([])
   const [relatedSystems, setRelatedSystems] = useState<RelatedSystem[]>([])
@@ -120,19 +120,16 @@ export function CreateTicket() {
   const [createdTicket, setCreatedTicket] = useState<CreatedTicket | null>(null)
 
   const loadReferences = useCallback(() => {
-    if (!requester) return
+    if (!user) return
     setReferencePhase('loading')
-    Promise.all([
-      fetchCategories(requester.id),
-      fetchRelatedSystems(requester.id),
-    ])
+    Promise.all([fetchCategories(), fetchRelatedSystems()])
       .then(([nextCategories, nextRelatedSystems]) => {
         setCategories(nextCategories)
         setRelatedSystems(nextRelatedSystems)
         setReferencePhase('loaded')
       })
       .catch(() => setReferencePhase('failed'))
-  }, [requester])
+  }, [user])
 
   useEffect(() => {
     loadReferences()
@@ -172,7 +169,7 @@ export function CreateTicket() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!requester || referencePhase !== 'loaded' || submitting) return
+    if (!user || referencePhase !== 'loaded' || submitting) return
 
     const nextErrors = validateForm(form)
     setFieldErrors(nextErrors)
@@ -185,17 +182,14 @@ export function CreateTicket() {
 
     setSubmitting(true)
     try {
-      const ticket = await createTicket(
-        {
-          categoryId: form.categoryId,
-          relatedSystemId: form.relatedSystemId,
-          requestedPriority: form.requestedPriority as Priority,
-          summary: form.summary.trim(),
-          description: form.description.trim(),
-          attachments: form.attachments,
-        },
-        requester.id,
-      )
+      const ticket = await createTicket({
+        categoryId: form.categoryId,
+        relatedSystemId: form.relatedSystemId,
+        requestedPriority: form.requestedPriority as Priority,
+        summary: form.summary.trim(),
+        description: form.description.trim(),
+        attachments: form.attachments,
+      })
       setCreatedTicket(ticket)
     } catch (error) {
       if (error instanceof ApiRequestError) {
@@ -289,7 +283,7 @@ export function CreateTicket() {
               />
             </FormField>
             <FormField id="requester" label="Requester" readOnly>
-              <input value={requester?.displayName ?? ''} readOnly />
+              <input value={user?.displayName ?? ''} readOnly />
             </FormField>
             <FormField id="currentStatus" label="Current Status" readOnly>
               <input value="New" readOnly />

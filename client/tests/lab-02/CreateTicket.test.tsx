@@ -6,9 +6,8 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { CreateTicket } from '../../src/screens/CreateTicket.js'
 import {
-  RequesterProvider,
-  STORAGE_KEY,
-} from '../../src/context/RequesterContext.js'
+  SessionProvider,
+} from '../../src/context/SessionContext.js'
 
 const REQUESTER = {
   id: 'r-jennifer',
@@ -44,6 +43,12 @@ const CREATED_TICKET = {
   attachmentFailures: [],
 }
 
+const SESSION_USER = {
+  ...REQUESTER,
+  role: 'REQUESTER' as const,
+  mustChangePassword: false,
+}
+
 type ApiResponse = {
   ok: boolean
   status: number
@@ -57,8 +62,8 @@ function response(body: unknown, ok = true, status = 200): ApiResponse {
 function mockApi(createResponse: ApiResponse | Promise<ApiResponse> = response({ data: CREATED_TICKET }, true, 201)) {
   const fetchMock = vi.fn((input: unknown, init?: RequestInit) => {
     const url = String(input)
-    if (url.endsWith('/api/requesters')) {
-      return Promise.resolve(response({ data: [REQUESTER] }))
+    if (url.endsWith('/api/auth/me')) {
+      return Promise.resolve(response({ data: SESSION_USER }))
     }
     if (url.endsWith('/api/categories')) {
       return Promise.resolve(response({ data: CATEGORIES }))
@@ -78,9 +83,9 @@ function mockApi(createResponse: ApiResponse | Promise<ApiResponse> = response({
 function renderScreen() {
   return render(
     <MemoryRouter initialEntries={['/tickets/new']}>
-      <RequesterProvider>
+      <SessionProvider>
         <CreateTicket />
-      </RequesterProvider>
+      </SessionProvider>
     </MemoryRouter>,
   )
 }
@@ -111,7 +116,6 @@ async function fillValidForm() {
 
 beforeEach(() => {
   window.sessionStorage.clear()
-  window.sessionStorage.setItem(STORAGE_KEY, REQUESTER.id)
 })
 
 afterEach(() => {
@@ -139,8 +143,8 @@ describe('UI-06/UI-07 · initial and reference states', () => {
     const pending = new Promise<ApiResponse>(() => {})
     const fetchMock = vi.fn((input: unknown) => {
       const url = String(input)
-      if (url.endsWith('/api/requesters')) {
-        return Promise.resolve(response({ data: [REQUESTER] }))
+      if (url.endsWith('/api/auth/me')) {
+        return Promise.resolve(response({ data: SESSION_USER }))
       }
       return pending
     })
@@ -156,8 +160,8 @@ describe('UI-06/UI-07 · initial and reference states', () => {
   it('shows a safe reference failure and keeps submit disabled', async () => {
     const fetchMock = vi.fn((input: unknown) => {
       const url = String(input)
-      if (url.endsWith('/api/requesters')) {
-        return Promise.resolve(response({ data: [REQUESTER] }))
+      if (url.endsWith('/api/auth/me')) {
+        return Promise.resolve(response({ data: SESSION_USER }))
       }
       return Promise.reject(new Error('reference service unavailable'))
     })
@@ -303,8 +307,8 @@ describe('UI-11 · AC-16/AC-17 · invalid attachment', () => {
   })
 })
 
-describe('UI-06 · AC-07 · requester binding at the network boundary', () => {
-  it('sends the selected requester header and never a requester body field', async () => {
+describe('UI-06 · AC-07 · identity at the network boundary', () => {
+  it('sends the session and never names a requester in the request', async () => {
     const fetchMock = mockApi()
     renderScreen()
     await waitForReferences()
@@ -318,9 +322,8 @@ describe('UI-06 · AC-07 · requester binding at the network boundary', () => {
     )
     expect(createCall).toBeDefined()
     const [, init] = createCall as [string, RequestInit]
-    expect((init.headers as Record<string, string>)['X-Requester-Id']).toBe(
-      REQUESTER.id,
-    )
+    expect(init.credentials).toBe('include')
+    expect(Object.keys(init.headers ?? {})).not.toContain('X-Requester-Id')
     expect(JSON.parse(String(init.body))).not.toHaveProperty('requesterId')
   })
 })

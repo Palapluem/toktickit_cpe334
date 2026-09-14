@@ -4,8 +4,11 @@ import cookieParser from 'cookie-parser'
 import multer from 'multer'
 import prisma from './prisma.js'
 import { ApiError, errorHandler, sendError } from './http/errors.js'
-import { requireRequesterContext } from './middleware/requesterContext.js'
-import { requireAuth } from './middleware/authContext.js'
+import {
+  requireAuth,
+  requirePasswordChanged,
+} from './middleware/authContext.js'
+import { requireOperation } from './middleware/authorize.js'
 import { authenticate, changePassword } from './auth/service.js'
 import {
   SESSION_COOKIE,
@@ -263,7 +266,7 @@ export function createApp(options: CreateTicketOptions = {}) {
   // Reference data (api-spec.md §2). All three: data envelope, isActive filter,
   // explicit name ordering (§11.15).
 
-  app.get('/api/categories', async (_req, res) => {
+  app.get('/api/categories', requireAuth, requirePasswordChanged, async (_req, res) => {
     const data = await (options.db ?? prisma).category.findMany({
       where: { isActive: true },
       orderBy: { name: 'asc' },
@@ -272,31 +275,28 @@ export function createApp(options: CreateTicketOptions = {}) {
     res.json({ data })
   })
 
-  app.get('/api/related-systems', async (_req, res) => {
+  app.get(
+    '/api/related-systems',
+    requireAuth,
+    requirePasswordChanged,
+    async (_req, res) => {
     const data = await (options.db ?? prisma).relatedSystem.findMany({
       where: { isActive: true },
       orderBy: { name: 'asc' },
       select: { id: true, name: true },
-    })
-    res.json({ data })
-  })
+      })
+      res.json({ data })
+    },
+  )
 
-  app.get('/api/requesters', async (_req, res) => {
-    const data = await (options.db ?? prisma).user.findMany({
-      // Role filter added with the User migration: the Lab 2 development
-      // selector lists requesters, not staff. L3-5 removes the endpoint.
-      where: { isActive: true, role: 'REQUESTER' },
-      orderBy: { displayName: 'asc' },
-      // isActive withheld: exposing it invites the client to treat the selector
-      // as authorization (BR-03, BR-14).
-      select: { id: true, displayName: true, email: true },
-    })
-    res.json({ data })
-  })
-
-  app.get('/api/tickets', requireRequesterContext, async (req, res) => {
+  app.get(
+    '/api/tickets',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:listOwn'),
+    async (req, res) => {
     const data = await listTickets(
-      req.requester!.id,
+      req.user!.id,
       req.query,
       options.db ?? prisma,
     )
@@ -305,13 +305,15 @@ export function createApp(options: CreateTicketOptions = {}) {
 
   app.post(
     '/api/tickets',
-    requireRequesterContext,
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:create'),
     parseAttachments,
     // Express 5 forwards rejected async handlers to the final error middleware.
     async (req, res) => {
       const files = Array.isArray(req.files) ? toAttachmentFiles(req.files) : []
       const ticket = await createTicket(
-        { requesterId: req.requester!.id, body: req.body, attachments: files },
+        { requesterId: req.user!.id, body: req.body, attachments: files },
         options,
       )
       const stored = await (options.db ?? prisma).ticket.findUniqueOrThrow({
@@ -364,10 +366,17 @@ export function createApp(options: CreateTicketOptions = {}) {
     },
   )
 
-  app.get('/api/tickets/:id', requireRequesterContext, async (req, res) => {
+  // Requester-scoped, as in Lab 2. IT Staff and Administrator read any Ticket
+  // through /api/staff/tickets/:id, which L3-7 delivers.
+  app.get(
+    '/api/tickets/:id',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:read'),
+    async (req, res) => {
     const data = await getTicketDetail(
       ticketParameter(req.params.id),
-      req.requester!.id,
+      req.user!.id,
       options.db ?? prisma,
     )
     res.json({ data })
@@ -375,11 +384,13 @@ export function createApp(options: CreateTicketOptions = {}) {
 
   app.get(
     '/api/tickets/:id/attachments',
-    requireRequesterContext,
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('attachment:manage'),
     async (req, res) => {
       const data = await listTicketAttachments(
         ticketParameter(req.params.id),
-        req.requester!.id,
+        req.user!.id,
         options.db ?? prisma,
       )
       res.json(data)
@@ -388,12 +399,14 @@ export function createApp(options: CreateTicketOptions = {}) {
 
   app.post(
     '/api/tickets/:id/attachments',
-    requireRequesterContext,
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('attachment:manage'),
     parseSingleAttachment,
     async (req, res) => {
       const data = await addTicketAttachment(
         ticketParameter(req.params.id),
-        req.requester!.id,
+        req.user!.id,
         toAttachmentFile(req.file),
         options,
       )
@@ -403,11 +416,13 @@ export function createApp(options: CreateTicketOptions = {}) {
 
   app.get(
     '/api/attachments/:id/download',
-    requireRequesterContext,
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('attachment:manage'),
     async (req, res, next) => {
       const { attachment, stream } = await downloadTicketAttachment(
         attachmentParameter(req.params.id),
-        req.requester!.id,
+        req.user!.id,
         options,
       )
       res.setHeader('Content-Type', attachment.mimeType)
@@ -421,11 +436,13 @@ export function createApp(options: CreateTicketOptions = {}) {
 
   app.delete(
     '/api/attachments/:id',
-    requireRequesterContext,
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('attachment:manage'),
     async (req, res) => {
       const data = await removeTicketAttachment(
         attachmentParameter(req.params.id),
-        req.requester!.id,
+        req.user!.id,
         req.body?.reason,
         options,
       )

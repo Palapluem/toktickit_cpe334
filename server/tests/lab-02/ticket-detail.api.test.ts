@@ -5,6 +5,7 @@ import request from 'supertest'
 import { createApp } from '../../src/app.js'
 import prisma from '../../src/prisma.js'
 import {
+  loadOtherRequester,
   loadTicketReferences,
   resetTicketData,
   type TicketReferences,
@@ -13,27 +14,25 @@ import {
 
 type DetailReferences = TicketReferences & {
   otherRequesterId: string
+  otherCookie: string
 }
 
 let references: DetailReferences
 
 beforeAll(async () => {
   const base = await loadTicketReferences()
-  const other = await prisma.user.findFirstOrThrow({
-    where: { isActive: true, role: 'REQUESTER', id: { not: base.requesterId } },
-    select: { id: true },
-  })
-  references = { ...base, otherRequesterId: other.id }
+  const other = await loadOtherRequester()
+  references = { ...base, otherRequesterId: other.requesterId, otherCookie: other.cookie }
 })
 
 beforeEach(async () => {
   await resetTicketData()
 })
 
-async function createTicket(requesterId = references.requesterId): Promise<string> {
+async function createTicket(sessionCookie = references.cookie): Promise<string> {
   const response = await request(createApp())
     .post('/api/tickets')
-    .set('X-Requester-Id', requesterId)
+    .set('Cookie', sessionCookie)
     .send(validTicketPayload(references))
 
   expect(response.status).toBe(201)
@@ -81,7 +80,7 @@ describe('API-19 · AC-27 · owned Ticket Detail', () => {
 
     const response = await request(createApp())
       .get(`/api/tickets/${ticketId}`)
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
 
     expect(response.status).toBe(200)
     expect(response.body.data).toMatchObject({
@@ -140,7 +139,7 @@ describe('API-20 · AC-28 · BR-16 · cross-requester Ticket Detail', () => {
 
     const response = await request(createApp())
       .get(`/api/tickets/${ticketId}`)
-      .set('X-Requester-Id', references.otherRequesterId)
+      .set('Cookie', references.otherCookie)
 
     expect(response.status).toBe(404)
     expect(response.body.error).toMatchObject({
@@ -154,7 +153,7 @@ describe('route parameter validation', () => {
   it('returns the ticket not-found envelope for a malformed Ticket id', async () => {
     const response = await request(createApp())
       .get('/api/tickets/not-a-uuid')
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
 
     expect(response.status).toBe(404)
     expect(response.body.error).toMatchObject({
