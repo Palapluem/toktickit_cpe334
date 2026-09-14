@@ -36,7 +36,7 @@ test('AUTH-01 captures the sign-in screen at three viewports', async ({ page }) 
   }
 })
 
-test('AUTH-02 refuses a wrong password with one safe message', async ({ page }) => {
+test('AUTH-02 refuses wrong, unknown, and inactive accounts with one safe message', async ({ page }) => {
   await page.setViewportSize(DESKTOP)
   await signInThroughTheScreen(page, 'jennifer.anderson@example.ac.th', 'wrong-password')
 
@@ -46,6 +46,10 @@ test('AUTH-02 refuses a wrong password with one safe message', async ({ page }) 
 
   // The same message for an account that does not exist at all (SEC-002).
   await signInThroughTheScreen(page, 'nobody@example.ac.th', 'wrong-password')
+  await expect(page.getByRole('alert')).toHaveText('Invalid email or password.')
+
+  // BR-03: an inactive account is indistinguishable from the other failures.
+  await signInThroughTheScreen(page, 'robert.wilson@example.ac.th')
   await expect(page.getByRole('alert')).toHaveText('Invalid email or password.')
 })
 

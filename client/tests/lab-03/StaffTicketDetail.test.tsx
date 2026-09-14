@@ -16,6 +16,9 @@ vi.mock('../../src/api.js', async () => {
     setTicketOwner: vi.fn(),
     setItPriority: vi.fn(),
     setTicketStatus: vi.fn(),
+    uploadAttachment: vi.fn(),
+    removeAttachment: vi.fn(),
+    downloadAttachment: vi.fn(),
   }
 })
 
@@ -23,6 +26,24 @@ const fetchStaffTicketMock = vi.mocked(api.fetchStaffTicket)
 const setTicketOwnerMock = vi.mocked(api.setTicketOwner)
 const setItPriorityMock = vi.mocked(api.setItPriority)
 const setTicketStatusMock = vi.mocked(api.setTicketStatus)
+const uploadAttachmentMock = vi.mocked(api.uploadAttachment)
+const removeAttachmentMock = vi.mocked(api.removeAttachment)
+const downloadAttachmentMock = vi.mocked(api.downloadAttachment)
+
+const ATTACHMENT: api.TicketAttachment = {
+  id: 'attachment-1',
+  originalFilename: 'network-diagram.png',
+  mimeType: 'image/png',
+  sizeBytes: 2048,
+  createdAt: '2026-09-02T04:00:00.000Z',
+  removedAt: null,
+}
+
+const ASSIGNABLE_OWNERS = [
+  { id: 's-1', displayName: 'Patricia Evans' },
+  { id: 's-2', displayName: 'Daniel Carter' },
+  { id: 'a-1', displayName: 'Margaret Hale' },
+]
 
 const TICKET: api.StaffTicket = {
   id: 't-1',
@@ -39,7 +60,8 @@ const TICKET: api.StaffTicket = {
   requesterResolvedAt: null,
   createdAt: '2026-09-01T04:00:00.000Z',
   updatedAt: '2026-09-08T06:00:00.000Z',
-  attachments: [],
+  attachments: [ATTACHMENT],
+  assignableOwners: ASSIGNABLE_OWNERS,
   permittedTransitions: ['IN_PROGRESS', 'WAITING_FOR_REQUESTER', 'RESOLVED', 'CANCELLED'],
 }
 
@@ -63,6 +85,15 @@ function renderDetail() {
 beforeEach(() => {
   vi.clearAllMocks()
   fetchStaffTicketMock.mockResolvedValue(TICKET)
+  uploadAttachmentMock.mockResolvedValue({ data: ATTACHMENT })
+  removeAttachmentMock.mockResolvedValue({
+    data: {
+      ...ATTACHMENT,
+      removedAt: '2026-09-10T04:00:00.000Z',
+      removedReason: 'No longer needed',
+    },
+  })
+  downloadAttachmentMock.mockResolvedValue(new Blob(['attachment']))
 })
 
 describe('UI-11 · AC-20 · ownership', () => {
@@ -71,6 +102,13 @@ describe('UI-11 · AC-20 · ownership', () => {
 
     expect(await screen.findByRole('button', { name: 'Claim' })).toBeInTheDocument()
     expect(screen.getByText('Unassigned')).toBeInTheDocument()
+  })
+
+  it('renders one Owner field label instead of duplicating it', async () => {
+    renderDetail()
+
+    await screen.findByRole('combobox', { name: 'Owner' })
+    expect(screen.getAllByText('Owner', { exact: true })).toHaveLength(1)
   })
 
   it('claims the Ticket and shows the new owner and status', async () => {
@@ -86,7 +124,9 @@ describe('UI-11 · AC-20 · ownership', () => {
     await waitFor(() => {
       expect(setTicketOwnerMock).toHaveBeenCalledWith('t-1', 'me')
     })
-    expect(await screen.findByText('Patricia Evans')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Patricia Evans', { selector: 'p' }),
+    ).toBeInTheDocument()
   })
 
   it('offers Unassign once the Ticket is owned, and no Claim', async () => {
@@ -107,6 +147,26 @@ describe('UI-11 · AC-20 · ownership', () => {
     await waitFor(() => {
       expect(setTicketOwnerMock).toHaveBeenCalledWith('t-1', null)
     })
+  })
+
+  it('reassigns the Ticket to another eligible owner from the detail screen', async () => {
+    setTicketOwnerMock.mockResolvedValue({
+      ...TICKET,
+      owner: { id: 's-2', displayName: 'Daniel Carter' },
+    })
+    renderDetail()
+
+    await userEvent.selectOptions(
+      await screen.findByRole('combobox', { name: 'Owner' }),
+      's-2',
+    )
+
+    await waitFor(() => {
+      expect(setTicketOwnerMock).toHaveBeenCalledWith('t-1', 's-2')
+    })
+    expect(
+      await screen.findByText('Daniel Carter', { selector: 'p' }),
+    ).toBeInTheDocument()
   })
 })
 
@@ -207,6 +267,20 @@ describe('UI-12 · AC-23 · the status control offers only permitted transitions
 })
 
 describe('UI-11 · the read-only body is the Lab 2 card, unchanged', () => {
+  it('keeps the Lab 2 attachment section on Staff Ticket Detail', async () => {
+    renderDetail()
+
+    expect(await screen.findByRole('heading', { name: 'Attachments' })).toHaveTextContent(
+      'Attachments (1 of 5)',
+    )
+    expect(
+      screen.getByRole('link', { name: 'Download network-diagram.png' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Remove network-diagram.png' }),
+    ).toBeInTheDocument()
+  })
+
   it('shows the fields that are never editable here', async () => {
     renderDetail()
     await screen.findByText('TKT-2026-000001')
@@ -251,5 +325,15 @@ describe('UI-11 · the read-only body is the Lab 2 card, unchanged', () => {
 
     expect(await screen.findByText(/not available/i)).toBeInTheDocument()
     expect(document.querySelector('.zen-state--forbidden')).toBeNull()
+  })
+
+  it('shows a safe failure with a retry action when loading fails', async () => {
+    fetchStaffTicketMock.mockRejectedValueOnce(new Error('network'))
+    fetchStaffTicketMock.mockResolvedValueOnce(TICKET)
+    renderDetail()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Try again' }))
+
+    expect(await screen.findByText('TKT-2026-000001')).toBeInTheDocument()
   })
 })

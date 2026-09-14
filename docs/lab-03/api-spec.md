@@ -282,8 +282,17 @@ Default ordering is **IT Priority descending, then oldest first** — a work que
 IT Staff and Administrator. The full Ticket including attachments, comments, notes, and the permitted next statuses for the calling role — so the client renders only legal transitions without re-implementing §5.1.
 
 ```json
+"assignableOwners": [
+  { "id": "bb22...", "displayName": "Daniel Carter" },
+  { "id": "cc33...", "displayName": "Margaret Hale" }
+],
 "permittedTransitions": ["WAITING_FOR_REQUESTER", "RESOLVED", "CANCELLED"]
 ```
+
+`assignableOwners` contains only active IT Staff and Administrator users, ordered by
+display name. It is the source for the Owner control; the client does not reconstruct
+the eligible-role or active-account policy. The current owner is retained in the list
+when necessary for display after an account is no longer eligible for a new assignment.
 
 The server still validates the transition when it arrives. `permittedTransitions` is feedback, not the control (SEC-016).
 

@@ -59,6 +59,8 @@ export interface TicketAttachment {
   removedBy?: Pick<Requester, 'id' | 'displayName'> | null
 }
 
+export type AssignableOwner = Pick<Requester, 'id' | 'displayName'>
+
 export interface Ticket {
   id: string
   ticketNo: string
@@ -376,6 +378,7 @@ export interface StaffTicket extends Omit<StaffQueueRow, 'category'> {
   category: Category
   relatedSystem: RelatedSystem
   attachments: TicketAttachment[]
+  assignableOwners: AssignableOwner[]
   permittedTransitions: TicketStatus[]
 }
 

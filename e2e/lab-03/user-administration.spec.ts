@@ -2,7 +2,11 @@
 // refusals. Margaret Hale is the only seeded Administrator, which is exactly
 // the state the last-Administrator capture needs (server/src/seed/roster.ts).
 import { expect, test } from '../lab-02/fixtures'
-import { DEVELOPMENT_PASSWORD, captureLab3Screenshot } from '../lab-02/helpers'
+import {
+  DEVELOPMENT_PASSWORD,
+  captureLab3Screenshot,
+  signOut,
+} from '../lab-02/helpers'
 
 const API = 'http://127.0.0.1:3002'
 
@@ -23,6 +27,17 @@ async function signIn(
     data: { email, password: DEVELOPMENT_PASSWORD },
   })
   expect(login.ok(), `login for ${email}`).toBeTruthy()
+}
+
+async function signInThroughTheScreen(
+  page: import('@playwright/test').Page,
+  email: string,
+  password: string,
+): Promise<void> {
+  await page.goto('/login')
+  await page.getByLabel('Email').fill(email)
+  await page.getByLabel('Password').fill(password)
+  await page.getByRole('button', { name: 'Sign in' }).click()
 }
 
 test('ADMIN-01 captures the user list at three viewports', async ({ page }) => {
@@ -82,32 +97,94 @@ test('ADMIN-03 captures the duplicate-email conflict', async ({ page }) => {
   await captureLab3Screenshot(page, 'user-management', 'duplicate-email.png')
 })
 
-test('ADMIN-04 edits a user and sets a new initial password', async ({ page }) => {
+test('ADMIN-04 edits a user, resets its password, and proves the next-login gate', async ({
+  page,
+}) => {
   await signIn(page, ADMIN)
   await page.setViewportSize(VIEWPORTS[0])
   await page.goto('/admin/users')
 
-  const row = page.locator('tr', { hasText: 'Jennifer Anderson' })
+  const stamp = Date.now()
+  const createdName = `E2E Editable ${stamp}`
+  const editedName = `E2E Edited ${stamp}`
+  const createdEmail = `e2e-editable-${stamp}@example.ac.th`
+  const editedEmail = `e2e-edited-${stamp}@example.ac.th`
+  const createdPassword = 'a-created-password'
+  const resetPassword = `a-reset-password-${stamp}`
+  const finalPassword = `a-final-password-${stamp}`
+
+  await page.getByRole('button', { name: 'New User' }).click()
+  const createDialog = page.getByRole('dialog')
+  await createDialog.getByLabel('Name', { exact: false }).fill(createdName)
+  await createDialog.getByLabel('Email', { exact: false }).fill(createdEmail)
+  await createDialog.getByLabel('Role', { exact: false }).selectOption('REQUESTER')
+  await createDialog
+    .getByLabel('Initial password', { exact: false })
+    .fill(createdPassword)
+  await createDialog.getByRole('button', { name: 'Create User' }).click()
+  await expect(createDialog).toHaveCount(0)
+
+  const row = page.locator('tr', { hasText: createdName })
+  await expect(row).toBeVisible()
   await row.getByRole('button', { name: 'Edit' }).click()
   const dialog = page.getByRole('dialog')
   await expect(dialog.getByLabel('Initial password', { exact: false })).toHaveCount(0)
 
-  await dialog.getByRole('button', { name: 'Set New Initial Password' }).click()
+  await dialog.getByLabel('Name', { exact: false }).fill(editedName)
+  await dialog.getByLabel('Email', { exact: false }).fill(editedEmail)
+  await dialog.getByLabel('Role', { exact: false }).selectOption('IT_STAFF')
+  await captureLab3Screenshot(page, 'user-management', 'edit-dialog.png')
+  await dialog.getByRole('button', { name: 'Save Changes' }).click()
+  await expect(dialog).toHaveCount(0)
+  await expect(page.getByText(editedName, { exact: true })).toBeVisible()
+
+  const edited = await page.request.get(`${API}/api/admin/users`, {
+    params: { search: editedEmail },
+  })
+  const editedBody = await edited.json()
+  expect(editedBody.data).toHaveLength(1)
+  expect(editedBody.data[0]).toMatchObject({
+    displayName: editedName,
+    email: editedEmail,
+    role: 'IT_STAFF',
+    isActive: true,
+  })
+
+  const editedRow = page.locator('tr', { hasText: editedName })
+  await editedRow.getByRole('button', { name: 'Edit' }).click()
+  const editedDialog = page.getByRole('dialog')
+  await editedDialog.getByRole('button', { name: 'Set New Initial Password' }).click()
   const confirm = page.getByRole('dialog', { name: /new initial password/i })
   await expect(confirm).toContainText(/must change it at next login/i)
 
   const responsePromise = page.waitForResponse((response) =>
     response.url().includes('/initial-password'),
   )
-  await confirm.getByLabel('New initial password', { exact: false }).fill('a-replaced-password')
+  await confirm
+    .getByLabel('New initial password', { exact: false })
+    .fill(resetPassword)
   await confirm.getByRole('button', { name: 'Save' }).click()
   const response = await responsePromise
 
-  await expect(page.getByText(/must change it at next login/i)).toBeVisible()
+  await expect(confirm).toContainText(/must change it at next login/i)
+  await captureLab3Screenshot(page, 'user-management', 'reset-confirmation.png')
   // SEC-032: the password is never echoed back — checked against the actual
   // response, not the DOM, where the field the admin just typed into still
   // and correctly holds what they typed.
-  expect(await response.text()).not.toContain('a-replaced-password')
+  expect(await response.text()).not.toContain(resetPassword)
+
+  await confirm.getByRole('button', { name: 'Close' }).click()
+  await signOut(page)
+
+  await signInThroughTheScreen(page, editedEmail, resetPassword)
+  await expect(page.getByRole('heading', { name: 'Choose a new password' })).toBeVisible()
+  await captureLab3Screenshot(page, 'authentication', 'admin-created-change-password.png')
+
+  await page.getByLabel('Current password').fill(resetPassword)
+  await page.locator('#newPassword').fill(finalPassword)
+  await page.locator('#confirmPassword').fill(finalPassword)
+  await page.getByRole('button', { name: 'Save and continue' }).click()
+  await expect(page.getByRole('heading', { name: 'Ticket Queue' })).toBeVisible()
 })
 
 test('ADMIN-05 captures self-deactivation disabled with its reason', async ({ page }) => {

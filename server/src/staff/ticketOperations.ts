@@ -37,6 +37,11 @@ const STAFF_DETAIL_INCLUDE = {
 /** Roles that may hold a Ticket, per BR-16. */
 const OWNER_ROLES: Role[] = ['IT_STAFF', 'ADMINISTRATOR']
 
+const ASSIGNABLE_OWNER_SELECT = {
+  id: true,
+  displayName: true,
+} as const
+
 function ticketNotFound(): ApiError {
   return new ApiError(404, 'TICKET_NOT_FOUND', 'Ticket not found.')
 }
@@ -86,7 +91,15 @@ async function loadTicket(
 
 type StaffTicket = Awaited<ReturnType<typeof loadTicket>>
 
-function mapStaffTicket(ticket: StaffTicket, role: Role) {
+async function assignableOwners(db: PrismaClient) {
+  return db.user.findMany({
+    where: { isActive: true, role: { in: OWNER_ROLES } },
+    select: ASSIGNABLE_OWNER_SELECT,
+    orderBy: { displayName: 'asc' },
+  })
+}
+
+async function mapStaffTicket(ticket: StaffTicket, role: Role, db: PrismaClient) {
   return {
     id: ticket.id,
     ticketNo: ticket.ticketNo,
@@ -111,6 +124,7 @@ function mapStaffTicket(ticket: StaffTicket, role: Role) {
       removedAt: attachment.removedAt,
       removedReason: attachment.removedReason,
     })),
+    assignableOwners: await assignableOwners(db),
     // Policy the client is told, not policy it computes.
     permittedTransitions: allowedTransitions(role, ticket.status as TicketStatus),
   }
@@ -121,7 +135,7 @@ export async function getStaffTicketDetail(
   role: Role,
   db: PrismaClient,
 ) {
-  return mapStaffTicket(await loadTicket(ticketId, db), role)
+  return mapStaffTicket(await loadTicket(ticketId, db), role, db)
 }
 
 export async function setTicketOwner(
@@ -173,7 +187,7 @@ export async function setTicketOwner(
     include: STAFF_DETAIL_INCLUDE,
   })
 
-  return mapStaffTicket(updated, role)
+  return mapStaffTicket(updated, role, db)
 }
 
 export async function setItPriority(
@@ -202,7 +216,7 @@ export async function setItPriority(
     include: STAFF_DETAIL_INCLUDE,
   })
 
-  return mapStaffTicket(updated, role)
+  return mapStaffTicket(updated, role, db)
 }
 
 const ALL_ROLES: Role[] = ['REQUESTER', 'IT_STAFF', 'ADMINISTRATOR']
@@ -276,7 +290,7 @@ export async function setTicketStatus(
     include: STAFF_DETAIL_INCLUDE,
   })
 
-  return mapStaffTicket(updated, role)
+  return mapStaffTicket(updated, role, db)
 }
 
 /**
