@@ -13,6 +13,8 @@ import {
   requireAuth,
   requirePasswordChanged,
 } from '../../src/middleware/authContext.js'
+import { requireOperation } from '../../src/middleware/authorize.js'
+import { OPERATIONS } from '../../src/auth/matrix.js'
 import { DEVELOPMENT_PASSWORD } from '../../src/seed/roster.js'
 
 export const REQUESTER_EMAIL = 'jennifer.anderson@example.ac.th'
@@ -110,6 +112,39 @@ export function guardedApp() {
   guarded.get('/guarded', requireAuth, requirePasswordChanged, (_req, res) => {
     res.json({ data: { reached: true } })
   })
+  guarded.use(errorHandler)
+  return guarded
+}
+
+/**
+ * Operation names carry a colon, and Express 5 reads a colon in a route path as
+ * the start of a parameter — `/ops/ticket:read` would match `/ops/ticketANY`.
+ * The slug keeps each route literal.
+ */
+export function operationPath(operation: string): string {
+  return `/ops/${operation.replace(/:/g, '-')}`
+}
+
+/**
+ * One route per operation in the matrix, behind the real middleware chain.
+ * The refusal tests call these directly, never through a screen — the only way
+ * to tell an enforced rule from a hidden button (security-contract.md §9).
+ */
+export function matrixApp() {
+  const guarded = express()
+  guarded.use(express.json())
+  guarded.use(cookieParser())
+  for (const operation of OPERATIONS) {
+    guarded.get(
+      operationPath(operation),
+      requireAuth,
+      requirePasswordChanged,
+      requireOperation(operation),
+      (req, res) => {
+        res.json({ data: { operation, grant: req.grant } })
+      },
+    )
+  }
   guarded.use(errorHandler)
   return guarded
 }
