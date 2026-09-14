@@ -1322,3 +1322,64 @@ body {
   align-items: center;
   gap: var(--zen-space-2);
 }
+
+/* ---- Comment and note threads (lab-03 ui-spec §9) ---- */
+
+.thread__audience {
+  margin: 0 0 var(--zen-space-3);
+  color: var(--zen-text-muted);
+}
+
+.thread__entries {
+  list-style: none;
+  margin: 0 0 var(--zen-space-3);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--zen-space-3);
+}
+
+.thread__entry {
+  border-top: 1px solid var(--zen-border);
+  padding-top: var(--zen-space-3);
+}
+
+.thread__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--zen-space-2);
+  margin: 0 0 var(--zen-space-1);
+  font-size: 0.8125rem;
+  color: var(--zen-text-muted);
+}
+
+.thread__author {
+  font-weight: 600;
+  color: var(--zen-text);
+}
+
+.thread__body {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.thread__empty {
+  margin: 0 0 var(--zen-space-3);
+  color: var(--zen-text-muted);
+}
+
+/* The internal surface is the one visual cue that must never be missed. */
+.thread--internal {
+  background: var(--zen-warning-bg);
+  border-left: 3px solid var(--zen-warning);
+}
+
+.thread__internal-tag {
+  background: var(--zen-warning);
+  color: var(--zen-surface);
+  border-radius: var(--zen-radius);
+  padding: 0 var(--zen-space-2);
+  font-weight: 600;
+}

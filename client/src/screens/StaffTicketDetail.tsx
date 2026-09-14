@@ -24,6 +24,10 @@ import {
   ForbiddenState,
   LoadingState,
 } from '../components/States.js'
+import {
+  InternalNotesSection,
+  PublicCommentsSection,
+} from '../components/ThreadSection.js'
 
 const PRIORITIES: Priority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
 
@@ -246,6 +250,9 @@ export function StaffTicketDetail() {
           <textarea value={ticket.description} readOnly rows={4} />
         </FormField>
       </section>
+
+      <PublicCommentsSection ticketId={ticket.id} />
+      <InternalNotesSection ticketId={ticket.id} />
     </div>
   )
 }
