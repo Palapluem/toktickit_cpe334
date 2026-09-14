@@ -8,6 +8,7 @@ const API = 'http://127.0.0.1:3002'
 
 const VIEWPORTS = [
   { name: 'desktop', width: 1280, height: 900 },
+  { name: 'tablet', width: 834, height: 1112 },
   { name: 'mobile', width: 390, height: 844 },
 ] as const
 
@@ -24,7 +25,7 @@ async function signIn(
   expect(login.ok(), `login for ${email}`).toBeTruthy()
 }
 
-test('ADMIN-01 captures the user list at desktop and mobile', async ({ page }) => {
+test('ADMIN-01 captures the user list at three viewports', async ({ page }) => {
   await signIn(page, ADMIN)
 
   for (const viewport of VIEWPORTS) {
@@ -32,11 +33,7 @@ test('ADMIN-01 captures the user list at desktop and mobile', async ({ page }) =
     await page.goto('/admin/users')
     await expect(page.getByRole('heading', { name: 'User Management' })).toBeVisible()
     await expect(page.getByText('Jennifer Anderson')).toBeVisible()
-    await captureLab3Screenshot(
-      page,
-      'user-management',
-      viewport.name === 'mobile' ? 'mobile-list.png' : 'desktop-list.png',
-    )
+    await captureLab3Screenshot(page, 'user-management', `${viewport.name}-list.png`)
   }
 })
 
