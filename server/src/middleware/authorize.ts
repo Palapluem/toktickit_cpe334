@@ -28,11 +28,9 @@ export function requireOperation(operation: Operation) {
     const grant = role === undefined ? null : grantFor(role, operation)
 
     if (grant === null) {
-      // A Requester reaching for Internal Notes is the access this system
-      // most needs to notice (SEC-026) — logged with its own signal rather
-      // than folded into every other forbidden call.
+      // Requester Internal Note refusals have a dedicated signal (SEC-026).
       if (role !== undefined && (operation === 'note:read' || operation === 'note:create')) {
-        logInternalNoteRefusal(role, req.params.id)
+        logInternalNoteRefusal(role)
       } else {
         logSecurityEvent('FORBIDDEN', { operation, role })
       }

@@ -160,11 +160,11 @@ authorization middleware, with the captures in
 [`evidence/l3-3-boundary-proof.md`](../../docs/lab-03/evidence/l3-3-boundary-proof.md)
 and [`l3-4-boundary-proof.md`](../../docs/lab-03/evidence/l3-4-boundary-proof.md).
 
-**The `File` column was corrected at release.** Nine rows named paths delivery never
-used — `comments-notes.api.test.ts` became `notes.api.test.ts`, the planned single
-staff E2E spec split into two, and the planned dedicated responsive spec became
-per-screen viewport loops. A plan pointing at files nobody wrote is worse than no plan,
-so the column now names where each test actually lives.
+**The `File` column and repository structure were reconciled at release.** The three
+server suites and the user-administration E2E suite now use the exact names required by
+labsheet §12. Queue and Ticket Detail checks were consolidated into
+`e2e/lab-03/staff-ticket-flow.spec.ts`; the supplementary comments-and-notes suite is
+also traced explicitly. Responsive checks remain in the feature specs that capture them.
 
 ### Final test output
 
@@ -301,7 +301,7 @@ scoping the lookup; the reproduction is now a permanent regression test. Recorde
 | Create user with one role and an initial password | `API-27`, E2E `ADMIN-02`, `create-dialog.png` |
 | Duplicate email rejected, naming only the field | `API-28`, `duplicate-email.png` |
 | Invalid role rejected | `API-29` |
-| Edit name, email, role, activation state | `FR-31` tests in `admin-users.api.test.ts`, E2E `ADMIN-04` |
+| Edit name, email, role, activation state | `FR-31` tests in `users-admin.api.test.ts`, E2E `ADMIN-04` |
 | New initial password forces a change at next login | `API-32`, E2E `ADMIN-04` |
 | **Administrator cannot deactivate their own account** | `API-30`, `self-deactivation-refused.png` |
 | **Never zero active Administrators** | `API-31`, `last-administrator.png` |

@@ -47,14 +47,11 @@ Red → Green → Refactor, per `testing-contract.md` §5. One exception, record
 
 ## 2. Planned Tests
 
-> **The `File` column was corrected at release, not at planning.** Nine rows named a
-> path that delivery did not use — `comments-notes.api.test.ts` became
-> `notes.api.test.ts`, `users-admin.api.test.ts` became `admin-users.api.test.ts`,
-> the planned single `staff-ticket-flow.spec.ts` split into a queue spec and a
-> detail spec, and the planned dedicated `responsive.spec.ts` for the new screens
-> became per-screen viewport loops inside each feature spec. The column now names
-> where each test actually lives, because a plan that points at files nobody wrote
-> is worse than no plan.
+> **The `File` column was reconciled with labsheet §12 at release.** The three
+> server suites and the user-administration E2E suite now use the required names.
+> Queue and Ticket Detail checks are consolidated in
+> `e2e/lab-03/staff-ticket-flow.spec.ts`;
+> responsive checks remain inside the feature specs that create their evidence.
 
 ### Unit
 
@@ -64,7 +61,7 @@ Red → Green → Refactor, per `testing-contract.md` §5. One exception, record
 | UNIT-02 | BR-05 | Password policy | Rejects below the minimum length; accepts at and above (TDT-02) | `server/tests/lab-03/password.unit.test.ts` | Pass |
 | UNIT-03 | BR-21, §5.1 | Transition matrix | Every permitted transition allowed, every other refused, per role (TDT-03) | `server/tests/lab-03/transitions.unit.test.ts` | Pass |
 | UNIT-04 | BR-12, §8.1 | Authorization matrix | Every cell resolves as the matrix states; an unlisted operation denies (TDT-03) | `server/tests/lab-03/authorization.unit.test.ts` | Pass |
-| UNIT-05 | BR-31 | Comment/note validation | Rejects empty and whitespace-only; boundaries at 1 and 2000 (TDT-02) | `server/tests/lab-03/notes.api.test.ts` | Pass |
+| UNIT-05 | BR-31 | Comment/note validation | Rejects empty and whitespace-only; boundaries at 1 and 2000 (TDT-02) | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
 | UNIT-06 | BR-08 | Session expiry | An expired session is not valid; a live one is | `server/tests/lab-03/session.unit.test.ts` | Pass |
 
 ### API — authentication
@@ -90,14 +87,14 @@ Red → Green → Refactor, per `testing-contract.md` §5. One exception, record
 | SEC-T02 | AC-08, BR-10 | Client-supplied `requesterId` | Ignored; the authenticated identity is used | `server/tests/lab-03/ownership.api.test.ts` | Pass |
 | SEC-T03 | AC-13, BR-14 | Another Requester's Ticket | 404, and the body does not confirm it exists | `server/tests/lab-03/ownership.api.test.ts` | Pass |
 | SEC-T04 | AC-13 | Another Requester's Attachment | 404, no metadata leaked | `server/tests/lab-02/attachments.api.test.ts` (API-28, on authenticated identity) | Pass |
-| SEC-T05 | AC-09, BR-28 | Requester reads Internal Notes | Refused with no note content and no existence signal | `server/tests/lab-03/notes.api.test.ts` | Pass |
-| SEC-T06 | AC-09 | Requester creates an Internal Note | Refused | `server/tests/lab-03/notes.api.test.ts` | Pass |
+| SEC-T05 | AC-09, BR-28 | Requester reads Internal Notes | Refused with no note content and no existence signal | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
+| SEC-T06 | AC-09 | Requester creates an Internal Note | Refused | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
 | SEC-T07 | AC-10 | Requester calls an Administrator endpoint | 403 on every admin route | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-T08 | AC-11 | IT Staff calls an Administrator endpoint | 403 on every admin route | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-T09 | AC-10 | Requester calls the Staff Queue | 403 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-T10 | AC-24, BR-22 | Requester sends `RESOLVED` / `CLOSED` | Refused; status unchanged | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-T11 | BR-13 | Role sent by the client | Ignored; the session's role decides | `server/tests/lab-03/authorization.api.test.ts` | Pass |
-| SEC-T12 | BR-39 | Deactivated user's session | Refused on the next request | `server/tests/lab-03/admin-users.api.test.ts` | Pass |
+| SEC-T12 | BR-39 | Deactivated user's session | Refused on the next request | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
 | SEC-T13 | SEC-025 | Error bodies | No stack trace, SQL fragment, file path, or other user's data in any failure | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-T14 | SEC-027, TDT-05 | Injection-shaped input | Handled safely; no SQL error surfaces | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 
@@ -108,36 +105,36 @@ Red → Green → Refactor, per `testing-contract.md` §5. One exception, record
 | API-11 | AC-18 | Queue spans requesters | Tickets from all Requesters returned to IT Staff | `server/tests/lab-03/staff-queue.api.test.ts` | Pass |
 | API-12 | AC-19 | Queue query composition | Search, filter, sort, and pagination combine correctly (TDT-03) | `server/tests/lab-03/staff-queue.api.test.ts` | Pass |
 | API-13 | AC-19 | Invalid queue parameters | Validation failure, not a silent fallback | `server/tests/lab-03/staff-queue.api.test.ts` | Pass |
-| API-14 | AC-20, BR-24 | Claim unassigned | Owner set to the claimer; status moves `NEW` → `OPEN` | `server/tests/lab-03/staff-ticket.api.test.ts` | Pass |
-| API-15 | AC-21, BR-16 | Assign to inactive user | Refused | `server/tests/lab-03/staff-ticket.api.test.ts` | Pass |
-| API-16 | AC-22, BR-18 | IT Priority change | IT Priority updated; Requested Priority untouched | `server/tests/lab-03/staff-ticket.api.test.ts` | Pass |
-| API-17 | AC-23, BR-21 | Illegal transition | Refused for every disallowed cell of §5.1; status unchanged | `server/tests/lab-03/staff-ticket.api.test.ts` | Pass |
-| API-18 | §5.1 | Legal transitions | Every permitted cell succeeds (TDT-04) | `server/tests/lab-03/staff-ticket.api.test.ts` | Pass |
+| API-14 | AC-20, BR-24 | Claim unassigned | Owner set to the claimer; status moves `NEW` → `OPEN` | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
+| API-15 | AC-21, BR-16 | Assign to inactive user | Refused | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
+| API-16 | AC-22, BR-18 | IT Priority change | IT Priority updated; Requested Priority untouched | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
+| API-17 | AC-23, BR-21 | Illegal transition | Refused for every disallowed cell of §5.1; status unchanged | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
+| API-18 | §5.1 | Legal transitions | Every permitted cell succeeds (TDT-04) | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
 
 ### API — comments, notes, resolution signal
 
 | ID | AC | What it tests | Expected result | File | Final |
 |---|---|---|---|---|---|
-| API-19 | AC-16, BR-26 | Requester posts a Public Comment | Stored with author and server-set time; visible to IT Staff | `server/tests/lab-03/notes.api.test.ts` | Pass |
-| API-20 | BR-30 | Client-supplied author or timestamp | Ignored; the server's values are used | `server/tests/lab-03/notes.api.test.ts` | Pass |
-| API-21 | AC-25, BR-27 | Internal Note visibility | Visible to IT Staff and Administrator only | `server/tests/lab-03/notes.api.test.ts` | Pass |
-| API-22 | BR-31 | Empty and whitespace content | Rejected for both comments and notes | `server/tests/lab-03/notes.api.test.ts` | Pass |
-| API-23 | BR-29 | Append-only | No edit or delete endpoint exists for either | `server/tests/lab-03/notes.api.test.ts` | Pass |
-| API-24 | AC-17, BR-23 | Resolution indication | Recorded as a timestamp; status unchanged | `server/tests/lab-03/notes.api.test.ts` | Pass |
+| API-19 | AC-16, BR-26 | Requester posts a Public Comment | Stored with author and server-set time; visible to IT Staff | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
+| API-20 | BR-30 | Client-supplied author or timestamp | Ignored; the server's values are used | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
+| API-21 | AC-25, BR-27 | Internal Note visibility | Visible to IT Staff and Administrator only | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
+| API-22 | BR-31 | Empty and whitespace content | Rejected for both comments and notes | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
+| API-23 | BR-29 | Append-only | No edit or delete endpoint exists for either | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
+| API-24 | AC-17, BR-23 | Resolution indication | Recorded as a timestamp; status unchanged | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
 
 ### API — Administrator
 
 | ID | AC | What it tests | Expected result | File | Final |
 |---|---|---|---|---|---|
-| API-25 | AC-26 | User list | Name, email, role, and status returned; no hash | `server/tests/lab-03/admin-users.api.test.ts` | Pass |
-| API-26 | AC-27 | Search and role filter | Only matching users returned | `server/tests/lab-03/admin-users.api.test.ts` | Pass |
-| API-27 | AC-28 | Create user | User can log in and must change the password | `server/tests/lab-03/admin-users.api.test.ts` | Pass |
-| API-28 | AC-29, BR-33 | Duplicate email | 409; case-insensitive comparison | `server/tests/lab-03/admin-users.api.test.ts` | Pass |
-| API-29 | AC-30, BR-34 | Unknown role | Refused on create and on update | `server/tests/lab-03/admin-users.api.test.ts` | Pass |
-| API-30 | AC-31, BR-35 | Self-deactivation | Refused | `server/tests/lab-03/admin-users.api.test.ts` | Pass |
-| API-31 | AC-32, BR-36 | Last active Administrator | Deactivation **and** demotion both refused | `server/tests/lab-03/admin-users.api.test.ts` | Pass |
-| API-32 | AC-33, BR-06 | New initial password | Next login requires a change | `server/tests/lab-03/admin-users.api.test.ts` | Pass |
-| API-33 | BR-38 | Deactivation preserves records | Tickets owned and submitted by the user are unchanged | `server/tests/lab-03/admin-users.api.test.ts` | Pass |
+| API-25 | AC-26 | User list | Name, email, role, and status returned; no hash | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-26 | AC-27 | Search and role filter | Only matching users returned | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-27 | AC-28 | Create user | User can log in and must change the password | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-28 | AC-29, BR-33 | Duplicate email | 409; case-insensitive comparison | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-29 | AC-30, BR-34 | Unknown role | Refused on create and on update | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-30 | AC-31, BR-35 | Self-deactivation | Refused | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-31 | AC-32, BR-36 | Last active Administrator | Deactivation **and** demotion both refused | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-32 | AC-33, BR-06 | New initial password | Next login requires a change | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-33 | BR-38 | Deactivation preserves records | Tickets owned and submitted by the user are unchanged | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
 
 ### Migration / regression
 
@@ -176,23 +173,23 @@ Red → Green → Refactor, per `testing-contract.md` §5. One exception, record
 
 | ID | Requirement | What it tests | Expected result | File | Final |
 |---|---|---|---|---|---|
-| STYLE-01 | STY-001, STY-003 | Tokens on new screens | No colour literal, no Bootstrap colour utility | the screen tests in `client/tests/lab-03/` | Pass |
-| STYLE-02 | STY-019, ui-spec | Role badges | Role rendered as text, not colour alone | the screen tests in `client/tests/lab-03/` | Pass |
-| STYLE-03 | STY-019 | New status badges | All eight statuses render their text label | the screen tests in `client/tests/lab-03/` | Pass |
-| STYLE-04 | STY-026 | Login and admin labelling | Every input has a programmatic label | `Login.test.tsx`, `ChangePassword.test.tsx`, `UserManagement.test.tsx` | Pass |
-| STYLE-05 | STY-012 | Validation placement | Messages below their field and associated by `aria-describedby` | `Login.test.tsx`, `ChangePassword.test.tsx` | Pass |
+| STYLE-01 | STY-001, STY-003 | Tokens on new screens | No colour literal, no Bootstrap colour utility | `client/tests/lab-03/Login.test.tsx`, `client/tests/lab-03/StaffTicketQueue.test.tsx`, `client/tests/lab-03/StaffTicketDetail.test.tsx`, `client/tests/lab-03/UserManagement.test.tsx` | Pass |
+| STYLE-02 | STY-019, ui-spec | Role badges | Role rendered as text, not colour alone | `client/tests/lab-03/AppShell.test.tsx` | Pass |
+| STYLE-03 | STY-019 | New status badges | All eight statuses render their text label | `client/tests/lab-03/StaffTicketQueue.test.tsx`, `client/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
+| STYLE-04 | STY-026 | Login and admin labelling | Every input has a programmatic label | `client/tests/lab-03/Login.test.tsx`, `client/tests/lab-03/ChangePassword.test.tsx`, `client/tests/lab-03/UserManagement.test.tsx` | Pass |
+| STYLE-05 | STY-012 | Validation placement | Messages below their field and associated by `aria-describedby` | `client/tests/lab-03/Login.test.tsx`, `client/tests/lab-03/ChangePassword.test.tsx` | Pass |
 
 ### Responsive and E2E
 
 | ID | AC | What it tests | Expected result | File | Final |
 |---|---|---|---|---|---|
 | RESP-01 | AC-34 | Login and Change Password at three viewports | No overflow, clipping, or overlap; screenshots captured | `e2e/lab-03/authentication.spec.ts` | Pass |
-| RESP-02 | AC-34 | Staff Queue at three viewports | Readable at mobile; controls reachable; screenshots captured | `e2e/lab-03/staff-queue.spec.ts` | Pass |
-| RESP-03 | AC-34 | Staff Ticket Detail at three viewports | Comments and notes readable and distinct; screenshots captured | `e2e/lab-03/staff-ticket-detail.spec.ts` | Pass |
-| RESP-04 | AC-34 | User Management at three viewports | List usable at mobile; screenshots captured | `e2e/lab-03/user-management.spec.ts` | Pass |
+| RESP-02 | AC-34 | Staff Queue at three viewports | Readable at mobile; controls reachable; screenshots captured | `e2e/lab-03/staff-ticket-flow.spec.ts` | Pass |
+| RESP-03 | AC-34 | Staff Ticket Detail at three viewports | Comments and notes readable and distinct; screenshots captured | `e2e/lab-03/staff-ticket-flow.spec.ts`, `e2e/lab-03/comments-and-notes.spec.ts` | Pass |
+| RESP-04 | AC-34 | User Management at three viewports | List usable at mobile; screenshots captured | `e2e/lab-03/user-administration.spec.ts` | Pass |
 | E2E-01 | AC-01, AC-02, AC-04 | Authentication journey | Log in with an initial password → forced change → application opens → log out → protected URL refused | `e2e/lab-03/authentication.spec.ts` | Pass |
-| E2E-02 | AC-18, AC-20, AC-25 | Staff ticket journey | Queue → open → claim → set IT Priority → status change → Public Comment → Internal Note | `e2e/lab-03/staff-queue.spec.ts`, `staff-ticket-detail.spec.ts` | Pass |
-| E2E-03 | AC-28, AC-31, AC-33 | User administration journey | Create user with initial password → that user logs in and must change it → self-deactivation refused | `e2e/lab-03/user-management.spec.ts` | Pass |
+| E2E-02 | AC-18, AC-20, AC-25 | Staff ticket journey | Queue → open → claim → set IT Priority → status change → Public Comment → Internal Note | `e2e/lab-03/staff-ticket-flow.spec.ts`, `e2e/lab-03/comments-and-notes.spec.ts` | Pass |
+| E2E-03 | AC-28, AC-31, AC-33 | User administration journey | Create user with initial password → that user logs in and must change it → self-deactivation refused | `e2e/lab-03/user-administration.spec.ts` | Pass |
 
 ---
 
@@ -256,16 +253,33 @@ The labsheet §12 names the files it expects. Mapped:
 | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | API-14 … API-18 |
 | `server/tests/lab-03/comments-notes.api.test.ts` | API-19 … API-24, SEC-T05, SEC-T06 |
 | `server/tests/lab-03/users-admin.api.test.ts` | API-25 … API-33 |
-| `client/.../Login.test.tsx` | UI-01 … UI-03 |
-| `client/.../ChangePassword.test.tsx` | UI-04, UI-05 |
-| `client/.../StaffTicketQueue.test.tsx` | UI-08 … UI-10, UI-18 |
-| `client/.../StaffTicketDetail.test.tsx` | UI-11 … UI-13 |
-| `client/.../UserManagement.test.tsx` | UI-15 … UI-17 |
-| `e2e/lab-03/authentication.spec.ts` | E2E-01 |
-| `e2e/lab-03/staff-ticket-flow.spec.ts` | E2E-02 |
-| `e2e/lab-03/user-administration.spec.ts` | E2E-03 |
+| `client/tests/lab-03/Login.test.tsx` | UI-01 … UI-03 |
+| `client/tests/lab-03/ChangePassword.test.tsx` | UI-04, UI-05 |
+| `client/tests/lab-03/StaffTicketQueue.test.tsx` | UI-08 … UI-10, UI-18 |
+| `client/tests/lab-03/StaffTicketDetail.test.tsx` | UI-11, UI-12 |
+| `client/tests/lab-03/UserManagement.test.tsx` | UI-15 … UI-17 |
+| `e2e/lab-03/authentication.spec.ts` | RESP-01, E2E-01 |
+| `e2e/lab-03/staff-ticket-flow.spec.ts` | RESP-02, RESP-03, E2E-02 |
+| `e2e/lab-03/user-administration.spec.ts` | RESP-04, E2E-03 |
 
-Files beyond the labsheet's list — `password.unit.test.ts`, `transitions.unit.test.ts`, `authorization.unit.test.ts`, `content.unit.test.ts`, `session.unit.test.ts`, `migration.api.test.ts`, `style/lab3-screens.test.tsx`, `responsive.spec.ts` — exist because the labsheet's list is a minimum, and the unit and migration levels have nowhere else to live.
+Additional delivered files beyond the labsheet's minimum are also traced explicitly:
+
+| Additional file | Coverage |
+|---|---|
+| `server/tests/lab-03/app-config.unit.test.ts` | Production CORS configuration guard |
+| `server/tests/lab-03/authorization.unit.test.ts` | UNIT-04 authorization matrix |
+| `server/tests/lab-03/ownership.api.test.ts` | SEC-T02, SEC-T03 ownership boundaries |
+| `server/tests/lab-03/password.unit.test.ts` | UNIT-01, UNIT-02 password rules |
+| `server/tests/lab-03/seed-database.api.test.ts` | MIG-01 … MIG-03 |
+| `server/tests/lab-03/seed-roster.unit.test.ts` | Seed roster and realistic demo data |
+| `server/tests/lab-03/selector-removed.unit.test.ts` | MIG-05 selector-removal guard |
+| `server/tests/lab-03/session.unit.test.ts` | UNIT-06 session expiry |
+| `server/tests/lab-03/transitions.unit.test.ts` | UNIT-03 transition matrix |
+| `client/tests/lab-03/AppShell.test.tsx` | UI-06, UI-07 and logout |
+| `client/tests/lab-03/RequesterResolution.test.tsx` | AC-17 Requester resolution signal |
+| `client/tests/lab-03/RouteGuard.test.tsx` | UI-04 authentication and password gates |
+| `client/tests/lab-03/ThreadSection.test.tsx` | UI-13, UI-14 comments/notes separation |
+| `e2e/lab-03/comments-and-notes.spec.ts` | Public Comments, Internal Notes, and Requester refusal |
 
 ---
 

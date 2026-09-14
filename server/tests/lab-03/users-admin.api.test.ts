@@ -246,7 +246,7 @@ describe('FR-31 · editing a user', () => {
         categoryId: category.id,
         relatedSystemId: relatedSystem.id,
         summary: 'Survives deactivation',
-        description: 'Created by admin-users.api.test.ts.',
+        description: 'Created by users-admin.api.test.ts.',
         requestedPriority: 'LOW',
         itPriority: 'LOW',
       },

@@ -44,10 +44,15 @@ MISSING server/tests/lab-03/staff-ticket-detail.api.test.ts
 MISSING server/tests/lab-03/users-admin.api.test.ts
 ```
 
-Every one turned out to be a rename or a split, not a gap — `SEC-T04`, for
-instance, is delivered by `server/tests/lab-02/attachments.api.test.ts` API-28
-running on authenticated identity. The `File` column now names where each test
-actually lives.
+The command output above records the audit-time state. Before PR #66 was merged,
+the three required server suites and `user-administration.spec.ts` were renamed
+to the labsheet §12 paths. Queue and Ticket Detail checks were consolidated into
+`staff-ticket-flow.spec.ts`; per-screen responsive loops stayed with those tests.
+
+The same review removed the remaining phantom names from `tests.md` §4 and added
+the previously omitted `comments-and-notes.spec.ts` mapping. `SEC-T04`, for
+example, remains delivered by `server/tests/lab-02/attachments.api.test.ts`
+API-28 running on authenticated identity.
 
 ## 3. MIG-05 had no automated guard
 
@@ -104,10 +109,10 @@ files** were wrong or out of line with the plan:
 
 | File | Names | What was wrong |
 |---|---|---|
-| `staff-ticket.api.test.ts` | 6 | API IDs off by one — the claim test was labelled `API-13`, which the plan assigns to invalid queue parameters |
+| `staff-ticket-detail.api.test.ts` | 6 | API IDs off by one — the claim test was labelled `API-13`, which the plan assigns to invalid queue parameters |
 | `staff-queue.api.test.ts` | 1 | The invalid-parameter test was a second `API-12`; the plan calls it `API-13` |
-| `notes.api.test.ts` | 5 | IDs off by one; Public Comments cited AC-17, which is the resolution indication — comments are AC-16 |
-| `admin-users.api.test.ts` | 7 | IDs off by three and ACs off by two — the user list cited AC-28 (*create*), editing cited AC-30 (*unknown role*) |
+| `comments-notes.api.test.ts` | 5 | IDs off by one; Public Comments cited AC-17, which is the resolution indication — comments are AC-16 |
+| `users-admin.api.test.ts` | 7 | IDs off by three and ACs off by two — the user list cited AC-28 (*create*), editing cited AC-30 (*unknown role*) |
 | `UserManagement.test.tsx` | 4 | The same AC shift as the server admin tests |
 | `RequesterResolution.test.tsx` | 1 | The resolution test cited AC-16 (*comments*) instead of AC-17 |
 | `ThreadSection.test.tsx` | 2 | Author and role on entries cited AC-17; the notes-affordance test cited AC-09 where the plan traces AC-25 |

@@ -58,7 +58,7 @@ async function makeTicket(status: TicketStatus = 'NEW', ownerId: string | null =
       categoryId: category.id,
       relatedSystemId: relatedSystem.id,
       summary: 'Operations fixture',
-      description: 'Created by staff-ticket.api.test.ts.',
+      description: 'Created by staff-ticket-detail.api.test.ts.',
       requestedPriority: 'MEDIUM',
       itPriority: 'MEDIUM',
       status,

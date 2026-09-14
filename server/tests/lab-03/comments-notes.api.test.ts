@@ -53,7 +53,7 @@ async function makeTicket(): Promise<void> {
       categoryId: category.id,
       relatedSystemId: relatedSystem.id,
       summary: 'Threads fixture',
-      description: 'Created by notes.api.test.ts.',
+      description: 'Created by comments-notes.api.test.ts.',
       requestedPriority: 'MEDIUM',
       itPriority: 'MEDIUM',
       status: 'IN_PROGRESS',
