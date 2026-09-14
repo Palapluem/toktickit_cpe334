@@ -224,8 +224,10 @@ export function createApp(options: CreateTicketOptions = {}) {
   })
 
   app.get('/api/requesters', async (_req, res) => {
-    const data = await (options.db ?? prisma).requesterUser.findMany({
-      where: { isActive: true },
+    const data = await (options.db ?? prisma).user.findMany({
+      // Role filter added with the User migration: the Lab 2 development
+      // selector lists requesters, not staff. L3-5 removes the endpoint.
+      where: { isActive: true, role: 'REQUESTER' },
       orderBy: { displayName: 'asc' },
       // isActive withheld: exposing it invites the client to treat the selector
       // as authorization (BR-03, BR-14).

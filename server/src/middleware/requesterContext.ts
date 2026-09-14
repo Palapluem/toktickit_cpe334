@@ -39,7 +39,7 @@ export async function requireRequesterContext(
     return
   }
 
-  const requester = await prisma.requesterUser.findUnique({
+  const requester = await prisma.user.findUnique({
     where: { id: header },
     select: { id: true, displayName: true, email: true, isActive: true },
   })

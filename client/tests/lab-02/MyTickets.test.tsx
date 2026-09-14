@@ -220,7 +220,7 @@ describe('UI-16 · AC-20/AC-21/AC-22 · query wiring', () => {
       'HIGH',
     )
     await user.selectOptions(screen.getByRole('combobox', { name: 'IT Priority' }), 'URGENT')
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Current Status' }), 'ASSIGNED')
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Current Status' }), 'OPEN')
     await user.click(screen.getByRole('button', { name: /sort by summary/i }))
 
     await waitFor(() => {
@@ -229,7 +229,7 @@ describe('UI-16 · AC-20/AC-21/AC-22 · query wiring', () => {
         categoryId: 'category-hardware',
         requestedPriority: 'HIGH',
         itPriority: 'URGENT',
-        status: 'ASSIGNED',
+        status: 'OPEN',
         sort: 'summary:asc',
         page: 1,
         pageSize: 10,

@@ -5,11 +5,12 @@ export const UUID =
 export const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'] as const
 export const TICKET_STATUSES = [
   'NEW',
-  'ASSIGNED',
+  'OPEN',
   'IN_PROGRESS',
-  'PENDING_REQUESTER',
+  'WAITING_FOR_REQUESTER',
   'RESOLVED',
   'CLOSED',
+  'REOPENED',
   'CANCELLED',
 ] as const
 
