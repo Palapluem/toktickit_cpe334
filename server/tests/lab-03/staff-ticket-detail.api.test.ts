@@ -451,6 +451,19 @@ describe('API-24 · AC-17 · the Requester resolution signal is a timestamp (§1
 })
 
 describe('API-18 · §5.1 · the staff detail carries the policy the screen renders', () => {
+  it('returns only active IT Staff and Administrators as assignable owners', async () => {
+    const response = await request(app)
+      .get(`/api/staff/tickets/${ticketId}`)
+      .set('Cookie', cookies.IT_STAFF)
+
+    expect(response.status).toBe(200)
+    expect(
+      response.body.data.assignableOwners
+        .map((owner: { displayName: string }) => owner.displayName)
+        .sort(),
+    ).toEqual(['Daniel Carter', 'Margaret Hale', 'Olivia Reed', 'Patricia Evans'])
+  })
+
   it('returns permittedTransitions for the calling role', async () => {
     await makeTicket('OPEN')
     const asStaff = await request(app)

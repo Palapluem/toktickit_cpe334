@@ -1,7 +1,12 @@
 // Parts 6–7 evidence: Queue, Ticket Detail, and their required E2E journey.
 // Refused operations are exercised directly against the API as the wrong role.
 import { expect, test } from '../lab-02/fixtures'
-import { DEVELOPMENT_PASSWORD, captureLab3Screenshot } from '../lab-02/helpers'
+import {
+  createTicket,
+  DEVELOPMENT_PASSWORD,
+  captureLab3Screenshot,
+  signOut,
+} from '../lab-02/helpers'
 
 const API = 'http://127.0.0.1:3002'
 
@@ -136,7 +141,9 @@ test('DETAIL-02 claims an unassigned Ticket and moves it to OPEN', async ({ page
   await expect(page.getByRole('button', { name: 'Claim' })).toBeVisible()
   await page.getByRole('button', { name: 'Claim' }).click()
 
-  await expect(page.getByText('Patricia Evans')).toBeVisible()
+  await expect(
+    page.locator('.staff-ticket__owner > p').filter({ hasText: 'Patricia Evans' }),
+  ).toBeVisible()
   await expect(page.getByRole('button', { name: 'Unassign' })).toBeVisible()
 
   // BR-24: claiming a NEW Ticket moves it to OPEN in the same operation.
@@ -213,4 +220,64 @@ test('DETAIL-06 lets the Requester say the problem appears resolved', async ({ p
   await expect(
     page.getByRole('button', { name: 'The problem appears resolved' }),
   ).toHaveCount(0)
+})
+
+test('DETAIL-07 carries an uploaded attachment into Staff Ticket Detail', async ({
+  page,
+  e2eSummaries,
+}) => {
+  const summary = `E2E staff attachment ${Date.now()}`
+  e2eSummaries.add(summary)
+
+  await signIn(page, REQUESTER)
+  const created = await createTicket(page, summary, 'staff-detail-attachment.png')
+
+  await signOut(page)
+  await signIn(page, STAFF)
+  const ticketId = await openFirstQueueTicket(page, created.ticketNumber)
+  await page.goto(`/staff/tickets/${ticketId}`)
+
+  await expect(page.getByRole('heading', { name: created.ticketNumber })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Attachments' })).toContainText(
+    'Attachments (1 of 5)',
+  )
+  await expect(
+    page.getByRole('link', { name: 'Download staff-detail-attachment.png' }),
+  ).toBeVisible()
+  await captureLab3Screenshot(page, 'staff-ticket-detail', 'attachments.png')
+})
+
+test('DETAIL-08 reassigns a Ticket to another active owner', async ({ page }) => {
+  await signIn(page, STAFF)
+  const ticketId = await openFirstQueueTicket(page, 'TKT-2026-900003')
+
+  const owner = page.getByRole('combobox', { name: 'Owner' })
+  await owner.selectOption({ label: 'Daniel Carter' })
+  await expect(
+    page.locator('.staff-ticket__owner > p').filter({ hasText: 'Daniel Carter' }),
+  ).toBeVisible()
+
+  const reassigned = await page.request.get(`${API}/api/staff/tickets/${ticketId}`)
+  expect((await reassigned.json()).data.owner.displayName).toBe('Daniel Carter')
+
+  // Restore the seeded owner so later evidence starts from the documented state.
+  await owner.selectOption({ label: 'Patricia Evans' })
+  const restored = await page.request.get(`${API}/api/staff/tickets/${ticketId}`)
+  expect((await restored.json()).data.owner.displayName).toBe('Patricia Evans')
+})
+
+test('DETAIL-09 shows a safe load failure and recovers with Try again', async ({ page }) => {
+  await signIn(page, STAFF)
+  const ticketId = await openFirstQueueTicket(page, 'TKT-2026-900003')
+  const detailRoute = `**/api/staff/tickets/${ticketId}`
+
+  await page.route(detailRoute, (route) => route.abort())
+  await page.goto(`/staff/tickets/${ticketId}`)
+  await expect(page.getByRole('alert')).toContainText('ticket could not be loaded')
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible()
+  await captureLab3Screenshot(page, 'staff-ticket-detail', 'failure.png')
+
+  await page.unroute(detailRoute)
+  await page.getByRole('button', { name: 'Try again' }).click()
+  await expect(page.getByRole('heading', { name: 'TKT-2026-900003' })).toBeVisible()
 })

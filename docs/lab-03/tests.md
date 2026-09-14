@@ -193,6 +193,12 @@ Red → Green → Refactor, per `testing-contract.md` §5. One exception, record
 
 ---
 
+The release-gap E2E additions are deliberately mapped to existing criteria rather than
+creating new acceptance criteria: `DETAIL-07` proves attachment continuity, `DETAIL-08`
+proves reassignment through the Staff Detail control, `DETAIL-09` proves safe retry
+recovery, `AUTH-02` includes inactive-account refusal, and `ADMIN-04` proves the
+create/edit/reset/forced-change journey.
+
 ## 3. Acceptance-Criterion Traceability
 
 Every criterion in `specification.md` §9 maps to at least one planned test.

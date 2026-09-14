@@ -165,6 +165,12 @@ Extends Lab 2's Requester Ticket Detail rather than replacing it. Same card stru
 **Read-only:** Ticket No. · Ticket Date · Requester · Category · Related System · Requested Priority · Summary · Description
 **Editable by role:** Owner · IT Priority · Status
 
+The Owner control offers Claim when there is no owner, Unassign when there is one,
+and a selector populated by the API's active IT Staff and Administrator choices for
+reassignment. The screen keeps the current owner visible even if that account is no
+longer eligible for a new assignment; the server remains authoritative for every
+write.
+
 **Layout, top to bottom:**
 
 1. Header — Ticket No., status badge, IT Priority badge, and the resolution-indicated marker if present
@@ -242,6 +248,11 @@ user-management/    desktop-list · mobile-list · create-dialog ·
 ```
 
 The three refusal captures — `login-failure`, `duplicate-email`, `last-administrator` — are named explicitly because Parts 5 and 8 ask for them and a happy-path-only capture session will not produce them.
+
+The post-audit evidence also includes `authentication/admin-created-change-password.png`,
+`staff-ticket-detail/attachments.png`, `staff-ticket-detail/failure.png`,
+`user-management/edit-dialog.png`, `user-management/reset-confirmation.png`, and
+`user-management/self-deactivation-refused.png`.
 
 ## 13. Visual inspection checklist
 

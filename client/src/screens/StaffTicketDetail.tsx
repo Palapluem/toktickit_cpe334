@@ -7,16 +7,21 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   ApiRequestError,
+  downloadAttachment,
   fetchStaffTicket,
+  removeAttachment,
   setItPriority,
   setTicketOwner,
   setTicketStatus,
+  uploadAttachment,
   type Priority,
   type StaffTicket,
+  type TicketAttachment,
   type TicketStatus,
 } from '../api.js'
 import { PriorityBadge, StatusBadge } from '../components/Badge.js'
 import { Button } from '../components/Button.js'
+import { AttachmentSection } from '../components/AttachmentSection.js'
 import { FormField } from '../components/FormField.js'
 import {
   EmptyState,
@@ -110,6 +115,47 @@ export function StaffTicketDetail() {
     [busy],
   )
 
+  async function addAttachment(file: File): Promise<TicketAttachment> {
+    if (!ticket) throw new Error('Ticket is not loaded.')
+    const response = await uploadAttachment(ticket.id, file)
+    setTicket((current) =>
+      current
+        ? { ...current, attachments: [...current.attachments, response.data] }
+        : current,
+    )
+    return response.data
+  }
+
+  async function removeTicketAttachment(
+    attachmentId: string,
+    reason: string,
+  ): Promise<TicketAttachment> {
+    const response = await removeAttachment(attachmentId, reason)
+    setTicket((current) =>
+      current
+        ? {
+            ...current,
+            attachments: current.attachments.map((attachment) =>
+              attachment.id === response.data.id ? response.data : attachment,
+            ),
+          }
+        : current,
+    )
+    return response.data
+  }
+
+  async function downloadTicketAttachment(attachmentId: string): Promise<void> {
+    const attachment = ticket?.attachments.find(({ id }) => id === attachmentId)
+    if (!attachment) throw new Error('Attachment is not available.')
+    const blob = await downloadAttachment(attachmentId)
+    const objectUrl = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = objectUrl
+    link.download = attachment.originalFilename
+    link.click()
+    window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 0)
+  }
+
   if (phase === 'loading') return <LoadingState label="Loading the ticket…" />
 
   if (phase === 'forbidden') {
@@ -136,6 +182,13 @@ export function StaffTicketDetail() {
       />
     )
   }
+
+  const ownerOptions = ticket.owner && !ticket.assignableOwners.some(({ id }) => id === ticket.owner?.id)
+    ? [ticket.owner, ...ticket.assignableOwners]
+    : ticket.assignableOwners
+  const activeAttachmentCount = ticket.attachments.filter(
+    (attachment) => attachment.removedAt === null,
+  ).length
 
   return (
     <div className="ticket-detail-page staff-ticket">
@@ -164,10 +217,25 @@ export function StaffTicketDetail() {
 
         <div className="staff-ticket__operations-row">
           <div className="staff-ticket__owner">
-            <p className="zen-field__label">Owner</p>
             {ticket.owner ? (
               <>
                 <p>{ticket.owner.displayName}</p>
+                <FormField id="owner" label="Owner">
+                  <select
+                    value={ticket.owner.id}
+                    disabled={busy}
+                    onChange={(event) =>
+                      run(() => setTicketOwner(ticket.id, event.target.value || null))
+                    }
+                  >
+                    <option value="">No owner</option>
+                    {ownerOptions.map((owner) => (
+                      <option key={owner.id} value={owner.id}>
+                        {owner.displayName}
+                      </option>
+                    ))}
+                  </select>
+                </FormField>
                 <Button
                   variant="tertiary"
                   busy={busy}
@@ -179,6 +247,22 @@ export function StaffTicketDetail() {
             ) : (
               <>
                 <p className="staff-queue__unassigned">Unassigned</p>
+                <FormField id="owner" label="Owner">
+                  <select
+                    value=""
+                    disabled={busy}
+                    onChange={(event) =>
+                      run(() => setTicketOwner(ticket.id, event.target.value || null))
+                    }
+                  >
+                    <option value="">No owner</option>
+                    {ownerOptions.map((owner) => (
+                      <option key={owner.id} value={owner.id}>
+                        {owner.displayName}
+                      </option>
+                    ))}
+                  </select>
+                </FormField>
                 <Button
                   variant="secondary"
                   busy={busy}
@@ -250,6 +334,18 @@ export function StaffTicketDetail() {
           <textarea value={ticket.description} readOnly rows={4} />
         </FormField>
       </section>
+
+      <div className="zen-card ticket-detail-card">
+        <AttachmentSection
+          ticketId={ticket.id}
+          attachments={ticket.attachments}
+          activeCount={activeAttachmentCount}
+          activeLimit={5}
+          onAdd={addAttachment}
+          onRemove={removeTicketAttachment}
+          onDownload={downloadTicketAttachment}
+        />
+      </div>
 
       <PublicCommentsSection ticketId={ticket.id} />
       <InternalNotesSection ticketId={ticket.id} />
