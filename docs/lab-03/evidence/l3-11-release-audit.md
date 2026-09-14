@@ -95,7 +95,38 @@ so a failed logout escaped the click handler as an unhandled rejection. The
 cleanup was already correct; only the rejection was unhandled. Now swallowed
 deliberately, with the reason stated.
 
-## 6. Final suite state
+## 6. Test names cited the wrong identifiers
+
+Part 3 is graded on traceability, and a grader tracing an AC to its test reads the
+test's name. Every identifier in every Lab 3 test name was extracted and compared
+against `tests.md` §2 and against the specification's own AC wording. **26 names in 7
+files** were wrong or out of line with the plan:
+
+| File | Names | What was wrong |
+|---|---|---|
+| `staff-ticket.api.test.ts` | 6 | API IDs off by one — the claim test was labelled `API-13`, which the plan assigns to invalid queue parameters |
+| `staff-queue.api.test.ts` | 1 | The invalid-parameter test was a second `API-12`; the plan calls it `API-13` |
+| `notes.api.test.ts` | 5 | IDs off by one; Public Comments cited AC-17, which is the resolution indication — comments are AC-16 |
+| `admin-users.api.test.ts` | 7 | IDs off by three and ACs off by two — the user list cited AC-28 (*create*), editing cited AC-30 (*unknown role*) |
+| `UserManagement.test.tsx` | 4 | The same AC shift as the server admin tests |
+| `RequesterResolution.test.tsx` | 1 | The resolution test cited AC-16 (*comments*) instead of AC-17 |
+| `ThreadSection.test.tsx` | 2 | Author and role on entries cited AC-17; the notes-affordance test cited AC-09 where the plan traces AC-25 |
+
+Only the test names changed — no assertion, fixture or setup — and every affected
+file was re-run green. The dated captures in `l3-*-green.txt` keep the names they were
+recorded with; rewriting a capture would make it no longer a capture.
+
+Two gaps sit in the plan and specification rather than in the tests, so they were
+recorded and not changed:
+
+- **Editing a user has no acceptance criterion.** FR-31 requires it and the labsheet
+  Part 8 demonstrates it, but no AC makes it testable. The editing tests now cite FR-31
+  rather than an AC that describes something else.
+- **`SEC-T09` traces to AC-10**, whose wording covers *Administrator* endpoints only. A
+  Requester calling the IT Staff queue is refused correctly and tested, but no AC names
+  that case.
+
+## 7. Final suite state
 
 Run on `feature/23-e2e-and-release` with the complete feature set merged.
 
