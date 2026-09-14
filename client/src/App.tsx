@@ -7,6 +7,7 @@ import { StyleGuide } from './screens/StyleGuide.js'
 import { CreateTicket } from './screens/CreateTicket.js'
 import { MyTickets } from './screens/MyTickets.js'
 import { RequesterTicketDetail } from './screens/RequesterTicketDetail.js'
+import { StaffTicketQueue } from './screens/StaffTicketQueue.js'
 import { Login } from './screens/Login.js'
 import { ChangePassword } from './screens/ChangePassword.js'
 import { RequireSession } from './components/RequireSession.js'
@@ -16,7 +17,9 @@ import { CHANGE_PASSWORD_ROUTE, LOGIN_ROUTE, homeFor } from './routes.js'
 function ShellLayout() {
   const { pathname } = useLocation()
   const breadcrumb =
-    pathname === '/tickets/new'
+    pathname === '/staff/tickets'
+      ? ['Ticket Queue']
+      : pathname === '/tickets/new'
       ? ['My Tickets', 'Create Ticket']
       : pathname.startsWith('/tickets/')
         ? ['My Tickets', 'Ticket Details']
@@ -96,6 +99,16 @@ function App() {
           element={
             <RequireSession>
               <RequesterTicketDetail />
+            </RequireSession>
+          }
+        />
+        {/* A Requester reaching this URL directly gets the forbidden state
+            from the server's refusal, which is the control (ui-spec §8). */}
+        <Route
+          path="/staff/tickets"
+          element={
+            <RequireSession>
+              <StaffTicketQueue />
             </RequireSession>
           }
         />

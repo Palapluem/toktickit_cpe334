@@ -50,3 +50,26 @@ export function ErrorState({
     </div>
   )
 }
+
+/**
+ * Forbidden is not an error and not "not found": the system is working and the
+ * user is not permitted (lab-03 ui-spec §4). It never offers Try again —
+ * retrying will not help, and offering it implies the refusal was transient.
+ */
+export function ForbiddenState({
+  title = 'You do not have access to this page',
+  detail,
+  action,
+}: {
+  title?: string
+  detail: string
+  action?: ReactNode
+}) {
+  return (
+    <div className="zen-state zen-state--forbidden" role="alert">
+      <p className="zen-state__title">{title}</p>
+      <p className="zen-state__detail">{detail}</p>
+      {action}
+    </div>
+  )
+}
