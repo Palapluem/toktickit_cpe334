@@ -1,0 +1,30 @@
+ FAIL  tests/lab-03/ChangePassword.test.tsx > UI-05 · the rule is stated before the user types (AC-06) > shows the minimum length as a hint, not only as a failure
+TestingLibraryElementError: Unable to find an element with the text: /at least 10 characters/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+ FAIL  tests/lab-03/ChangePassword.test.tsx > UI-05 · the rule is stated before the user types (AC-06) > explains why the screen is being shown
+TestingLibraryElementError: Unable to find an element with the text: /initial password/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+ FAIL  tests/lab-03/ChangePassword.test.tsx > UI-05 · AC-06 · validation refuses before the request > refuses a new password below the minimum length
+TestingLibraryElementError: Unable to find a label with the text of: /^Current password/
+ FAIL  tests/lab-03/ChangePassword.test.tsx > UI-05 · AC-06 · validation refuses before the request > refuses a mismatched confirmation
+TestingLibraryElementError: Unable to find a label with the text of: /^Current password/
+ FAIL  tests/lab-03/ChangePassword.test.tsx > UI-05 · AC-06 · validation refuses before the request > refuses a new password identical to the current one
+TestingLibraryElementError: Unable to find a label with the text of: /^Current password/
+ FAIL  tests/lab-03/ChangePassword.test.tsx > UI-05 · AC-06 · validation refuses before the request > accepts one at the minimum length
+TestingLibraryElementError: Unable to find a label with the text of: /^Current password/
+ FAIL  tests/lab-03/ChangePassword.test.tsx > UI-04 · AC-05 · a wrong current password is a field message > reports it on the field rather than as a page banner
+TestingLibraryElementError: Unable to find a label with the text of: /^Current password/
+ FAIL  tests/lab-03/ChangePassword.test.tsx > UI-04 · AC-05 · a wrong current password is a field message > reports a server field error against the field it names
+TestingLibraryElementError: Unable to find a label with the text of: /^Current password/
+ FAIL  tests/lab-03/ChangePassword.test.tsx > UI-04 · AC-02 · success leaves the screen > routes to the role home once the password is saved
+TestingLibraryElementError: Unable to find a label with the text of: /^Current password/
+ FAIL  tests/lab-03/ChangePassword.test.tsx > UI-04 · the busy state sends one request > disables submit while the request is in flight
+TestingLibraryElementError: Unable to find a label with the text of: /^Current password/
+ FAIL  tests/lab-03/Login.test.tsx > UI-01 · AC-01 · a valid sign-in reaches the application > sends the credentials the user typed
+TestingLibraryElementError: Unable to find a label with the text of: /^Email/
+ FAIL  tests/lab-03/Login.test.tsx > UI-01 · AC-01 · a valid sign-in reaches the application > routes a ready user into the application
+TestingLibraryElementError: Unable to find a label with the text of: /^Email/
+ FAIL  tests/lab-03/Login.test.tsx > UI-01 · AC-01 · a valid sign-in reaches the application > routes a user with an initial password to Change Password (AC-02)
+TestingLibraryElementError: Unable to find a label with the text of: /^Email/
+ FAIL  tests/lab-03/Login.test.tsx > UI-02 · AC-03 · the failure message says one thing > shows the safe message and no transport or account detail
+TestingLibraryElementError: Unable to find a label with the text of: /^Email/
+ FAIL  tests/lab-03/Login.test.tsx > UI-02 · AC-03 · the failure message says one thing > says the same thing for an unknown email as for a wrong password
+TestingLibraryElementError: Unable to find a label with the text of: /^Email/

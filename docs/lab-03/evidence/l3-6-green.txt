@@ -1,0 +1,66 @@
+=== Client (npx vitest run) ===
+ Test Files  19 passed (19)
+      Tests  129 passed (129)
+
+=== Lab 3 screen tests, verbose ===
+ ✓ tests/lab-03/Login.test.tsx > UI-01 · AC-01 · a valid sign-in reaches the application > sends the credentials the user typed 1119ms
+ ✓ tests/lab-03/Login.test.tsx > UI-01 · AC-01 · a valid sign-in reaches the application > routes a ready user into the application 888ms
+ ✓ tests/lab-03/Login.test.tsx > UI-01 · AC-01 · a valid sign-in reaches the application > routes a user with an initial password to Change Password (AC-02) 893ms
+ ✓ tests/lab-03/Login.test.tsx > UI-02 · AC-03 · the failure message says one thing > shows the safe message and no transport or account detail 887ms
+ ✓ tests/lab-03/Login.test.tsx > UI-02 · AC-03 · the failure message says one thing > says the same thing for an unknown email as for a wrong password 698ms
+ ✓ tests/lab-03/Login.test.tsx > UI-02 · AC-03 · the failure message says one thing > stays on the sign-in screen after a refusal 865ms
+ ✓ tests/lab-03/Login.test.tsx > UI-02 · field validation happens before the request > refuses an empty form without calling the API 93ms
+ ✓ tests/lab-03/Login.test.tsx > UI-02 · field validation happens before the request > refuses a malformed email without calling the API 605ms
+ ✓ tests/lab-03/Login.test.tsx > UI-03 · AC-01 · the busy state sends one request > disables submit while the request is in flight 890ms
+ ✓ tests/lab-03/Login.test.tsx > UI-03 · AC-01 · the busy state sends one request > sends exactly one request however many times submit is clicked 970ms
+ ✓ tests/lab-03/Login.test.tsx > UI-02 · the screen offers nothing it cannot deliver > has no forgot-password link, because there is no password reset (§3) 12ms
+ ✓ tests/lab-03/ChangePassword.test.tsx > UI-05 · the rule is stated before the user types (AC-06) > shows the minimum length as a hint, not only as a failure 60ms
+ ✓ tests/lab-03/ChangePassword.test.tsx > UI-05 · the rule is stated before the user types (AC-06) > explains why the screen is being shown 16ms
+ ✓ tests/lab-03/ChangePassword.test.tsx > UI-05 · AC-06 · validation refuses before the request > refuses a new password below the minimum length 762ms
+ ✓ tests/lab-03/ChangePassword.test.tsx > UI-05 · AC-06 · validation refuses before the request > refuses a mismatched confirmation 1059ms
+ ✓ tests/lab-03/ChangePassword.test.tsx > UI-05 · AC-06 · validation refuses before the request > refuses a new password identical to the current one 938ms
+ ✓ tests/lab-03/ChangePassword.test.tsx > UI-05 · AC-06 · validation refuses before the request > accepts one at the minimum length 747ms
+ ✓ tests/lab-03/ChangePassword.test.tsx > UI-04 · AC-05 · a wrong current password is a field message > reports it on the field rather than as a page banner 855ms
+ ✓ tests/lab-03/ChangePassword.test.tsx > UI-04 · AC-05 · a wrong current password is a field message > reports a server field error against the field it names 935ms
+ ✓ tests/lab-03/ChangePassword.test.tsx > UI-04 · AC-02 · success leaves the screen > routes to the role home once the password is saved 928ms
+ ✓ tests/lab-03/ChangePassword.test.tsx > UI-04 · the busy state sends one request > disables submit while the request is in flight 992ms
+ ✓ tests/lab-03/AppShell.test.tsx > UI-06 · AC-35 · the shell shows who is signed in and as what > shows the name and a REQUESTER badge 56ms
+ ✓ tests/lab-03/AppShell.test.tsx > UI-06 · AC-35 · the shell shows who is signed in and as what > shows the name and a IT_STAFF badge 9ms
+ ✓ tests/lab-03/AppShell.test.tsx > UI-06 · AC-35 · the shell shows who is signed in and as what > shows the name and a ADMINISTRATOR badge 20ms
+ ✓ tests/lab-03/AppShell.test.tsx > UI-06 · AC-35 · the shell shows who is signed in and as what > offers Logout 125ms
+ ✓ tests/lab-03/AppShell.test.tsx > UI-06 · AC-35 · the shell shows who is signed in and as what > shows neither name nor badge when there is no session 17ms
+ ✓ tests/lab-03/AppShell.test.tsx > UI-07 · FR-11 · each role sees only its own destinations > shows REQUESTER exactly its permitted destinations 24ms
+ ✓ tests/lab-03/AppShell.test.tsx > UI-07 · FR-11 · each role sees only its own destinations > shows IT_STAFF exactly its permitted destinations 15ms
+ ✓ tests/lab-03/AppShell.test.tsx > UI-07 · FR-11 · each role sees only its own destinations > shows ADMINISTRATOR exactly its permitted destinations 15ms
+ ✓ tests/lab-03/AppShell.test.tsx > UI-07 · FR-11 · each role sees only its own destinations > renders an unauthorised destination as absent, never as disabled 14ms
+ ✓ tests/lab-03/AppShell.test.tsx > UI-06 · AC-04 · Logout ends the session > calls the API and returns to the sign-in screen 90ms
+ ✓ tests/lab-03/AppShell.test.tsx > UI-06 · AC-04 · Logout ends the session > leaves the session ended even when the request fails 62ms
+ ✓ tests/lab-03/RouteGuard.test.tsx > UI-04 · AC-12 · an unauthenticated visitor is sent to sign in > redirects rather than rendering the protected screen 44ms
+ ✓ tests/lab-03/RouteGuard.test.tsx > UI-04 · AC-12 · an unauthenticated visitor is sent to sign in > renders nothing protected while the session is still resolving 3ms
+ ✓ tests/lab-03/RouteGuard.test.tsx > UI-04 · AC-02 · the must-change gate redirects every other route > sends a user with an initial password to Change Password 9ms
+ ✓ tests/lab-03/RouteGuard.test.tsx > UI-04 · AC-02 · the must-change gate redirects every other route > lets the same user through once the password is changed 15ms
+ ❯ tests/lab-03/AppShell.test.tsx:145:34
+ ❯ node_modules/@vitest/runner/dist/chunk-artifact.js:302:11
+ ❯ node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26
+ ❯ node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20
+ ❯ runWithCancel node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10
+ ❯ node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20
+ ❯ runWithTimeout node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10
+ ❯ node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64
+ Test Files  4 passed (4)
+      Tests  36 passed (36)
+
+=== E2E ===
+  ok  1 [chromium] › e2e\lab-02\attachment-lifecycle.spec.ts:11:5 › E2E-03 covers add, download, soft-remove, and blocked attachment (5.8s)
+  ok  2 [chromium] › e2e\lab-02\requester-isolation.spec.ts:5:5 › E2E-02 isolates tickets between signed-in users (4.9s)
+  ok  3 [chromium] › e2e\lab-02\requester-ticket-flow.spec.ts:5:5 › E2E-01 completes requester creation and My Tickets journey (4.2s)
+  ok  4 [chromium] › e2e\lab-02\responsive.spec.ts:11:5 › RESP-01 renders Create Ticket at desktop, tablet, and mobile (2.0s)
+  ok  5 [chromium] › e2e\lab-02\responsive.spec.ts:24:5 › RESP-02 renders My Tickets at desktop, tablet, and mobile (5.1s)
+  ok  6 [chromium] › e2e\lab-02\responsive.spec.ts:48:5 › RESP-03 renders Ticket Detail at desktop, tablet, and mobile (5.2s)
+  ok  7 [chromium] › e2e\lab-03\authentication.spec.ts:25:5 › AUTH-01 captures the sign-in screen at desktop and mobile (897ms)
+  ok  8 [chromium] › e2e\lab-03\authentication.spec.ts:37:5 › AUTH-02 refuses a wrong password with one safe message (1.4s)
+  ok  9 [chromium] › e2e\lab-03\authentication.spec.ts:50:5 › AUTH-03 signs in and reaches My Tickets (895ms)
+  ok 10 [chromium] › e2e\lab-03\authentication.spec.ts:61:5 › AUTH-04 captures the mandatory Change Password screen (1.5s)
+  ok 11 [chromium] › e2e\lab-03\authentication.spec.ts:83:5 › AUTH-05 refuses every other route until the password is changed (1.1s)
+  ok 12 [chromium] › e2e\lab-03\authentication.spec.ts:99:5 › AUTH-06 logs out and cannot return without signing in again (1.2s)
+  12 passed (47.1s)

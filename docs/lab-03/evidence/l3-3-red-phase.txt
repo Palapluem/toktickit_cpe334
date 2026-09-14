@@ -1,0 +1,76 @@
+ FAIL  tests/lab-03/auth.api.test.ts > API-01 · a valid login establishes a session (AC-01) > returns the safe profile
+AssertionError: expected 401 to be 200 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-01 · a valid login establishes a session (AC-01) > sets an httpOnly, SameSite=Lax session cookie (SEC-013)
+AssertionError: expected null not to be null
+ FAIL  tests/lab-03/auth.api.test.ts > API-01 · a valid login establishes a session (AC-01) > stores the session server-side so it can be revoked (BR-09)
+AssertionError: expected 401 to be 200 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-01 · a valid login establishes a session (AC-01) > reports the role from the server, never from anything the client holds (BR-13)
+AssertionError: expected {} to match object { data: { role: 'IT_STAFF' } }
+ FAIL  tests/lab-03/auth.api.test.ts > API-02 … API-04 · every failure looks the same (AC-03, SEC-002) > refuses an unknown email
+AssertionError: expected 401 to be 200 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-02 … API-04 · every failure looks the same (AC-03, SEC-002) > refuses a wrong password
+AssertionError: expected 401 to be 200 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-02 … API-04 · every failure looks the same (AC-03, SEC-002) > refuses an inactive account holding the correct password (BR-01)
+AssertionError: expected 401 to be 200 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-02 … API-04 · every failure looks the same (AC-03, SEC-002) > rejects a malformed request before it reaches the credential check
+AssertionError: expected 401 to be 400 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-02 … API-04 · every failure looks the same (AC-03, SEC-002) > creates no session for a failed attempt
+AssertionError: expected 401 to be 200 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-05 · logout revokes access (AC-04, BR-09, SEC-004) > refuses the next request made with the logged-out session
+AssertionError: expected 200 to be 401 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-05 · logout revokes access (AC-04, BR-09, SEC-004) > deletes the row rather than marking it
+AssertionError: expected +0 to be -1 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-06 · the must-change gate (AC-02, BR-02, SEC-008) > refuses a guarded endpoint with 403 PASSWORD_CHANGE_REQUIRED
+AssertionError: expected 200 to be 403 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-06 · the must-change gate (AC-02, BR-02, SEC-008) > admits the same user once the password is changed
+AssertionError: expected 200 to be 403 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-06 · the must-change gate (AC-02, BR-02, SEC-008) > leaves the current-user endpoint open, so the client can learn why
+AssertionError: expected {} to match object { data: { mustChangePassword: true } }
+ FAIL  tests/lab-03/auth.api.test.ts > API-06 · the must-change gate (AC-02, BR-02, SEC-008) > refuses an unauthenticated caller with 401, not 403
+AssertionError: expected 200 to be 401 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-07 · a wrong current password changes nothing (AC-05) > refuses the change and leaves the old password working
+AssertionError: expected 500 to be 401 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-08 · the new password is validated (AC-06, BR-05) > refuses one shorter than the minimum and keeps the old one working
+AssertionError: expected 500 to be 400 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-08 · the new password is validated (AC-06, BR-05) > refuses a new password identical to the current one
+AssertionError: expected 500 to be 400 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-08 · the new password is validated (AC-06, BR-05) > accepts one at the minimum length
+AssertionError: expected 500 to be 200 // Object.is equality
+ FAIL  tests/lab-03/auth.api.test.ts > API-09 · nothing secret leaves the server (AC-07, SEC-003) > never puts the session token in the body
+AssertionError: expected null not to be null
+ FAIL  tests/lab-03/auth.api.test.ts > API-10 · a password change ends the user’s other sessions (BR-07) > refuses the other session and keeps the one that made the change
+AssertionError: expected 500 to be 200 // Object.is equality
+ FAIL  tests/lab-03/password.unit.test.ts > UNIT-02 · password policy (BR-05, SEC-010) > refuses one character below the minimum
+AssertionError: expected [] to include 'newPassword'
+ FAIL  tests/lab-03/password.unit.test.ts > UNIT-02 · password policy (BR-05, SEC-010) > refuses an empty password
+AssertionError: expected [] to include 'newPassword'
+ FAIL  tests/lab-03/password.unit.test.ts > UNIT-02 · password policy (BR-05, SEC-010) > refuses a value that is not a string
+AssertionError: expected [] to include 'newPassword'
+ FAIL  tests/lab-03/password.unit.test.ts > UNIT-02 · password policy (BR-05, SEC-010) > refuses a new password identical to the current one
+AssertionError: expected [] to include 'newPassword'
+ FAIL  tests/lab-03/password.unit.test.ts > UNIT-02 · password policy (BR-05, SEC-010) > imposes no composition rule the specification does not state
+AssertionError: expected [] to include 'newPassword'
+ FAIL  tests/lab-03/session.unit.test.ts > UNIT-06 · session tokens > is 32 bytes of base64url, long enough not to be guessed
+AssertionError: expected '' to match /^[A-Za-z0-9_-]{43}$/
+ FAIL  tests/lab-03/session.unit.test.ts > UNIT-06 · session tokens > never repeats
+AssertionError: expected 1 to be 50 // Object.is equality
+ FAIL  tests/lab-03/session.unit.test.ts > UNIT-06 · session tokens > is not derived from the user id
+AssertionError: expected 0 to be greater than 0
+ FAIL  tests/lab-03/session.unit.test.ts > UNIT-06 · session resolution (BR-08, SEC-014) > resolves a live session to its user
+AssertionError: expected undefined to be '517537b4-7087-43c4-9589-b430e47010e8' // Object.is equality
+ FAIL  tests/lab-03/session.unit.test.ts > UNIT-06 · session resolution (BR-08, SEC-014) > sets the expiry eight hours out
+AssertionError: expected 0 to be greater than or equal to 1789176769729
+ FAIL  tests/lab-03/session.unit.test.ts > UNIT-06 · session resolution (BR-08, SEC-014) > refuses a session whose expiry has passed
+AssertionError: expected null not to be null
+ FAIL  tests/lab-03/session.unit.test.ts > UNIT-06 · session resolution (BR-08, SEC-014) > refuses a token that was never issued
+AssertionError: expected null not to be null
+ FAIL  tests/lab-03/session.unit.test.ts > UNIT-06 · session resolution (BR-08, SEC-014) > refuses a session whose user has been deactivated (BR-39)
+AssertionError: expected null not to be null
+ FAIL  tests/lab-03/session.unit.test.ts > UNIT-06 · ending sessions > ends one session and leaves the others alone
+AssertionError: expected null not to be null
+ FAIL  tests/lab-03/session.unit.test.ts > UNIT-06 · ending sessions > ends every session but the one held (BR-07)
+AssertionError: expected null not to be null
+ FAIL  tests/lab-03/session.unit.test.ts > UNIT-06 · ending sessions > leaves another user’s sessions untouched
+AssertionError: expected null not to be null
+ Test Files  3 failed (3)
+      Tests  37 failed | 11 passed (48)

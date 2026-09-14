@@ -5,13 +5,13 @@ const e2eDatabaseUrl = getE2EDatabaseUrl({ required: false })
 const { FORCE_COLOR: _forceColor, NO_COLOR: _noColor, ...cleanEnv } = process.env
 
 export default defineConfig({
-  testDir: './e2e/lab-02',
+  testDir: './e2e',
   timeout: 45_000,
   expect: { timeout: 7_000 },
   fullyParallel: false,
   workers: 1,
   globalSetup: './e2e/lab-02/global-setup.ts',
-  outputDir: 'artifacts/lab-02/playwright-results',
+  outputDir: 'artifacts/lab-03/playwright-results',
   reporter: [['list']],
   use: {
     baseURL: 'http://127.0.0.1:5174',

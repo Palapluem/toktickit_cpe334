@@ -1,0 +1,41 @@
+=== Server ===
+ Test Files  25 passed (25)
+      Tests  366 passed (366)
+
+=== Client ===
+ Test Files  23 passed (23)
+      Tests  182 passed (182)
+
+=== E2E ===
+  ok  1 [chromium] › e2e\lab-02\attachment-lifecycle.spec.ts:11:5 › E2E-03 covers add, download, soft-remove, and blocked attachment (4.9s)
+  ok  2 [chromium] › e2e\lab-02\requester-isolation.spec.ts:5:5 › E2E-02 isolates tickets between signed-in users (4.7s)
+  ok  3 [chromium] › e2e\lab-02\requester-ticket-flow.spec.ts:5:5 › E2E-01 completes requester creation and My Tickets journey (5.7s)
+  ok  4 [chromium] › e2e\lab-02\responsive.spec.ts:11:5 › RESP-01 renders Create Ticket at desktop, tablet, and mobile (2.1s)
+  ok  5 [chromium] › e2e\lab-02\responsive.spec.ts:24:5 › RESP-02 renders My Tickets at desktop, tablet, and mobile (10.0s)
+  ok  6 [chromium] › e2e\lab-02\responsive.spec.ts:48:5 › RESP-03 renders Ticket Detail at desktop, tablet, and mobile (6.9s)
+  ok  7 [chromium] › e2e\lab-03\authentication.spec.ts:25:5 › AUTH-01 captures the sign-in screen at desktop and mobile (996ms)
+  ok  8 [chromium] › e2e\lab-03\authentication.spec.ts:37:5 › AUTH-02 refuses a wrong password with one safe message (1.4s)
+  ok  9 [chromium] › e2e\lab-03\authentication.spec.ts:50:5 › AUTH-03 signs in and reaches My Tickets (948ms)
+  ok 10 [chromium] › e2e\lab-03\authentication.spec.ts:61:5 › AUTH-04 captures the mandatory Change Password screen (1.8s)
+  ok 11 [chromium] › e2e\lab-03\authentication.spec.ts:83:5 › AUTH-05 refuses every other route until the password is changed (1.2s)
+  ok 12 [chromium] › e2e\lab-03\authentication.spec.ts:99:5 › AUTH-06 logs out and cannot return without signing in again (1.3s)
+  ok 13 [chromium] › e2e\lab-03\comments-and-notes.spec.ts:41:5 › THREAD-01 captures both threads, visually distinct (1.4s)
+  ok 14 [chromium] › e2e\lab-03\comments-and-notes.spec.ts:62:5 › THREAD-02 posts to each thread through its own composer (1.4s)
+  ok 15 [chromium] › e2e\lab-03\comments-and-notes.spec.ts:83:5 › THREAD-03 captures what the Requester sees, and does not (1.5s)
+  ok 16 [chromium] › e2e\lab-03\comments-and-notes.spec.ts:102:5 › THREAD-04 refuses the Requester directly, revealing no count (816ms)
+  ok 17 [chromium] › e2e\lab-03\staff-queue.spec.ts:27:5 › QUEUE-01 captures the queue at three viewports (1.7s)
+  ok 18 [chromium] › e2e\lab-03\staff-queue.spec.ts:44:5 › QUEUE-02 shows ownership and the resolution marker (941ms)
+  ok 19 [chromium] › e2e\lab-03\staff-queue.spec.ts:59:5 › QUEUE-03 captures the no-results state (1.9s)
+  ok 20 [chromium] › e2e\lab-03\staff-queue.spec.ts:76:5 › QUEUE-04 captures the empty state (930ms)
+  ok 21 [chromium] › e2e\lab-03\staff-queue.spec.ts:91:5 › QUEUE-05 refuses a Requester with the forbidden state (800ms)
+  ok 22 [chromium] › e2e\lab-03\staff-ticket-detail.spec.ts:47:5 › DETAIL-01 captures the staff Ticket Detail at three viewports (2.5s)
+  ok 23 [chromium] › e2e\lab-03\staff-ticket-detail.spec.ts:64:5 › DETAIL-02 claims an unassigned Ticket and moves it to OPEN (1.5s)
+  ok 24 [chromium] › e2e\lab-03\staff-ticket-detail.spec.ts:82:5 › DETAIL-03 offers only permitted transitions (1.3s)
+  ok 25 [chromium] › e2e\lab-03\staff-ticket-detail.spec.ts:94:5 › DETAIL-04 refuses the moves nobody and no role may make (1.1s)
+  ok 26 [chromium] › e2e\lab-03\staff-ticket-detail.spec.ts:114:5 › DETAIL-05 captures the refusal a Requester can actually see (1.5s)
+  ok 27 [chromium] › e2e\lab-03\staff-ticket-detail.spec.ts:135:5 › DETAIL-06 lets the Requester say the problem appears resolved (914ms)
+  27 passed (1.3m)
+
+=== Mutation proof ===
+note:read gate swapped for comment:read -> 3 failed
+trim removed from validation             -> 3 failed

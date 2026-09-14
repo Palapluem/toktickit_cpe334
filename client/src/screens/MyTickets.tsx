@@ -14,7 +14,7 @@ import { Button } from '../components/Button.js'
 import { PriorityBadge, StatusBadge } from '../components/Badge.js'
 import { FormField } from '../components/FormField.js'
 import { EmptyState, ErrorState, LoadingState } from '../components/States.js'
-import { useRequester } from '../context/RequesterContext.js'
+import { useSession } from '../context/SessionContext.js'
 
 const PRIORITIES: Priority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
 const STATUSES: TicketStatus[] = [
@@ -199,7 +199,7 @@ function LoadingResults() {
 }
 
 export function MyTickets() {
-  const { requester, status: requesterStatus } = useRequester()
+  const { user, status: sessionStatus } = useSession()
   const navigate = useNavigate()
   const [categories, setCategories] = useState<Category[]>([])
   const [categoriesLoading, setCategoriesLoading] = useState(false)
@@ -209,7 +209,8 @@ export function MyTickets() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const [retryNumber, setRetryNumber] = useState(0)
-  const requesterId = requester?.id ?? null
+  // Identity is the cookie's; this only says whether there is one to load for.
+  const signedIn = user !== null
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -224,7 +225,7 @@ export function MyTickets() {
   }, [searchInput])
 
   useEffect(() => {
-    if (!requesterId) {
+    if (!signedIn) {
       setCategories([])
       setCategoriesLoading(false)
       return
@@ -232,7 +233,7 @@ export function MyTickets() {
 
     let cancelled = false
     setCategoriesLoading(true)
-    fetchCategories(requesterId)
+    fetchCategories()
       .then((rows) => {
         if (!cancelled) setCategories(rows)
       })
@@ -246,10 +247,10 @@ export function MyTickets() {
     return () => {
       cancelled = true
     }
-  }, [requesterId])
+  }, [signedIn])
 
   useEffect(() => {
-    if (!requesterId) {
+    if (!signedIn) {
       setResponse(null)
       setLoading(false)
       setError(false)
@@ -261,7 +262,7 @@ export function MyTickets() {
     setLoading(true)
     setError(false)
 
-    fetchTickets(requesterId, toTicketQuery(filters))
+    fetchTickets(toTicketQuery(filters))
       .then((nextResponse) => {
         if (!cancelled) setResponse(nextResponse)
       })
@@ -275,7 +276,7 @@ export function MyTickets() {
     return () => {
       cancelled = true
     }
-  }, [filters, requesterId, retryNumber])
+  }, [filters, signedIn, retryNumber])
 
   const updateFilter = <K extends keyof FilterState>(
     key: K,
@@ -321,20 +322,15 @@ export function MyTickets() {
     return { start, end }
   }, [response])
 
-  if (requesterStatus === 'loading') {
-    return <LoadingState label="Loading requester…" />
+  if (sessionStatus === 'loading') {
+    return <LoadingState label="Loading your session…" />
   }
 
-  if (!requester) {
+  if (!user) {
     return (
       <EmptyState
-        title="No requester selected"
-        detail="Choose a development requester before viewing tickets."
-        action={
-          <Button variant="primary" onClick={() => navigate('/select-requester')}>
-            Select Requester
-          </Button>
-        }
+        title="Sign in to continue"
+        detail="This page needs an active session."
       />
     )
   }

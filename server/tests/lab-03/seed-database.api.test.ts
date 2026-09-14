@@ -11,6 +11,7 @@ import {
   DEVELOPMENT_PASSWORD,
   LAB2_REQUESTER_EMAILS,
 } from '../../src/seed/roster.js'
+import { restoreSeededCredentials, signIn } from './auth-fixtures.js'
 import { SEED_TICKETS } from '../../src/seed/demoTickets.js'
 
 function runSeed(): void {
@@ -45,8 +46,10 @@ let afterSecondRun: Counts
 
 describe('L3-2 · the migrated database', () => {
   beforeAll(async () => {
-    // Earlier Lab 2 files clear Ticket data, so this restores the demo rows
-    // and measures idempotency at the same time.
+    // Earlier files clear Ticket data and lift password gates to log in. The
+    // seed restores the rows; this restores the credentials, so MIG-03 asserts
+    // the migrated state rather than whatever ran before it.
+    await restoreSeededCredentials()
     runSeed()
     afterFirstRun = await counts()
     runSeed()
@@ -154,10 +157,15 @@ describe('L3-2 · the migrated database', () => {
       expect(await verifyPassword('not-the-password', user.passwordHash)).toBe(false)
     })
 
-    it('never returns a hash from the reference-data endpoint', async () => {
-      const response = await request(app).get('/api/requesters')
+    it('never returns a hash from the endpoint that does return user data', async () => {
+      // /api/requesters is gone with the selector (L3-5); /api/auth/me is now
+      // the only endpoint that answers with a user.
+      const cookie = await signIn(LAB2_REQUESTER_EMAILS[0])
+      const response = await request(app).get('/api/auth/me').set('Cookie', cookie)
+
       expect(response.status).toBe(200)
       expect(JSON.stringify(response.body)).not.toMatch(/passwordHash|\$2[aby]\$/)
+      await restoreSeededCredentials()
     })
   })
 
