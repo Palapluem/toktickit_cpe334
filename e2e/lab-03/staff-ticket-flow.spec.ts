@@ -262,6 +262,9 @@ test('DETAIL-08 reassigns a Ticket to another active owner', async ({ page }) =>
 
   // Restore the seeded owner so later evidence starts from the documented state.
   await owner.selectOption({ label: 'Patricia Evans' })
+  await expect(
+    page.locator('.staff-ticket__owner > p').filter({ hasText: 'Patricia Evans' }),
+  ).toBeVisible()
   const restored = await page.request.get(`${API}/api/staff/tickets/${ticketId}`)
   expect((await restored.json()).data.owner.displayName).toBe('Patricia Evans')
 })
