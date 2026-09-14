@@ -479,6 +479,70 @@ export function postInternalNote(ticketId: string, body: string): Promise<Thread
   )
 }
 
+export interface ManagedUser {
+  id: string
+  displayName: string
+  email: string
+  role: Role
+  isActive: boolean
+  mustChangePassword: boolean
+}
+
+export interface UserQuery {
+  search?: string
+  role?: string
+}
+
+export function fetchUsers(query: UserQuery = {}): Promise<ManagedUser[]> {
+  const params = new URLSearchParams()
+  for (const [key, raw] of Object.entries(query)) {
+    const value = typeof raw === 'string' ? raw.trim() : raw
+    if (!value) continue
+    params.set(key, String(value))
+  }
+  const queryString = params.toString()
+  return get<ManagedUser[]>(
+    `/api/admin/users${queryString ? `?${queryString}` : ''}`,
+    'Users request failed',
+  )
+}
+
+export type NewUser = {
+  displayName: string
+  email: string
+  role: Role
+  isActive: boolean
+  initialPassword: string
+}
+
+export function createUser(payload: NewUser): Promise<ManagedUser> {
+  return postJson<ManagedUser>('/api/admin/users', payload, 'The user could not be created.')
+}
+
+export type UserChanges = Partial<
+  Pick<ManagedUser, 'displayName' | 'email' | 'role' | 'isActive'>
+>
+
+export function updateUser(userId: string, changes: UserChanges): Promise<ManagedUser> {
+  return patchJson<ManagedUser>(
+    `/api/admin/users/${userId}`,
+    changes,
+    'The user could not be saved.',
+  )
+}
+
+/** The password is never echoed back, so neither is it returned here (SEC-032). */
+export function setUserInitialPassword(
+  userId: string,
+  initialPassword: string,
+): Promise<{ id: string; mustChangePassword: boolean }> {
+  return postJson<{ id: string; mustChangePassword: boolean }>(
+    `/api/admin/users/${userId}/initial-password`,
+    { initialPassword },
+    'The initial password could not be set.',
+  )
+}
+
 export async function fetchTickets(
   query: TicketListQuery = {},
 ): Promise<TicketListResponse> {

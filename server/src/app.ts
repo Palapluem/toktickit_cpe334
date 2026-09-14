@@ -27,6 +27,12 @@ import {
 import { listTickets } from './tickets/listTickets.js'
 import { listStaffQueue } from './staff/staffQueue.js'
 import {
+  createUser,
+  listUsers,
+  setInitialPassword,
+  updateUser,
+} from './admin/users.js'
+import {
   createInternalNote,
   createPublicComment,
   listInternalNotes,
@@ -331,6 +337,62 @@ export function createApp(options: CreateTicketOptions = {}) {
   // Internal Notes the contract says it includes (api-spec.md §8). A Requester
   // holds ticket:read scoped to their own and never holds note:read, so this
   // chain refuses them here while /api/tickets/:id still serves them.
+  // Administrator user management (api-spec.md §9). Every route answers 403 to
+  // a Requester or IT Staff — IT Staff never gain user management, which is
+  // where the conceptual separation carries its security weight (§11.8).
+  app.get(
+    '/api/admin/users',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('user:list'),
+    async (req, res) => {
+      const data = await listUsers(req.query, options.db ?? prisma)
+      res.json({ data })
+    },
+  )
+
+  app.post(
+    '/api/admin/users',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('user:write'),
+    async (req, res) => {
+      const data = await createUser(req.body, options.db ?? prisma)
+      res.status(201).json({ data })
+    },
+  )
+
+  app.patch(
+    '/api/admin/users/:id',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('user:write'),
+    async (req, res) => {
+      const data = await updateUser(
+        routeParameter(req.params.id),
+        req.user!.id,
+        req.body,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.post(
+    '/api/admin/users/:id/initial-password',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('user:setInitialPassword'),
+    async (req, res) => {
+      const data = await setInitialPassword(
+        routeParameter(req.params.id),
+        req.body,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
   // Public Comments (api-spec.md §6). The owning Requester, IT Staff, and
   // Administrator; a Requester's grant is scoped to their own Ticket.
   app.get(
