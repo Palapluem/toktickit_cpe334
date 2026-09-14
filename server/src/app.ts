@@ -1,9 +1,21 @@
 import express, { type NextFunction, type Request, type Response } from 'express'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
 import multer from 'multer'
 import prisma from './prisma.js'
 import { ApiError, errorHandler, sendError } from './http/errors.js'
-import { requireRequesterContext } from './middleware/requesterContext.js'
+import {
+  requireAuth,
+  requirePasswordChanged,
+} from './middleware/authContext.js'
+import { requireOperation } from './middleware/authorize.js'
+import { authenticate, changePassword } from './auth/service.js'
+import {
+  SESSION_COOKIE,
+  endSession,
+  sessionCookieOptions,
+  startSession,
+} from './auth/session.js'
 import {
   createTicket,
   type CreateTicketOptions,
@@ -13,6 +25,26 @@ import {
   MAX_ATTACHMENTS,
 } from './tickets/attachmentRules.js'
 import { listTickets } from './tickets/listTickets.js'
+import { listStaffQueue } from './staff/staffQueue.js'
+import {
+  createUser,
+  listUsers,
+  setInitialPassword,
+  updateUser,
+} from './admin/users.js'
+import {
+  createInternalNote,
+  createPublicComment,
+  listInternalNotes,
+  listPublicComments,
+} from './tickets/threads.js'
+import {
+  getStaffTicketDetail,
+  indicateRequesterResolution,
+  setItPriority,
+  setTicketOwner,
+  setTicketStatus,
+} from './staff/ticketOperations.js'
 import { UUID } from './tickets/validation.js'
 import {
   addTicketAttachment,
@@ -190,8 +222,18 @@ function attachmentParameter(value: string | string[] | undefined): string {
 export function createApp(options: CreateTicketOptions = {}) {
   const app = express()
 
-  app.use(cors())
+  // credentials: the session cookie must travel on cross-origin XHR in dev,
+  // where the client is served from a different port (api-spec.md §1).
+  // Reflecting the request's own origin is a documented dev convenience
+  // (.env.example) — never something a real deployment should inherit
+  // silently, since combined with credentials:true it accepts a
+  // cookie-carrying request from any site.
+  if (!process.env.CLIENT_ORIGIN && process.env.NODE_ENV === 'production') {
+    throw new Error('CLIENT_ORIGIN must be set outside local development.')
+  }
+  app.use(cors({ origin: process.env.CLIENT_ORIGIN ?? true, credentials: true }))
   app.use(express.json())
+  app.use(cookieParser())
 
   // Minimal placeholder proving the server starts (Issue 1 scope only).
   app.get('/', (_req, res) => {
@@ -202,10 +244,56 @@ export function createApp(options: CreateTicketOptions = {}) {
     res.json({ status: 'ok', service: 'TokTickIT API' })
   })
 
+  // Authentication (api-spec.md §3). The session cookie is the only identity
+  // these endpoints accept; nothing reads a role from the request.
+
+  app.post('/api/auth/login', async (req, res) => {
+    const user = await authenticate(req.body?.email, req.body?.password)
+    if (user === null) {
+      // One body for unknown email, wrong password, and inactive (SEC-002).
+      sendError(
+        res,
+        401,
+        'INVALID_CREDENTIALS',
+        'Email or password is incorrect.',
+      )
+      return
+    }
+
+    const { token, expiresAt } = await startSession(user.id)
+    res.cookie(SESSION_COOKIE, token, sessionCookieOptions(expiresAt))
+    res.json({ data: user })
+  })
+
+  // No requireAuth: logging out of nothing is not an error, and reporting one
+  // would confirm whether a token was valid (api-spec.md §3).
+  app.post('/api/auth/logout', async (req, res) => {
+    const token = req.cookies?.[SESSION_COOKIE]
+    if (typeof token === 'string' && token.length > 0) await endSession(token)
+    res.clearCookie(SESSION_COOKIE, { path: '/' })
+    res.json({ data: { loggedOut: true } })
+  })
+
+  // Exempt from the must-change gate, so the client can discover why it is
+  // being refused without a special case (api-spec.md §4).
+  app.get('/api/auth/me', requireAuth, (req, res) => {
+    res.json({ data: req.user })
+  })
+
+  app.post('/api/auth/change-password', requireAuth, async (req, res) => {
+    await changePassword(
+      req.user!.id,
+      req.body?.currentPassword,
+      req.body?.newPassword,
+      req.sessionToken!,
+    )
+    res.json({ data: { passwordChanged: true } })
+  })
+
   // Reference data (api-spec.md §2). All three: data envelope, isActive filter,
   // explicit name ordering (§11.15).
 
-  app.get('/api/categories', async (_req, res) => {
+  app.get('/api/categories', requireAuth, requirePasswordChanged, async (_req, res) => {
     const data = await (options.db ?? prisma).category.findMany({
       where: { isActive: true },
       orderBy: { name: 'asc' },
@@ -214,31 +302,259 @@ export function createApp(options: CreateTicketOptions = {}) {
     res.json({ data })
   })
 
-  app.get('/api/related-systems', async (_req, res) => {
+  app.get(
+    '/api/related-systems',
+    requireAuth,
+    requirePasswordChanged,
+    async (_req, res) => {
     const data = await (options.db ?? prisma).relatedSystem.findMany({
       where: { isActive: true },
       orderBy: { name: 'asc' },
       select: { id: true, name: true },
-    })
-    res.json({ data })
-  })
+      })
+      res.json({ data })
+    },
+  )
 
-  app.get('/api/requesters', async (_req, res) => {
-    const data = await (options.db ?? prisma).user.findMany({
-      // Role filter added with the User migration: the Lab 2 development
-      // selector lists requesters, not staff. L3-5 removes the endpoint.
-      where: { isActive: true, role: 'REQUESTER' },
-      orderBy: { displayName: 'asc' },
-      // isActive withheld: exposing it invites the client to treat the selector
-      // as authorization (BR-03, BR-14).
-      select: { id: true, displayName: true, email: true },
-    })
-    res.json({ data })
-  })
+  // The staff queue (api-spec.md §8). Not user-scoped, so the role check is
+  // the only thing between a Requester and every Ticket in the system.
+  app.get(
+    '/api/staff/tickets',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('staffQueue:read'),
+    async (req, res) => {
+      const data = await listStaffQueue(
+        req.user!.id,
+        req.query,
+        options.db ?? prisma,
+      )
+      res.json(data)
+    },
+  )
 
-  app.get('/api/tickets', requireRequesterContext, async (req, res) => {
+  // Two grants because the response carries two things: the Ticket, and the
+  // Internal Notes the contract says it includes (api-spec.md §8). A Requester
+  // holds ticket:read scoped to their own and never holds note:read, so this
+  // chain refuses them here while /api/tickets/:id still serves them.
+  // Administrator user management (api-spec.md §9). Every route answers 403 to
+  // a Requester or IT Staff — IT Staff never gain user management, which is
+  // where the conceptual separation carries its security weight (§11.8).
+  app.get(
+    '/api/admin/users',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('user:list'),
+    async (req, res) => {
+      const data = await listUsers(req.query, options.db ?? prisma)
+      res.json({ data })
+    },
+  )
+
+  app.post(
+    '/api/admin/users',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('user:write'),
+    async (req, res) => {
+      const data = await createUser(req.body, options.db ?? prisma)
+      res.status(201).json({ data })
+    },
+  )
+
+  app.patch(
+    '/api/admin/users/:id',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('user:write'),
+    async (req, res) => {
+      const data = await updateUser(
+        routeParameter(req.params.id),
+        req.user!.id,
+        req.body,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.post(
+    '/api/admin/users/:id/initial-password',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('user:setInitialPassword'),
+    async (req, res) => {
+      const data = await setInitialPassword(
+        routeParameter(req.params.id),
+        req.body,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  // Public Comments (api-spec.md §6). The owning Requester, IT Staff, and
+  // Administrator; a Requester's grant is scoped to their own Ticket.
+  app.get(
+    '/api/tickets/:id/comments',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('comment:read'),
+    async (req, res) => {
+      const data = await listPublicComments(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.grant!,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.post(
+    '/api/tickets/:id/comments',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('comment:create'),
+    async (req, res) => {
+      const data = await createPublicComment(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.grant!,
+        req.body,
+        options.db ?? prisma,
+      )
+      res.status(201).json({ data })
+    },
+  )
+
+  // Internal Notes (api-spec.md §7). A Requester is refused by the role gate
+  // before any query runs, so the response carries no count, no empty array,
+  // and no indication of whether notes exist (BR-28, SEC-021).
+  app.get(
+    '/api/tickets/:id/internal-notes',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('note:read'),
+    async (req, res) => {
+      const data = await listInternalNotes(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.grant!,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.post(
+    '/api/tickets/:id/internal-notes',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('note:create'),
+    async (req, res) => {
+      const data = await createInternalNote(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.grant!,
+        req.body,
+        options.db ?? prisma,
+      )
+      res.status(201).json({ data })
+    },
+  )
+
+  app.get(
+    '/api/staff/tickets/:id',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:read'),
+    requireOperation('note:read'),
+    async (req, res) => {
+      const data = await getStaffTicketDetail(
+        ticketParameter(req.params.id),
+        req.user!.role,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.patch(
+    '/api/staff/tickets/:id/owner',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:setOwner'),
+    async (req, res) => {
+      const data = await setTicketOwner(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.user!.role,
+        req.body,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.patch(
+    '/api/staff/tickets/:id/it-priority',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:setItPriority'),
+    async (req, res) => {
+      const data = await setItPriority(
+        ticketParameter(req.params.id),
+        req.user!.role,
+        req.body,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.patch(
+    '/api/staff/tickets/:id/status',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:setStatus'),
+    async (req, res) => {
+      const data = await setTicketStatus(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.user!.role,
+        req.grant!,
+        req.body,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.post(
+    '/api/tickets/:id/requester-resolution',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:requesterResolution'),
+    async (req, res) => {
+      const data = await indicateRequesterResolution(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        options.now?.() ?? new Date(),
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.get(
+    '/api/tickets',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:listOwn'),
+    async (req, res) => {
     const data = await listTickets(
-      req.requester!.id,
+      req.user!.id,
       req.query,
       options.db ?? prisma,
     )
@@ -247,13 +563,15 @@ export function createApp(options: CreateTicketOptions = {}) {
 
   app.post(
     '/api/tickets',
-    requireRequesterContext,
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:create'),
     parseAttachments,
     // Express 5 forwards rejected async handlers to the final error middleware.
     async (req, res) => {
       const files = Array.isArray(req.files) ? toAttachmentFiles(req.files) : []
       const ticket = await createTicket(
-        { requesterId: req.requester!.id, body: req.body, attachments: files },
+        { requesterId: req.user!.id, body: req.body, attachments: files },
         options,
       )
       const stored = await (options.db ?? prisma).ticket.findUniqueOrThrow({
@@ -306,10 +624,17 @@ export function createApp(options: CreateTicketOptions = {}) {
     },
   )
 
-  app.get('/api/tickets/:id', requireRequesterContext, async (req, res) => {
+  // Requester-scoped, as in Lab 2. IT Staff and Administrator read any Ticket
+  // through /api/staff/tickets/:id, which L3-7 delivers.
+  app.get(
+    '/api/tickets/:id',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('ticket:read'),
+    async (req, res) => {
     const data = await getTicketDetail(
       ticketParameter(req.params.id),
-      req.requester!.id,
+      req.user!.id,
       options.db ?? prisma,
     )
     res.json({ data })
@@ -317,11 +642,13 @@ export function createApp(options: CreateTicketOptions = {}) {
 
   app.get(
     '/api/tickets/:id/attachments',
-    requireRequesterContext,
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('attachment:manage'),
     async (req, res) => {
       const data = await listTicketAttachments(
         ticketParameter(req.params.id),
-        req.requester!.id,
+        req.user!.id,
         options.db ?? prisma,
       )
       res.json(data)
@@ -330,12 +657,14 @@ export function createApp(options: CreateTicketOptions = {}) {
 
   app.post(
     '/api/tickets/:id/attachments',
-    requireRequesterContext,
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('attachment:manage'),
     parseSingleAttachment,
     async (req, res) => {
       const data = await addTicketAttachment(
         ticketParameter(req.params.id),
-        req.requester!.id,
+        req.user!.id,
         toAttachmentFile(req.file),
         options,
       )
@@ -345,11 +674,13 @@ export function createApp(options: CreateTicketOptions = {}) {
 
   app.get(
     '/api/attachments/:id/download',
-    requireRequesterContext,
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('attachment:manage'),
     async (req, res, next) => {
       const { attachment, stream } = await downloadTicketAttachment(
         attachmentParameter(req.params.id),
-        req.requester!.id,
+        req.user!.id,
         options,
       )
       res.setHeader('Content-Type', attachment.mimeType)
@@ -363,11 +694,13 @@ export function createApp(options: CreateTicketOptions = {}) {
 
   app.delete(
     '/api/attachments/:id',
-    requireRequesterContext,
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('attachment:manage'),
     async (req, res) => {
       const data = await removeTicketAttachment(
         attachmentParameter(req.params.id),
-        req.requester!.id,
+        req.user!.id,
         req.body?.reason,
         options,
       )

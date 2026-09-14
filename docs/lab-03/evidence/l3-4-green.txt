@@ -1,0 +1,112 @@
+=== Direct-API authorization evidence (Part 7) ===
+Every call below reaches the API directly as the named role. No UI is involved.
+
+ ✓ tests/lab-03/authorization.api.test.ts > SEC-T01 · an unauthenticated caller reaches nothing (AC-12) > refuses every operation with 401, never 403 85ms
+ ✓ tests/lab-03/authorization.api.test.ts > SEC-T07 … SEC-T09 · every refused cell refuses over the wire > refuses REQUESTER every operation the matrix denies it 370ms
+ ✓ tests/lab-03/authorization.api.test.ts > SEC-T07 … SEC-T09 · every refused cell refuses over the wire > admits REQUESTER to every operation the matrix grants it, with the right scope 37ms
+ ✓ tests/lab-03/authorization.api.test.ts > SEC-T07 … SEC-T09 · every refused cell refuses over the wire > refuses IT_STAFF every operation the matrix denies it 105ms
+ ✓ tests/lab-03/authorization.api.test.ts > SEC-T07 … SEC-T09 · every refused cell refuses over the wire > admits IT_STAFF to every operation the matrix grants it, with the right scope 46ms
+ ✓ tests/lab-03/authorization.api.test.ts > SEC-T07 … SEC-T09 · every refused cell refuses over the wire > refuses ADMINISTRATOR every operation the matrix denies it 92ms
+ ✓ tests/lab-03/authorization.api.test.ts > SEC-T07 … SEC-T09 · every refused cell refuses over the wire > admits ADMINISTRATOR to every operation the matrix grants it, with the right scope 56ms
+ ✓ tests/lab-03/authorization.api.test.ts > SEC-T11 · a role sent by the client decides nothing (BR-13, SEC-005) > ignores a role header, a role body field, and a role cookie 25ms
+ ✓ tests/lab-03/authorization.api.test.ts > SEC-T11 · a role sent by the client decides nothing (BR-13, SEC-005) > refuses a forged session cookie 5ms
+ ✓ tests/lab-03/authorization.api.test.ts > SEC-T13 · a refusal body carries nothing internal (SEC-025) > answers with the envelope and no stack trace, SQL, or file path 6ms
+ ✓ tests/lab-03/authorization.api.test.ts > SEC-T13 · a refusal body carries nothing internal (SEC-025) > says the same thing whichever refused operation was asked for 64ms
+ ✓ tests/lab-03/authorization.api.test.ts > SEC-T14 · injection-shaped input is handled safely (SEC-027) > refuses an operation name carrying SQL without surfacing a database error 13ms
+ ✓ tests/lab-03/ownership.api.test.ts > SEC-T02 · an `own` grant reaches only the caller’s records (SEC-019) > resolves a Ticket the caller submitted 9ms
+ ✓ tests/lab-03/ownership.api.test.ts > SEC-T02 · an `own` grant reaches only the caller’s records (SEC-019) > does not resolve another Requester’s Ticket 2ms
+ ✓ tests/lab-03/ownership.api.test.ts > SEC-T02 · an `own` grant reaches only the caller’s records (SEC-019) > filters inside the query rather than after it 2ms
+ ✓ tests/lab-03/ownership.api.test.ts > SEC-T03 · a refusal is indistinguishable from absence (BR-14, SEC-024) > answers null for a Ticket that does not exist and for one that is not theirs 2ms
+ ✓ tests/lab-03/ownership.api.test.ts > SEC-T03 · a refusal is indistinguishable from absence (BR-14, SEC-024) > answers null for a malformed identifier instead of throwing 0ms
+ ✓ tests/lab-03/ownership.api.test.ts > SEC-T03 · an `any` grant reaches every Ticket > resolves Tickets belonging to different Requesters 2ms
+ ✓ tests/lab-03/ownership.api.test.ts > SEC-T03 · an `any` grant reaches every Ticket > still answers null for a Ticket that is not there 1ms
+ ✓ tests/lab-03/ownership.api.test.ts > SEC-T03 · an `any` grant reaches every Ticket > carries the fields a handler needs to decide the rest 1ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · the eight statuses (BR-20) > declares exactly the statuses §5.1 names 2ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets REQUESTER move NEW to CANCELLED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets REQUESTER move RESOLVED to REOPENED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets IT_STAFF move NEW to OPEN, IN_PROGRESS, CANCELLED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets IT_STAFF move OPEN to IN_PROGRESS, WAITING_FOR_REQUESTER, RESOLVED, CANCELLED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets IT_STAFF move IN_PROGRESS to WAITING_FOR_REQUESTER, RESOLVED, CANCELLED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets IT_STAFF move WAITING_FOR_REQUESTER to IN_PROGRESS, RESOLVED, CANCELLED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets IT_STAFF move RESOLVED to CLOSED, REOPENED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets IT_STAFF move CLOSED to REOPENED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets IT_STAFF move REOPENED to IN_PROGRESS, WAITING_FOR_REQUESTER, RESOLVED, CANCELLED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets ADMINISTRATOR move NEW to OPEN, IN_PROGRESS, CANCELLED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets ADMINISTRATOR move OPEN to IN_PROGRESS, WAITING_FOR_REQUESTER, RESOLVED, CANCELLED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets ADMINISTRATOR move IN_PROGRESS to WAITING_FOR_REQUESTER, RESOLVED, CANCELLED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets ADMINISTRATOR move WAITING_FOR_REQUESTER to IN_PROGRESS, RESOLVED, CANCELLED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets ADMINISTRATOR move RESOLVED to CLOSED, REOPENED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets ADMINISTRATOR move CLOSED to REOPENED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets ADMINISTRATOR move REOPENED to IN_PROGRESS, WAITING_FOR_REQUESTER, RESOLVED, CANCELLED 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every other transition is refused (BR-21) > refuses REQUESTER every transition §5.1 does not list 1ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every other transition is refused (BR-21) > refuses IT_STAFF every transition §5.1 does not list 2ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · every other transition is refused (BR-21) > refuses ADMINISTRATOR every transition §5.1 does not list 1ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · the rules the matrix exists to enforce > never lets a Requester declare a problem solved (BR-22) 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · the rules the matrix exists to enforce > leaves CANCELLED terminal for everyone (BR-25) 1ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · the rules the matrix exists to enforce > lets CLOSED move only to REOPENED, and only for staff (BR-25) 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · the rules the matrix exists to enforce > lets a Requester reopen their own RESOLVED Ticket but not a CLOSED one (§11.6) 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · the rules the matrix exists to enforce > gives the Administrator exactly the IT Staff transitions (§11.8) 0ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · the rules the matrix exists to enforce > leaves no status unreachable and no transition pointing nowhere 2ms
+ ✓ tests/lab-03/transitions.unit.test.ts > UNIT-03 · the rules the matrix exists to enforce > never lets a status transition to itself 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · the matrix lists every operation §8.1 names > exposes all sixteen operations 3ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for ticket:create 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses IT_STAFF for ticket:create 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses ADMINISTRATOR for ticket:create 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for ticket:listOwn 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses IT_STAFF for ticket:listOwn 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses ADMINISTRATOR for ticket:listOwn 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for ticket:read 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for ticket:read 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for ticket:read 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for ticket:setStatus 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for ticket:setStatus 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for ticket:setStatus 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses REQUESTER for ticket:setOwner 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for ticket:setOwner 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for ticket:setOwner 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses REQUESTER for ticket:setItPriority 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for ticket:setItPriority 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for ticket:setItPriority 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for ticket:requesterResolution 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses IT_STAFF for ticket:requesterResolution 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses ADMINISTRATOR for ticket:requesterResolution 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for attachment:manage 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for attachment:manage 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for attachment:manage 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for comment:read 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for comment:read 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for comment:read 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for comment:create 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for comment:create 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for comment:create 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses REQUESTER for note:read 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for note:read 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for note:read 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses REQUESTER for note:create 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for note:create 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for note:create 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses REQUESTER for staffQueue:read 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for staffQueue:read 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for staffQueue:read 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses REQUESTER for user:list 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses IT_STAFF for user:list 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for user:list 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses REQUESTER for user:write 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses IT_STAFF for user:write 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for user:write 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses REQUESTER for user:setInitialPassword 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > refuses IT_STAFF for user:setInitialPassword 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for user:setInitialPassword 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · an operation absent from the matrix is denied (BR-12, SEC-020) > refuses an operation nobody declared 2ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · an operation absent from the matrix is denied (BR-12, SEC-020) > refuses an operation name that only looks like a declared one 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · the shape of the matrix carries the design > never grants IT Staff any user-management operation 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · the shape of the matrix carries the design > gives the Administrator every IT Staff ticket operation (§11.8) 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · the shape of the matrix carries the design > scopes every Requester grant to their own records (SEC-018) 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · the shape of the matrix carries the design > never lets a Requester reach Internal Notes (BR-27, SEC-021) 0ms
+ ✓ tests/lab-03/authorization.unit.test.ts > UNIT-04 · the shape of the matrix carries the design > never lets a Requester reach the staff queue 0ms
+ Test Files  4 passed (4)
+      Tests  103 passed (103)
+
+=== Full server suite ===
+ Test Files  23 passed (23)
+      Tests  296 passed (296)

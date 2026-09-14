@@ -1,0 +1,116 @@
+ FAIL  tests/lab-03/authorization.api.test.ts > SEC-T01 · an unauthenticated caller reaches nothing (AC-12) > refuses every operation with 401, never 403
+AssertionError: expected 0 to be greater than 0
+ FAIL  tests/lab-03/authorization.api.test.ts > SEC-T07 … SEC-T09 · every refused cell refuses over the wire > refuses REQUESTER every operation the matrix denies it
+ FAIL  tests/lab-03/authorization.api.test.ts > SEC-T07 … SEC-T09 · every refused cell refuses over the wire > refuses IT_STAFF every operation the matrix denies it
+ FAIL  tests/lab-03/authorization.api.test.ts > SEC-T07 … SEC-T09 · every refused cell refuses over the wire > refuses ADMINISTRATOR every operation the matrix denies it
+AssertionError: expected 0 to be greater than 0
+ FAIL  tests/lab-03/authorization.api.test.ts > SEC-T07 … SEC-T09 · every refused cell refuses over the wire > admits REQUESTER to every operation the matrix grants it, with the right scope
+ FAIL  tests/lab-03/authorization.api.test.ts > SEC-T07 … SEC-T09 · every refused cell refuses over the wire > admits IT_STAFF to every operation the matrix grants it, with the right scope
+ FAIL  tests/lab-03/authorization.api.test.ts > SEC-T07 … SEC-T09 · every refused cell refuses over the wire > admits ADMINISTRATOR to every operation the matrix grants it, with the right scope
+AssertionError: expected 0 to be greater than 0
+ FAIL  tests/lab-03/authorization.api.test.ts > SEC-T11 · a role sent by the client decides nothing (BR-13, SEC-005) > ignores a role header, a role body field, and a role cookie
+AssertionError: expected 404 to be 200 // Object.is equality
+ FAIL  tests/lab-03/authorization.api.test.ts > SEC-T11 · a role sent by the client decides nothing (BR-13, SEC-005) > refuses a forged session cookie
+AssertionError: expected 404 to be 401 // Object.is equality
+ FAIL  tests/lab-03/authorization.api.test.ts > SEC-T13 · a refusal body carries nothing internal (SEC-025) > answers with the envelope and no stack trace, SQL, or file path
+AssertionError: expected 404 to be 403 // Object.is equality
+ FAIL  tests/lab-03/authorization.api.test.ts > SEC-T13 · a refusal body carries nothing internal (SEC-025) > says the same thing whichever refused operation was asked for
+AssertionError: user:list: expected 404 to be 403 // Object.is equality
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · the matrix lists every operation §8.1 names > exposes all sixteen operations
+AssertionError: expected [] to deeply equal [ 'attachment:manage', …(15) ]
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for ticket:create
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for ticket:listOwn
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for ticket:read
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for ticket:setStatus
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for ticket:requesterResolution
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for attachment:manage
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for comment:read
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants own to REQUESTER for comment:create
+AssertionError: expected null to be 'own' // Object.is equality
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for ticket:read
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for ticket:read
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for ticket:setStatus
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for ticket:setStatus
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for ticket:setOwner
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for ticket:setOwner
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for ticket:setItPriority
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for ticket:setItPriority
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for attachment:manage
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for attachment:manage
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for comment:read
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for comment:read
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for comment:create
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for comment:create
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for note:read
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for note:read
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for note:create
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for note:create
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to IT_STAFF for staffQueue:read
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for staffQueue:read
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for user:list
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for user:write
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · every cell resolves as §8.1 states (TDT-03) > grants any to ADMINISTRATOR for user:setInitialPassword
+AssertionError: expected null to be 'any' // Object.is equality
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · an operation absent from the matrix is denied (BR-12, SEC-020) > refuses an operation nobody declared
+AssertionError: expected false to be true // Object.is equality
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · an operation absent from the matrix is denied (BR-12, SEC-020) > refuses an operation name that only looks like a declared one
+AssertionError: expected false to be true // Object.is equality
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · the shape of the matrix carries the design > never grants IT Staff any user-management operation
+AssertionError: expected false to be true // Object.is equality
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · the shape of the matrix carries the design > scopes every Requester grant to their own records (SEC-018)
+AssertionError: expected null to be 'own' // Object.is equality
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · the shape of the matrix carries the design > never lets a Requester reach Internal Notes (BR-27, SEC-021)
+AssertionError: expected false to be true // Object.is equality
+ FAIL  tests/lab-03/authorization.unit.test.ts > UNIT-04 · the shape of the matrix carries the design > never lets a Requester reach the staff queue
+AssertionError: expected false to be true // Object.is equality
+ FAIL  tests/lab-03/ownership.api.test.ts > SEC-T02 · an `own` grant reaches only the caller’s records (SEC-019) > resolves a Ticket the caller submitted
+AssertionError: expected undefined to be 'a227d746-188e-471d-a877-f4d0474327c4' // Object.is equality
+ FAIL  tests/lab-03/ownership.api.test.ts > SEC-T02 · an `own` grant reaches only the caller’s records (SEC-019) > does not resolve another Requester’s Ticket
+AssertionError: expected null not to be null
+ FAIL  tests/lab-03/ownership.api.test.ts > SEC-T02 · an `own` grant reaches only the caller’s records (SEC-019) > filters inside the query rather than after it
+AssertionError: expected null not to be null
+ FAIL  tests/lab-03/ownership.api.test.ts > SEC-T03 · an `any` grant reaches every Ticket > resolves Tickets belonging to different Requesters
+AssertionError: expected undefined to be 'a227d746-188e-471d-a877-f4d0474327c4' // Object.is equality
+ FAIL  tests/lab-03/ownership.api.test.ts > SEC-T03 · an `any` grant reaches every Ticket > carries the fields a handler needs to decide the rest
+AssertionError: expected null to match object { …(2) }
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets REQUESTER move NEW to CANCELLED
+AssertionError: expected [] to deeply equal [ 'CANCELLED' ]
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets REQUESTER move RESOLVED to REOPENED
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets IT_STAFF move CLOSED to REOPENED
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets ADMINISTRATOR move CLOSED to REOPENED
+AssertionError: expected [] to deeply equal [ 'REOPENED' ]
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets IT_STAFF move NEW to OPEN, IN_PROGRESS, CANCELLED
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets ADMINISTRATOR move NEW to OPEN, IN_PROGRESS, CANCELLED
+AssertionError: expected [] to deeply equal [ 'CANCELLED', 'IN_PROGRESS', 'OPEN' ]
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets IT_STAFF move OPEN to IN_PROGRESS, WAITING_FOR_REQUESTER, RESOLVED, CANCELLED
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets IT_STAFF move REOPENED to IN_PROGRESS, WAITING_FOR_REQUESTER, RESOLVED, CANCELLED
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets ADMINISTRATOR move OPEN to IN_PROGRESS, WAITING_FOR_REQUESTER, RESOLVED, CANCELLED
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets ADMINISTRATOR move REOPENED to IN_PROGRESS, WAITING_FOR_REQUESTER, RESOLVED, CANCELLED
+AssertionError: expected [] to deeply equal [ 'CANCELLED', 'IN_PROGRESS', …(2) ]
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets IT_STAFF move IN_PROGRESS to WAITING_FOR_REQUESTER, RESOLVED, CANCELLED
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets ADMINISTRATOR move IN_PROGRESS to WAITING_FOR_REQUESTER, RESOLVED, CANCELLED
+AssertionError: expected [] to deeply equal [ 'CANCELLED', 'RESOLVED', …(1) ]
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets IT_STAFF move WAITING_FOR_REQUESTER to IN_PROGRESS, RESOLVED, CANCELLED
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets ADMINISTRATOR move WAITING_FOR_REQUESTER to IN_PROGRESS, RESOLVED, CANCELLED
+AssertionError: expected [] to deeply equal [ 'CANCELLED', 'IN_PROGRESS', …(1) ]
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets IT_STAFF move RESOLVED to CLOSED, REOPENED
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every permitted transition is allowed (TDT-03) > lets ADMINISTRATOR move RESOLVED to CLOSED, REOPENED
+AssertionError: expected [] to deeply equal [ 'CLOSED', 'REOPENED' ]
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every other transition is refused (BR-21) > refuses REQUESTER every transition §5.1 does not list
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every other transition is refused (BR-21) > refuses IT_STAFF every transition §5.1 does not list
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · every other transition is refused (BR-21) > refuses ADMINISTRATOR every transition §5.1 does not list
+AssertionError: expected 0 to be greater than 0
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · the rules the matrix exists to enforce > never lets a Requester declare a problem solved (BR-22)
+AssertionError: expected false to be true // Object.is equality
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · the rules the matrix exists to enforce > leaves CANCELLED terminal for everyone (BR-25)
+AssertionError: expected 0 to be greater than 0
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · the rules the matrix exists to enforce > lets CLOSED move only to REOPENED, and only for staff (BR-25)
+AssertionError: expected [] to deeply equal [ 'REOPENED' ]
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · the rules the matrix exists to enforce > lets a Requester reopen their own RESOLVED Ticket but not a CLOSED one (§11.6)
+AssertionError: expected false to be true // Object.is equality
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · the rules the matrix exists to enforce > leaves no status unreachable and no transition pointing nowhere
+AssertionError: OPEN can never be reached: expected [ 'NEW' ] to include 'OPEN'
+ FAIL  tests/lab-03/transitions.unit.test.ts > UNIT-03 · the rules the matrix exists to enforce > never lets a status transition to itself
+AssertionError: expected false to be true // Object.is equality
+ Test Files  4 failed (4)
+      Tests  79 failed | 24 passed (103)
