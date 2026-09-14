@@ -227,6 +227,45 @@ export function fetchCurrentUser(): Promise<SessionUser> {
   return get<SessionUser>('/api/auth/me', 'Current user')
 }
 
+async function postJson<T>(
+  path: string,
+  body: unknown,
+  label: string,
+): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    await throwApiRequestError(response, label)
+  }
+
+  return ((await response.json()) as { data: T }).data
+}
+
+/** The session cookie arrives in the response; nothing about it is readable here. */
+export function login(email: string, password: string): Promise<SessionUser> {
+  return postJson<SessionUser>('/api/auth/login', { email, password }, 'Sign in failed')
+}
+
+export function logout(): Promise<{ loggedOut: boolean }> {
+  return postJson<{ loggedOut: boolean }>('/api/auth/logout', {}, 'Sign out failed')
+}
+
+export function changePassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<{ passwordChanged: boolean }> {
+  return postJson<{ passwordChanged: boolean }>(
+    '/api/auth/change-password',
+    { currentPassword, newPassword },
+    'Password change failed',
+  )
+}
+
 export async function createTicket(
   payload: CreateTicketPayload,
 ): Promise<CreatedTicket> {

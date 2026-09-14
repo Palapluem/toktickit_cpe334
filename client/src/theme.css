@@ -22,6 +22,7 @@
   --zen-success-bg: #eaf6ef;
   --zen-disabled-bg: #eef1ef;
   --zen-disabled-text: #8a968f;
+
   --zen-focus-ring: 0 0 0 3px rgba(11, 122, 70, 0.35);
 
   /* Priority is a domain vocabulary, not a severity signal (§11.17, STY-030). */

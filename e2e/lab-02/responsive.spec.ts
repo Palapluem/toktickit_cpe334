@@ -1,7 +1,7 @@
 import { expect, test } from './fixtures'
 import {
   VIEWPORTS,
-  captureScreenshot,
+  captureLab3Screenshot,
   createTicket,
   expectNoPageOverflow,
   signIn,
@@ -16,7 +16,7 @@ test('RESP-01 renders Create Ticket at desktop, tablet, and mobile', async ({ pa
     await page.goto('/tickets/new')
     await expect(page.getByRole('heading', { name: 'Create Ticket' })).toBeVisible()
     await expectNoPageOverflow(page)
-    await captureScreenshot(page, 'create-ticket', `${viewport.name}-initial.png`)
+    await captureLab3Screenshot(page, 'create-ticket', `${viewport.name}-initial.png`)
   }
 })
 
@@ -36,7 +36,7 @@ test('RESP-02 renders My Tickets at desktop, tablet, and mobile', async ({
     await page.goto('/tickets')
     await expect(page.getByText(summary, { exact: true })).toBeVisible()
     await expectNoPageOverflow(page)
-    await captureScreenshot(
+    await captureLab3Screenshot(
       page,
       'my-tickets',
       viewport.name === 'mobile' ? 'mobile-cards.png' : `${viewport.name}-list.png`,
@@ -59,6 +59,6 @@ test('RESP-03 renders Ticket Detail at desktop, tablet, and mobile', async ({
     await page.goto(`/tickets/${created.ticketId}`)
     await expect(page.getByRole('heading', { name: 'Ticket Details' })).toBeVisible()
     await expectNoPageOverflow(page)
-    await captureScreenshot(page, 'ticket-detail', `${viewport.name}-detail.png`)
+    await captureLab3Screenshot(page, 'ticket-detail', `${viewport.name}-detail.png`)
   }
 })

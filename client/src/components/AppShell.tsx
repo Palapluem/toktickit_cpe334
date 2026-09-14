@@ -1,8 +1,12 @@
 // Application shell (ui-spec §5). NavLink supplies aria-current="page"; the
 // underline in --zen-secondary means active state is not colour alone (STY-007).
 import { useRef, useState, type ReactNode } from 'react'
-import { NavLink, Link } from 'react-router-dom'
+import { NavLink, Link, useNavigate } from 'react-router-dom'
+import { logout } from '../api.js'
 import { useOptionalSession } from '../context/SessionContext.js'
+import { LOGIN_ROUTE, navigationFor } from '../routes.js'
+import { Button } from './Button.js'
+import { RoleBadge } from './Badge.js'
 
 export type AppShellProps = {
   userName?: string
@@ -10,11 +14,6 @@ export type AppShellProps = {
   showNavigation?: boolean
   children?: ReactNode
 }
-
-const NAV = [
-  { to: '/tickets', label: 'My Tickets' },
-  { to: '/tickets/new', label: 'Create Ticket' },
-]
 
 export function AppShell({
   userName,
@@ -24,9 +23,23 @@ export function AppShell({
 }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const session = useOptionalSession()
+  const navigate = useNavigate()
 
-  const name = userName ?? session?.user?.displayName
+  const user = session?.user ?? null
+  const name = userName ?? user?.displayName
+  const destinations = navigationFor(user?.role ?? 'REQUESTER')
   const toggleRef = useRef<HTMLButtonElement>(null)
+
+  async function signOut() {
+    try {
+      await logout()
+    } finally {
+      // The session ends on screen either way: the server is the authority and
+      // will refuse the next request regardless of what this call did.
+      session?.clear()
+      navigate(LOGIN_ROUTE, { replace: true })
+    }
+  }
 
   // Escape returns focus to the toggle. Without this a keyboard user who
   // dismisses the menu is left focused on a link that is now hidden.
@@ -66,10 +79,10 @@ export function AppShell({
             aria-label="Main"
             className={`zen-shell__nav d-md-flex gap-4 ${menuOpen ? 'd-flex' : 'd-none'}`}
           >
-            {NAV.map(({ to, label }) => (
+            {destinations.map(({ path, label }) => (
               <NavLink
-                key={to}
-                to={to}
+                key={path}
+                to={path}
                 end
                 className={({ isActive }) =>
                   `zen-shell__nav-link${isActive ? ' zen-shell__nav-link--active' : ''}`
@@ -84,6 +97,16 @@ export function AppShell({
         {name ? (
           <div className="ms-auto d-flex align-items-center gap-2">
             <span>{name}</span>
+            {user ? <RoleBadge value={user.role} /> : null}
+            {session ? (
+              <Button
+                variant="tertiary"
+                className="zen-shell__header-action"
+                onClick={signOut}
+              >
+                Logout
+              </Button>
+            ) : null}
           </div>
         ) : null}
       </header>

@@ -20,6 +20,7 @@ coverage/
 
 # Playwright diagnostics (canonical responsive screenshots stay tracked)
 artifacts/lab-02/playwright-results/
+artifacts/lab-03/playwright-results/
 .playwright-cli/
 
 # Editor / OS noise

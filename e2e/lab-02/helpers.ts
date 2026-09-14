@@ -118,15 +118,31 @@ export async function expectNoPageOverflow(page: Page): Promise<void> {
   ).toBeLessThanOrEqual(metrics.viewportWidth)
 }
 
-export async function captureScreenshot(
+/**
+ * Lab 3 captures live under artifacts/lab-03 (lab-03 ui-spec §12).
+ *
+ * These specs render the Lab 3 application now, so writing their output over
+ * artifacts/lab-02 would overwrite a submitted Lab 2 deliverable with pictures
+ * of a different application.
+ */
+export async function captureLab3Screenshot(
   page: Page,
-  screen: 'create-ticket' | 'my-tickets' | 'ticket-detail',
+  screen: string,
+  filename: string,
+): Promise<void> {
+  await captureInto(page, 'lab-03', screen, filename)
+}
+
+async function captureInto(
+  page: Page,
+  lab: 'lab-02' | 'lab-03',
+  screen: string,
   filename: string,
 ): Promise<void> {
   const outputPath = path.resolve(
     process.cwd(),
     'artifacts',
-    'lab-02',
+    lab,
     'screenshots',
     screen,
     filename,
