@@ -59,15 +59,15 @@ graph TD
     C -- no --> E[Write failing tests first]
     E --> F[Implement until green]
     F --> G[Audit against style-contract / testing-contract]
-    G --> H[PR into lab2-staging · link via Development panel]
+    G --> H[PR into lab3-staging · link via Development panel]
     H --> I[Peer review · reviewer merges]
     I --> J[Close Issue by hand · card to Done]
     J --> K[Sprint integration · release PR to main]
 ```
 
-**Branch flow.** `feature/<n>-<slug>` → `lab2-staging` → `main`. Never open a PR directly against `main` except the single release PR.
+**Branch flow.** `feature/<n>-<slug>` → `lab3-staging` → `main`. Never open a PR directly against `main` except the single release PR.
 
-**Two manual steps after every merge.** Because PRs target `lab2-staging` rather than the default branch, GitHub does not act on `Closes #N`. The Issue must be closed by hand and the board card moved to Done. The PR↔Issue link must likewise be made through the Development panel in the browser; the keyword alone does not create it, and no API mutation exists for it.
+**Two manual steps after every merge.** Because PRs target `lab3-staging` rather than the default branch, GitHub does not act on `Closes #N`. The Issue must be closed by hand and the board card moved to Done. The PR↔Issue link must likewise be made through the Development panel in the browser; the keyword alone does not create it, and no API mutation exists for it.
 
 ---
 

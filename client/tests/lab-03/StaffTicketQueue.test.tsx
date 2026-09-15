@@ -1,4 +1,4 @@
-// UI-08, UI-09, UI-10. AC-18, AC-19, FR-36; ui-spec §8.
+// UI-08, UI-09, UI-10, UI-18. AC-18, AC-19, AC-36, FR-36; ui-spec §8.
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -355,17 +355,19 @@ describe('UI-10 · FR-36 · every state renders', () => {
     expect(screen.getByRole('button', { name: 'Clear Filters' })).toBeEnabled()
   })
 
-  it('shows the forbidden state for a role that may not be here', async () => {
-    fetchStaffQueueMock.mockRejectedValue(
-      new api.ApiRequestError('Queue request failed', [], 403, 'FORBIDDEN'),
-    )
-    renderQueue()
+  describe('UI-18 · AC-36 · forbidden state', () => {
+    it('shows the forbidden state for a role that may not be here', async () => {
+      fetchStaffQueueMock.mockRejectedValue(
+        new api.ApiRequestError('Queue request failed', [], 403, 'FORBIDDEN'),
+      )
+      renderQueue()
 
-    const state = await screen.findByRole('alert')
-    expect(state).toHaveClass('zen-state--forbidden')
-    // Forbidden never offers Try again: retrying will not help, and offering
-    // it implies the refusal was transient (ui-spec §4).
-    expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
+      const state = await screen.findByRole('alert')
+      expect(state).toHaveClass('zen-state--forbidden')
+      // Forbidden never offers Try again: retrying will not help, and offering
+      // it implies the refusal was transient (ui-spec §4).
+      expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
+    })
   })
 
   it('shows the failure state with Try again for anything else', async () => {

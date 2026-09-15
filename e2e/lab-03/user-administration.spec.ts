@@ -40,7 +40,7 @@ async function signInThroughTheScreen(
   await page.getByRole('button', { name: 'Sign in' }).click()
 }
 
-test('ADMIN-01 captures the user list at three viewports', async ({ page }) => {
+test('ADMIN-01 · AC-34 captures the user list at three viewports', async ({ page }) => {
   await signIn(page, ADMIN)
 
   for (const viewport of VIEWPORTS) {

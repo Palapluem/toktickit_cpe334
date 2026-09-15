@@ -3,6 +3,7 @@
 // test that drives the interface proves the button is hidden, and nothing more.
 import { afterAll, describe, expect, it } from 'vitest'
 import request from 'supertest'
+import app from '../../src/app.js'
 import { OPERATIONS, grantFor, type Operation } from '../../src/auth/matrix.js'
 import type { Role } from '../../src/auth/types.js'
 import {
@@ -24,6 +25,70 @@ const EMAIL_FOR: Record<Role, string> = {
 const ROLES: Role[] = ['REQUESTER', 'IT_STAFF', 'ADMINISTRATOR']
 
 const cookies = new Map<Role, string>()
+
+type HttpMethod = 'get' | 'post' | 'patch' | 'delete'
+type Endpoint = readonly [HttpMethod, string]
+
+const UNKNOWN_ID = '00000000-0000-4000-8000-000000000000'
+const TICKET_PATH = `/api/tickets/${UNKNOWN_ID}`
+const STAFF_TICKET_PATH = `/api/staff/tickets/${UNKNOWN_ID}`
+const ADMIN_USER_PATH = `/api/admin/users/${UNKNOWN_ID}`
+const ATTACHMENT_PATH = `/api/attachments/${UNKNOWN_ID}/download`
+
+const CONCRETE_PROTECTED_ENDPOINTS: readonly Endpoint[] = [
+  ['get', '/api/auth/me'],
+  ['post', '/api/auth/change-password'],
+  ['get', '/api/categories'],
+  ['get', '/api/related-systems'],
+  ['get', '/api/staff/tickets'],
+  ['get', '/api/admin/users'],
+  ['post', '/api/admin/users'],
+  ['patch', ADMIN_USER_PATH],
+  ['post', `${ADMIN_USER_PATH}/initial-password`],
+  ['get', `${TICKET_PATH}/comments`],
+  ['post', `${TICKET_PATH}/comments`],
+  ['get', `${TICKET_PATH}/internal-notes`],
+  ['post', `${TICKET_PATH}/internal-notes`],
+  ['get', STAFF_TICKET_PATH],
+  ['patch', `${STAFF_TICKET_PATH}/owner`],
+  ['patch', `${STAFF_TICKET_PATH}/it-priority`],
+  ['patch', `${STAFF_TICKET_PATH}/status`],
+  ['post', `${TICKET_PATH}/requester-resolution`],
+  ['get', '/api/tickets'],
+  ['post', '/api/tickets'],
+  ['get', TICKET_PATH],
+  ['get', `${TICKET_PATH}/attachments`],
+  ['post', `${TICKET_PATH}/attachments`],
+  ['get', ATTACHMENT_PATH],
+  ['delete', `/api/attachments/${UNKNOWN_ID}`],
+]
+
+const CONCRETE_ROLE_EXCLUSIVE_ENDPOINTS: readonly [Role, Endpoint][] = [
+  ['IT_STAFF', ['get', '/api/tickets']],
+  ['ADMINISTRATOR', ['get', '/api/tickets']],
+  ['IT_STAFF', ['post', '/api/tickets']],
+  ['ADMINISTRATOR', ['post', '/api/tickets']],
+  ['REQUESTER', ['get', `${TICKET_PATH}/internal-notes`]],
+  ['REQUESTER', ['post', `${TICKET_PATH}/internal-notes`]],
+  ['REQUESTER', ['get', '/api/staff/tickets']],
+  ['REQUESTER', ['get', STAFF_TICKET_PATH]],
+  ['REQUESTER', ['patch', `${STAFF_TICKET_PATH}/owner`]],
+  ['REQUESTER', ['patch', `${STAFF_TICKET_PATH}/it-priority`]],
+  ['IT_STAFF', ['post', `${TICKET_PATH}/requester-resolution`]],
+  ['ADMINISTRATOR', ['post', `${TICKET_PATH}/requester-resolution`]],
+  ['REQUESTER', ['get', '/api/admin/users']],
+  ['IT_STAFF', ['get', '/api/admin/users']],
+  ['REQUESTER', ['post', '/api/admin/users']],
+  ['IT_STAFF', ['post', '/api/admin/users']],
+  ['REQUESTER', ['patch', ADMIN_USER_PATH]],
+  ['IT_STAFF', ['patch', ADMIN_USER_PATH]],
+  ['REQUESTER', ['post', `${ADMIN_USER_PATH}/initial-password`]],
+  ['IT_STAFF', ['post', `${ADMIN_USER_PATH}/initial-password`]],
+]
+
+function concreteRequest(method: HttpMethod, path: string) {
+  return request(app)[method](path)
+}
 
 async function cookieFor(role: Role): Promise<string> {
   if (!cookies.has(role)) cookies.set(role, await signIn(EMAIL_FOR[role]))
@@ -168,6 +233,34 @@ describe('SEC-T14 · injection-shaped input is handled safely (SEC-027)', () => 
       // No such route: a 404 from Express, never a 500 carrying a driver error.
       expect([403, 404]).toContain(response.status)
       expect(JSON.stringify(response.body)).not.toMatch(/SELECT |syntax error|prisma/i)
+    }
+  })
+})
+
+describe('SEC-T01 AC-12 concrete protected endpoints', () => {
+  it('refuses every concrete endpoint before routing without a session', async () => {
+    expect(CONCRETE_PROTECTED_ENDPOINTS).toHaveLength(25)
+
+    for (const [method, path] of CONCRETE_PROTECTED_ENDPOINTS) {
+      const response = await concreteRequest(method, path)
+      expect(response.status, `${method.toUpperCase()} ${path}`).toBe(401)
+      expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED')
+    }
+  })
+})
+
+describe('SEC-T07 SEC-T08 concrete role-exclusive endpoints', () => {
+  it('refuses every concrete endpoint for its denied role', async () => {
+    expect(CONCRETE_ROLE_EXCLUSIVE_ENDPOINTS).toHaveLength(20)
+
+    for (const [role, [method, path]] of CONCRETE_ROLE_EXCLUSIVE_ENDPOINTS) {
+      const response = await concreteRequest(method, path).set(
+        'Cookie',
+        await cookieFor(role),
+      )
+      expect(response.status, `${role} ${method.toUpperCase()} ${path}`).toBe(403)
+      expect(response.body.error.code).toBe('FORBIDDEN')
+      expect(response.body).not.toHaveProperty('data')
     }
   })
 })
