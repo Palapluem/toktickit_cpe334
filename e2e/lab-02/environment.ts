@@ -15,6 +15,18 @@ function readDatabaseUrl(filePath: string): string | undefined {
   return line.slice(line.indexOf('=') + 1).trim().replace(/^(["'])(.*)\1$/, '$2')
 }
 
+function readEnvironmentValue(filePath: string, key: string): string | undefined {
+  if (!fs.existsSync(filePath)) return undefined
+
+  const line = fs
+    .readFileSync(filePath, 'utf8')
+    .split(/\r?\n/)
+    .find((entry) => entry.trimStart().startsWith(`${key}=`))
+  if (!line) return undefined
+
+  return line.slice(line.indexOf('=') + 1).trim().replace(/^(["'])(.*)\1$/, '$2')
+}
+
 function databaseName(urlValue: string): string {
   // DATABASE_URL follows PostgreSQL URI syntax. Reserved characters in
   // credentials must be percent-encoded; this lookup only reads the path.
@@ -54,4 +66,18 @@ export function getE2EDatabaseUrl(
   }
 
   return targetUrl.toString()
+}
+
+export function getE2ESeedPassword(): string {
+  const repoRoot = process.cwd()
+  const password =
+    process.env.LAB3_SEED_PASSWORD ??
+    readEnvironmentValue(path.join(repoRoot, 'server', '.env.test'), 'LAB3_SEED_PASSWORD')
+
+  if (password === undefined || password.length < 10) {
+    throw new Error(
+      'LAB3_SEED_PASSWORD is required in the environment or server/.env.test and must be at least 10 characters.',
+    )
+  }
+  return password
 }

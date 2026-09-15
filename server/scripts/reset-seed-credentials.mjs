@@ -5,8 +5,11 @@
 // changed survives a re-seed (BR-06). That is right for the seed and wrong for
 // an E2E run, which needs the same starting point every time.
 import bcrypt from 'bcryptjs'
+import { config } from 'dotenv'
 import pg from 'pg'
-import { DEVELOPMENT_PASSWORD } from '../src/seed/roster.ts'
+
+config({ path: '.env.test', override: false })
+const { DEVELOPMENT_PASSWORD } = await import('../src/seed/roster.ts')
 
 const url = process.env.DATABASE_URL
 if (!url) {

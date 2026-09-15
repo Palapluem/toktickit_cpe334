@@ -9,12 +9,18 @@ export type SeedUser = {
   isActive: boolean
 }
 
-/**
- * The one place the local development password is written (SEC-033).
- * Local lab only. It is never a real credential: every seeded and migrated
- * account carries mustChangePassword, so it opens exactly one screen (BR-06).
- */
-export const DEVELOPMENT_PASSWORD = 'TokTickIT-Lab3-Dev!'
+const SEED_PASSWORD_ENV = 'LAB3_SEED_PASSWORD'
+
+function readSeedPassword(): string {
+  const password = process.env[SEED_PASSWORD_ENV]
+  if (password === undefined || password.length < 10) {
+    throw new Error(`${SEED_PASSWORD_ENV} must be set to at least 10 characters.`)
+  }
+  return password
+}
+
+// The real local-only value lives in ignored .env or .env.test (SEC-033).
+export const DEVELOPMENT_PASSWORD = readSeedPassword()
 
 const DOMAIN = 'example.ac.th'
 

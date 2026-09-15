@@ -61,8 +61,9 @@ repository, since Lab 3 review ran in both directions.
 
 ### README and .gitignore
 
-[`README.md`](../../README.md) covers setup, the seeded accounts for each role, the two
-new session environment variables, the test commands, and the stacked-branch rule.
+[`README.md`](../../README.md) covers setup, the seeded accounts for each role, the
+local-only `LAB3_SEED_PASSWORD`, the two new session environment variables, the test
+commands, and the stacked-branch rule.
 [`.gitignore`](../../.gitignore) excludes `.env` and `.env.*` (keeping only
 `.env.example`), `node_modules/`, build output, uploaded files, and the Playwright
 result directories for both labs. No secret, credential, or real personal password is
@@ -79,8 +80,8 @@ server/tests/lab-03/   auth · authorization · ownership · staff-queue · staf
 client/tests/lab-03/   Login · ChangePassword · AppShell · RouteGuard
                        StaffTicketQueue · StaffTicketDetail · ThreadSection
                        UserManagement · RequesterResolution
-e2e/lab-03/       authentication · staff-queue · staff-ticket-detail
-                  comments-and-notes · user-management
+e2e/lab-03/       authentication · staff-ticket-flow · user-administration
+                  comments-and-notes
 artifacts/lab-03/screenshots/   authentication/ · staff-queue/
                                 staff-ticket-detail/ · user-management/
 ```

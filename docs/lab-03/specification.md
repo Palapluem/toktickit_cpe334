@@ -210,9 +210,9 @@ All identifiers remain UUID. Timestamps remain `timestamptz` in UTC.
 - `PublicComment(ticketId, createdAt)` and `InternalNote(ticketId, createdAt)` — thread retrieval
 - Lab 2's requester-scoped Ticket indexes remain
 
-**Migration strategy.** `RequesterUser` is **renamed**, not recreated — a rename preserves every row and every foreign key, where a drop-and-recreate would orphan every Ticket. New columns are added with defaults (`role = REQUESTER`, `mustChangePassword = true`) and `passwordHash` is backfilled with the hash of the documented initial password before the column is made non-nullable. Ticket and Attachment counts are asserted identical before and after.
+**Migration strategy.** `RequesterUser` is **renamed**, not recreated — a rename preserves every row and every foreign key, where a drop-and-recreate would orphan every Ticket. New columns are added with defaults (`role = REQUESTER`, `mustChangePassword = true`) and `passwordHash` is backfilled with the hash of the local-only password supplied by `LAB3_SEED_PASSWORD` before the column is made non-nullable. Ticket and Attachment counts are asserted identical before and after.
 
-**Seed (idempotent, keyed on email):** 4 active + 1 inactive Requester · 3 active + 1 inactive IT Staff · 1 active Administrator · Tickets spread across statuses, priorities, and assigned/unassigned ownership · example Comments and Notes carrying nothing sensitive. Every seeded account uses one documented development password and carries `mustChangePassword = true`.
+**Seed (idempotent, keyed on email):** 4 active + 1 inactive Requester · 3 active + 1 inactive IT Staff · 1 active Administrator · Tickets spread across statuses, priorities, and assigned/unassigned ownership · example Comments and Notes carrying nothing sensitive. Every seeded account uses the local-only `LAB3_SEED_PASSWORD` value and carries `mustChangePassword = true`.
 
 ## 8. API Contract
 
@@ -338,7 +338,7 @@ Every protected operation against every role. **An operation absent from this ta
 - Ticket and Attachment row counts are identical before and after migration
 - No password, hash, session identifier, or secret appears in any response, log, fixture, screenshot, or committed file
 - `.env` and `.env.test` remain untracked; only `.env.example` is committed
-- Seeded credentials are documented in one place and labelled local-only
+- `LAB3_SEED_PASSWORD` is documented as the local-only seed credential; its value is never committed
 - Screens conform to `ui-spec.md` and `style-contract.md`; no second visual system
 - Seed remains idempotent
 - README setup, run, and test instructions are current

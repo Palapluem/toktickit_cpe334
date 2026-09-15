@@ -35,9 +35,9 @@ order to read them in.
 
 ## Signing in
 
-The seed creates accounts for every role, all sharing one documented
-local-development password — see `server/prisma/seed.ts`. They are local-only
-and grant access to nothing outside your own machine.
+The seed creates accounts for every role, all sharing one local-only password
+provided through `LAB3_SEED_PASSWORD`. Set it in the ignored `server/.env` and
+`server/.env.test`; never put the value in source, documentation, or screenshots.
 
 | Role | Seeded account |
 |---|---|
@@ -73,11 +73,12 @@ cp server/.env.example server/.env   # DATABASE_URL, PORT
 cp client/.env.example client/.env   # VITE_API_BASE_URL
 ```
 
-Lab 3 adds two session variables, both documented in
+Lab 3 uses the local-only seed variable and adds two session variables, all documented in
 [`.env.example`](.env.example):
 
 | Variable | Purpose |
 |---|---|
+| `LAB3_SEED_PASSWORD` | Password used only to seed local/test accounts. Set the value in ignored env files; the seed refuses missing or too-short values. |
 | `SESSION_COOKIE_SECURE` | `false` locally. A `Secure` cookie is never sent over plain HTTP, so setting it on a local server silently loses every session. |
 | `CLIENT_ORIGIN` | The origin allowed to send the session cookie. Unset means "reflect the request's origin", which is what the split-port local setup needs — the server refuses to boot without it when `NODE_ENV=production`. |
 
@@ -109,16 +110,17 @@ createdb toktickit_dev
 createdb toktickit_test
 
 cd server
-cp .env.example .env         # DATABASE_URL → toktickit_dev
-cp .env.example .env.test    # DATABASE_URL → toktickit_test
+cp .env.example .env         # set DATABASE_URL → toktickit_dev and LAB3_SEED_PASSWORD
+cp .env.example .env.test    # set DATABASE_URL → toktickit_test and the same LAB3_SEED_PASSWORD
 
 npx prisma generate          # generate the Prisma Client
 npx prisma migrate deploy    # apply migrations to the development database
 npm run db:seed              # reference data — idempotent, safe to repeat
 ```
 
-`DATABASE_URL` must point at a local, disposable PostgreSQL database. Credentials
-are never committed — only `.env.example` is tracked.
+`DATABASE_URL` must point at a local, disposable PostgreSQL database. The seed
+password is required in the ignored env files and credentials are never
+committed — only `.env.example` is tracked.
 
 The seed loads the reference data every screen depends on: four Categories,
 seven Related Systems, and five Development Requesters, one of which is
