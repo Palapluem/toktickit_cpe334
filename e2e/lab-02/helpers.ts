@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { expect, type APIRequestContext, type Page } from '@playwright/test'
-import { DEVELOPMENT_PASSWORD } from '../../server/src/seed/roster'
+import { getE2ESeedPassword } from './environment'
 
 export const API_BASE_URL = 'http://127.0.0.1:3002'
 
@@ -22,8 +22,8 @@ export function pngFile(filename: string) {
   }
 }
 
-// Imported rather than restated: the password has one definition (SEC-033).
-export { DEVELOPMENT_PASSWORD } from '../../server/src/seed/roster'
+// Read the local-only value from ignored environment configuration (SEC-033).
+export const DEVELOPMENT_PASSWORD = getE2ESeedPassword()
 
 export const EMAIL_FOR: Record<string, string> = {
   'Jennifer Anderson': 'jennifer.anderson@example.ac.th',

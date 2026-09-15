@@ -88,6 +88,11 @@ describe('SEED-03 · the Lab 2 requesters survive the migration (BR-40)', () => 
 })
 
 describe('SEED-04 · the development password is a bridge, not a credential', () => {
+  it('uses the test-only LAB3_SEED_PASSWORD environment value (SEC-033)', () => {
+    expect(process.env.LAB3_SEED_PASSWORD).toBeDefined()
+    expect(DEVELOPMENT_PASSWORD).toBe(process.env.LAB3_SEED_PASSWORD)
+  })
+
   it('meets the length floor the server enforces (BR-05)', () => {
     expect(DEVELOPMENT_PASSWORD.length).toBeGreaterThanOrEqual(10)
   })
