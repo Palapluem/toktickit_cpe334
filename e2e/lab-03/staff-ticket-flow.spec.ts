@@ -45,7 +45,7 @@ async function openFirstQueueTicket(
   return href!.split('/').pop()!
 }
 
-test('QUEUE-01 captures the queue at three viewports', async ({ page }) => {
+test('QUEUE-01 · AC-34 captures the queue at three viewports', async ({ page }) => {
   await signIn(page, STAFF)
 
   for (const viewport of VIEWPORTS) {
@@ -117,7 +117,7 @@ test('QUEUE-05 refuses a Requester with the forbidden state', async ({ page }) =
   expect(direct.status()).toBe(403)
 })
 
-test('DETAIL-01 captures the staff Ticket Detail at three viewports', async ({ page }) => {
+test('DETAIL-01 · AC-34 captures the staff Ticket Detail at three viewports', async ({ page }) => {
   await signIn(page, STAFF)
   const ticketId = await openFirstQueueTicket(page, 'TKT-2026-900003')
 

@@ -23,7 +23,7 @@ async function signInThroughTheScreen(
   await page.getByRole('button', { name: 'Sign in' }).click()
 }
 
-test('AUTH-01 captures the sign-in screen at three viewports', async ({ page }) => {
+test('AUTH-01 · AC-34 captures the sign-in screen at three viewports', async ({ page }) => {
   for (const [name, viewport] of [
     ['desktop', DESKTOP],
     ['tablet', TABLET],
@@ -64,7 +64,7 @@ test('AUTH-03 signs in and reaches My Tickets', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible()
 })
 
-test('AUTH-04 captures the mandatory Change Password screen', async ({ page }) => {
+test('AUTH-04 · AC-34 captures the mandatory Change Password screen', async ({ page }) => {
   await signInThroughTheScreen(page, GATED_EMAIL)
   // Settle on the redirect before resizing: a goto issued mid-navigation
   // races the client-side one the sign-in just started.
