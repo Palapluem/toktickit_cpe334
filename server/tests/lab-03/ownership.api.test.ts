@@ -62,7 +62,7 @@ afterAll(async () => {
   await prisma.ticket.deleteMany({ where: { ticketNo: { in: [...TICKET_NUMBERS] } } })
 })
 
-describe('SEC-T02 · an `own` grant reaches only the caller’s records (SEC-019)', () => {
+describe('SEC-T02 · AC-08 · an `own` grant reaches only the caller’s records (SEC-019)', () => {
   it('resolves a Ticket the caller submitted', async () => {
     const ticket = await findTicketForCaller(mine.id, requesterId, 'own')
     expect(ticket?.id).toBe(mine.id)
@@ -84,7 +84,7 @@ describe('SEC-T02 · an `own` grant reaches only the caller’s records (SEC-019
   })
 })
 
-describe('SEC-T03 · a refusal is indistinguishable from absence (BR-14, SEC-024)', () => {
+describe('SEC-T03 · AC-13 · a refusal is indistinguishable from absence (BR-14, SEC-024)', () => {
   it('answers null for a Ticket that does not exist and for one that is not theirs', async () => {
     const absent = await findTicketForCaller(
       '00000000-0000-4000-8000-000000000000',

@@ -47,8 +47,9 @@ Red → Green → Refactor, per `testing-contract.md` §5. One exception, record
 
 ## 2. Planned Tests
 
-> **The `File` column was reconciled with labsheet §12 at release.** The three
-> server suites and the user-administration E2E suite now use the required names.
+> **The `File` column was reconciled with labsheet §12 at release.** The six
+> required server suites and the user-administration E2E suite now use the
+> required names.
 > Queue and Ticket Detail checks are consolidated in
 > `e2e/lab-03/staff-ticket-flow.spec.ts`;
 > responsive checks remain inside the feature specs that create their evidence.
@@ -97,6 +98,14 @@ Red → Green → Refactor, per `testing-contract.md` §5. One exception, record
 | SEC-T12 | BR-39 | Deactivated user's session | Refused on the next request | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
 | SEC-T13 | SEC-025 | Error bodies | No stack trace, SQL fragment, file path, or other user's data in any failure | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-T14 | SEC-027, TDT-05 | Injection-shaped input | Handled safely; no SQL error surfaces | `server/tests/lab-03/authorization.api.test.ts` | Pass |
+
+The concrete-route portion of `authorization.api.test.ts` makes the release
+gate auditable at the Express boundary: it enumerates all 25 protected routes
+from `server/src/app.ts` and asserts 401 before routing for an unauthenticated
+caller. It also exercises 20 concrete role-exclusive denied cells and asserts
+403 with no `data` envelope for the denied role. The older `/ops/...` matrix
+tests remain as policy-level coverage; this sweep proves that the live route
+registration applies the policy.
 
 ### API — IT Staff
 
@@ -243,6 +252,11 @@ Every criterion in `specification.md` §9 maps to at least one planned test.
 | AC-36 | UI-18 |
 | AC-37 | UI-13 |
 
+AC-14 is intentionally a suite-level migration/regression criterion. `MIG-04`
+is the result of running the complete Lab 2 suite against the migrated,
+authenticated implementation, so it is recorded in the final-suite table
+below rather than manufactured as a standalone Lab 3 test name.
+
 **Business rules covered without a dedicated AC:** BR-05 (UNIT-02) · BR-07 (API-10) · BR-08 (UNIT-06) · BR-12 (UNIT-04) · BR-13 (SEC-T11) · BR-24 (API-14) · BR-29 (API-23) · BR-30 (API-20) · BR-31 (UNIT-05, API-22) · BR-38 (API-33) · BR-39 (SEC-T12) · BR-40–42 (MIG-01…03).
 
 ---
@@ -324,3 +338,6 @@ Connection strings live in `.env.test`, untracked; only `.env.example` is commit
 - **Rate limiting is out of scope.** Lecture 5 (p17) recommends slowing repeated login attempts. The labsheet does not require it and it is not implemented; the safe-failure requirement it supports is covered by API-02 … API-04.
 - **Password hashing cost is not benchmarked.** UNIT-01 proves the hash is salted and verifiable, not that the work factor is high enough to be slow for an attacker.
 - **Session fixation is not tested.** The session identifier is generated fresh at login rather than accepted from the request, so fixation is structurally prevented; no test asserts it.
+- **Release-audit disclosure — migration hash.** The applied Lab 3 migration contains one bcrypt backfill value because `specification.md` §7.4 / BR-41 requires existing Lab 2 users to receive the documented initial password before `passwordHash` becomes non-null. This is a literal conflict with the broader §10 wording that forbids a hash in any committed file; it is recorded here rather than silently claimed as clean. The source, response, log, fixture, and screenshot scans found no additional credential or session-value literal.
+- **Release-audit disclosure — traceability gaps.** FR-31 (editing a user) has no dedicated AC, and SEC-T09 is currently listed under AC-10 even though AC-10 names Administrator endpoints. The implementation and tests are retained; adding or rewording an AC requires the student's explicit specification decision.
+- **Release-audit disclosure — AI provenance.** `ai-use.md` contains ten selected prompt renderings, while the private running log preserves three prompt entries. The rows were cross-checked against repository history and evidence, but wording not preserved in the private log is not claimed to be verbatim.

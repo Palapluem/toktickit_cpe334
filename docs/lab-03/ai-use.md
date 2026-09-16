@@ -37,6 +37,16 @@ request — the same convention Lab 2 used.
 | <pre>The Lab 3 E2E specs are overwriting artifacts/lab-02/screenshots/,<br>which is submitted Lab 2 evidence.<br><br>Find every spec that writes there, and fix the cause rather than the<br>symptom — I have restored those files more than once already this sprint and<br>do not want to restore them again.</pre> | Traced it to Lab 2's shared `captureScreenshot` helper being reused by specs that now render the Lab 3 application, and introduced a separate `captureLab3Screenshot` writing under `artifacts/lab-03/`. Also repointed `playwright.config.ts`'s `outputDir`, which was still writing run output into the Lab 2 directory. | "Fix the cause rather than the symptom" is a better prompt than a bug report because it rules out the fix I had already been doing by hand — restoring the files again. |
 | <pre>All nine feature PRs are merged. Before I start the release Issue,<br>audit lab3-staging against specification.md §10 Definition of Done —<br>every box, checked against the repository rather than against the<br>PR history.<br><br>Do not assume a merged PR means its content reached staging.<br>Report what is NOT satisfied.</pre> | Found that `lab3-staging` held almost none of the increment. The nine stacked PRs had merged into each other rather than up to staging, because they were merged in ascending order without branch deletion, so GitHub never retargeted the children. Also found `reviewer.md`, `ai-use.md` and a current README missing, and 91 unfilled Status boxes in `tests.md`. | The clause that mattered was "do not assume a merged PR means its content reached staging" — every dashboard said ten of ten merged, and the merge ledger would have gone into this submission describing an increment the branch did not contain. It was my own earlier merge-order advice that caused it, which is exactly why the audit had to check the repository and not the plan. |
 
+### Provenance note
+
+The private running log currently preserves three prompt entries: the Phase 0
+planning entry, the L3-1 contract entry, and the Issue #54 credential/release
+follow-up. The ten rows above are selected prompt renderings cross-checked
+against the repository history, review evidence, and test artifacts; they are
+not a claim that every original prompt is archived verbatim. Where the private
+log does not preserve the original wording, this document does not present a
+reconstructed sentence as verbatim evidence.
+
 ## My Reflection
 
 Lab 2 taught me to make prompts name their documents and their forbidden

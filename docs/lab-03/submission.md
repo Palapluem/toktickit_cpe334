@@ -161,8 +161,8 @@ authorization middleware, with the captures in
 [`evidence/l3-3-boundary-proof.md`](../../docs/lab-03/evidence/l3-3-boundary-proof.md)
 and [`l3-4-boundary-proof.md`](../../docs/lab-03/evidence/l3-4-boundary-proof.md).
 
-**The `File` column and repository structure were reconciled at release.** The three
-server suites and the user-administration E2E suite now use the exact names required by
+**The `File` column and repository structure were reconciled at release.** The six
+required server suites and the user-administration E2E suite now use the exact names required by
 labsheet §12. Queue and Ticket Detail checks were consolidated into
 `e2e/lab-03/staff-ticket-flow.spec.ts`; the supplementary comments-and-notes suite is
 also traced explicitly. Responsive checks remain in the feature specs that capture them.
@@ -222,8 +222,9 @@ unknown email, and an inactive account. `authenticate()` always runs the hash co
 an unknown email is checked against a memoized decoy — so response *time* cannot separate
 the three either.
 
-> **Screenshots:** `artifacts/lab-03/screenshots/authentication/` — login (desktop,
-> tablet, mobile), change-password (desktop, tablet, mobile), login-failure.
+> **Screenshots:** `artifacts/lab-03/screenshots/authentication/` — eight captures:
+> login and Change Password at desktop/tablet/mobile, the login-failure state, and
+> the administrator-created account's forced-change state.
 
 ---
 
@@ -275,6 +276,13 @@ Every row below is an API call with a session cookie and the wrong role — no U
 | `SEC-T11` | Client sends its own role | Ignored; the session decides |
 | `SEC-T03` | Requester opens another Requester's Ticket | `404` — identical to a Ticket that does not exist |
 
+The release-gate sweep in `server/tests/lab-03/authorization.api.test.ts` adds a
+concrete route check to this matrix evidence: it enumerates the 25 protected route
+registrations in `server/src/app.ts` and asserts `401` for each unauthenticated call.
+It also exercises 20 concrete role-exclusive denied cells and asserts `403` with no
+`data` envelope. The existing `/ops/...` checks remain the policy-level matrix proof;
+the concrete sweep proves that the live Express registration applies the policy.
+
 **BR-28 is tested by byte comparison.** The refusal a Requester receives for Internal
 Notes is identical whether the Ticket has zero notes or fifty — the test asserts the
 bodies match, with a positive control proving staff *do* see the difference.
@@ -287,7 +295,7 @@ away directly. Reproduced as a failing test first (it returned `200`), then fixe
 scoping the lookup; the reproduction is now a permanent regression test. Recorded in
 `reviewer.md` §2 under PR #62.
 
-> **Screenshots:** `artifacts/lab-03/screenshots/staff-ticket-detail/` — six captures
+> **Screenshots:** `artifacts/lab-03/screenshots/staff-ticket-detail/` — eight captures
 > including `requester-view-no-notes.png` and `forbidden.png`.
 
 ---
@@ -319,7 +327,7 @@ active Administrator and both succeed.
 between render and submit, so a client-side guard would be wrong at exactly the moment it
 mattered. The attempt reaches the server and the server's message is shown.
 
-> **Screenshots:** `artifacts/lab-03/screenshots/user-management/` — six captures
+> **Screenshots:** `artifacts/lab-03/screenshots/user-management/` — nine captures
 > including both refusals.
 
 ---
