@@ -11,8 +11,10 @@
 ## Answer Part 1: Git Use with Engineering Workflow
 
 **Branch flow.** `feature/<n>-<slug>` → `lab3-staging` → `main`. No direct commits to
-either protected branch; every change reached `lab3-staging` through a peer-reviewed
-Pull Request that `N0TAW00D` merged. The author never merged their own work.
+either protected branch; every change reached `lab3-staging` through a Pull Request
+that `N0TAW00D` merged. The review records are listed below, including the one
+evidence-only PR whose submitted review record is missing. The author never merged
+their own work.
 
 ### Pull Requests
 
