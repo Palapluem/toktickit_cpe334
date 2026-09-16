@@ -368,10 +368,10 @@ asserts each state, or the capture that shows it. Highlights:
 
 | Screen | Desktop | Tablet | Mobile |
 |---|---|---|---|
-| Authentication (login, change password) | ✓ | ✓ | ✓ |
-| IT Staff Ticket Queue | ✓ | ✓ | ✓ |
-| IT Staff Ticket Detail | ✓ | ✓ | ✓ |
-| Administrator User Management | ✓ | ✓ | ✓ |
+| Authentication (login, change password) | Pass | Pass | Pass |
+| IT Staff Ticket Queue | Pass | Pass | Pass |
+| IT Staff Ticket Detail | Pass | Pass | Pass |
+| Administrator User Management | Pass | Pass | Pass |
 
 Plus the state captures a happy path does not produce: `login-failure`,
 `duplicate-email`, `self-deactivation-refused`, `last-administrator`, `forbidden`
