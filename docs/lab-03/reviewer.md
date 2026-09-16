@@ -26,9 +26,17 @@ Unlike Lab 2, review in Lab 3 ran **in both directions** — §4 records the com
 | [#62](https://github.com/Palapluem/toktickit_cpe334/pull/62) | [#51](https://github.com/Palapluem/toktickit_cpe334/issues/51) | `feature/19-…` ← `feature/20-staff-ticket-detail` | `MERGED` | `7100fe6` | `N0TAW00D` |
 | [#63](https://github.com/Palapluem/toktickit_cpe334/pull/63) | [#52](https://github.com/Palapluem/toktickit_cpe334/issues/52) | `feature/20-…` ← `feature/21-comments-and-notes` | `MERGED` | `d18ac83` | `N0TAW00D` |
 | [#64](https://github.com/Palapluem/toktickit_cpe334/pull/64) | [#53](https://github.com/Palapluem/toktickit_cpe334/issues/53) | `feature/21-…` ← `feature/22-user-management` | `MERGED` | `d727d28` | `N0TAW00D` |
-| [#65](https://github.com/Palapluem/toktickit_cpe334/pull/65) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/22-user-management` | open at time of writing | — | — |
+| [#65](https://github.com/Palapluem/toktickit_cpe334/pull/65) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/22-user-management` | `MERGED` | `98ec433` | `N0TAW00D` |
+| [#66](https://github.com/Palapluem/toktickit_cpe334/pull/66) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/23-e2e-and-release` | `MERGED` | `2cad893` | `N0TAW00D` |
+| [#67](https://github.com/Palapluem/toktickit_cpe334/pull/67) | — | `lab3-staging` ← `feature/24-lab3-release-gaps` | `MERGED` | `82b24ad` | `N0TAW00D` |
+| [#68](https://github.com/Palapluem/toktickit_cpe334/pull/68) | — | `lab3-staging` ← `feature/25-lab3-final-evidence` | `MERGED` | `7a26ce2` | `N0TAW00D` |
+| [#69](https://github.com/Palapluem/toktickit_cpe334/pull/69) | — | `lab3-staging` ← `feature/26-lab3-e2e-owner-wait` | `MERGED` | `ea15e1d` | `N0TAW00D` |
+| [#70](https://github.com/Palapluem/toktickit_cpe334/pull/70) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/54-seed-credential-env` | `MERGED` | `53e29d0` | `N0TAW00D` |
+| [#71](https://github.com/Palapluem/toktickit_cpe334/pull/71) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/54-release-gate-concrete-auth` | `MERGED` | `5baa344` | `N0TAW00D` |
 
-Every PR received a substantive `COMMENTED` review before its `APPROVED` one.
+PRs #55–#64 contain the substantive review findings recorded below. The later release
+follow-ups are listed with their actual GitHub review state; approval-only reviews and
+the absence of a submitted review are not inflated into findings.
 
 ### 1.1 The stacked-branch merge defect, and PR #65
 
@@ -37,6 +45,13 @@ PRs #57–#64 were stacked: each targeted the previous feature branch rather tha
 This was caught during the release audit, not during review. It is recorded here rather than quietly repaired because the ledger above would otherwise read as though ten merges delivered an increment that staging did not actually hold. PR #65 merges the stack tip into `lab3-staging`; it introduces no code that was not already approved in #57–#64.
 
 The rule that would have prevented it: with stacked PRs, either delete each branch on merge so GitHub retargets the next one, or merge in **descending** order.
+
+PRs #66–#71 are follow-up release-audit, evidence, environment, and traceability
+changes. They all reached `lab3-staging` through a merge performed by `N0TAW00D`.
+GitHub records approval-only reviews for #65, #67, #69, #70, and #71; #68 has no
+submitted review record even though the peer performed the merge. That evidence-only
+PR is disclosed as a remaining peer-review record gap rather than described as
+approved without evidence.
 
 ---
 
@@ -103,6 +118,37 @@ The rule that would have prevented it: with stacked PRs, either delete each bran
 **Received.** The reviewer answered the PR's own checklist question — whether `CANNOT_DEACTIVATE_SELF` and `LAST_ADMINISTRATOR` should collapse into one code — with **keep them separate**, on the grounds that BR-35 fires regardless of Administrator count and BR-36 regardless of who is acting. The Serializable placement of the BR-36 check was verified as re-reading inside the transaction. One asymmetry noted: `setInitialPassword` deletes every session including the caller's own, unlike `changePassword`, which preserves the calling session.
 
 **Response.** The separation was deliberate for exactly the stated reason, so nothing changed. The session asymmetry was accepted as-is with the reviewer's agreement — an Administrator resetting their own initial password is a rare, self-inflicted path — and recorded here so the inconsistency is known rather than forgotten.
+
+### PR #66 — Release audit follow-up
+
+**Received.** The reviewer found four remaining phantom paths in `tests.md` §4 and a
+reverse gap: `comments-and-notes.spec.ts` existed but was not mapped. The reviewer also
+reported a branch conflict in `tests.md` and `ui-spec.md`.
+
+**Response.** The paths were removed, the missing mapping was added, the required
+filenames were aligned with labsheet §12, and the branch was re-synchronised before the
+reviewer approved the PR. The later PR #71 adds the concrete route and role-cell sweep
+that closes the separate release-gate traceability gap.
+
+### PR #67–#70 — Release evidence, stability, and environment follow-ups
+
+These PRs were merged by `N0TAW00D` after the release audit: #67 closed the attachment,
+reassignment, retry, and Administrator E2E evidence gaps; #68 refreshed the 25 evidence
+screenshots; #69 stabilised the owner-restore E2E assertion; and #70 moved the seed
+password to the local environment. GitHub records short peer approvals for #67, #69,
+and #70. PR #68 has no submitted review record, so it remains explicitly disclosed in
+§1 rather than being presented as a documented approval.
+
+### PR #71 — Concrete release-gate authorization coverage
+
+**Received.** The reviewer approved the PR with `looks good.` There were no inline
+comments and no requested changes.
+
+**Verification.** The PR adds direct unauthenticated checks for all 25 protected route
+registrations and direct wrong-role checks for 20 denied cells. It also makes the
+AC-08, AC-13, AC-34, and AC-36 traceability visible and records the migration-hash,
+specification, and AI-provenance limitations. The merged tree was re-run locally with
+410 server tests, 203 client tests, and 36 E2E tests passing.
 
 ---
 

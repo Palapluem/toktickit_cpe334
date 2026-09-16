@@ -28,8 +28,13 @@ Pull Request that `N0TAW00D` merged. The author never merged their own work.
 | [#62](https://github.com/Palapluem/toktickit_cpe334/pull/62) | [#51](https://github.com/Palapluem/toktickit_cpe334/issues/51) | `feature/19-…` ← `feature/20-staff-ticket-detail` | `7100fe6` | `N0TAW00D` |
 | [#63](https://github.com/Palapluem/toktickit_cpe334/pull/63) | [#52](https://github.com/Palapluem/toktickit_cpe334/issues/52) | `feature/20-…` ← `feature/21-comments-and-notes` | `d18ac83` | `N0TAW00D` |
 | [#64](https://github.com/Palapluem/toktickit_cpe334/pull/64) | [#53](https://github.com/Palapluem/toktickit_cpe334/issues/53) | `feature/21-…` ← `feature/22-user-management` | `d727d28` | `N0TAW00D` |
-| [#65](https://github.com/Palapluem/toktickit_cpe334/pull/65) | — | `lab3-staging` ← `feature/22-user-management` | _(integration)_ | `N0TAW00D` |
-| [#66](https://github.com/Palapluem/toktickit_cpe334/pull/66) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/23-e2e-and-release` | _(release audit)_ | `N0TAW00D` |
+| [#65](https://github.com/Palapluem/toktickit_cpe334/pull/65) | — | `lab3-staging` ← `feature/22-user-management` | `98ec433` | `N0TAW00D` |
+| [#66](https://github.com/Palapluem/toktickit_cpe334/pull/66) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/23-e2e-and-release` | `2cad893` | `N0TAW00D` |
+| [#67](https://github.com/Palapluem/toktickit_cpe334/pull/67) | — | `lab3-staging` ← `feature/24-lab3-release-gaps` | `82b24ad` | `N0TAW00D` |
+| [#68](https://github.com/Palapluem/toktickit_cpe334/pull/68) | — | `lab3-staging` ← `feature/25-lab3-final-evidence` | `7a26ce2` | `N0TAW00D` |
+| [#69](https://github.com/Palapluem/toktickit_cpe334/pull/69) | — | `lab3-staging` ← `feature/26-lab3-e2e-owner-wait` | `ea15e1d` | `N0TAW00D` |
+| [#70](https://github.com/Palapluem/toktickit_cpe334/pull/70) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/54-seed-credential-env` | `53e29d0` | `N0TAW00D` |
+| [#71](https://github.com/Palapluem/toktickit_cpe334/pull/71) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/54-release-gate-concrete-auth` | `5baa344` | `N0TAW00D` |
 | _(release)_ | — | `main` ← `lab3-staging` | _(fill after merge)_ | `N0TAW00D` |
 
 **A defect in this workflow, disclosed rather than hidden.** PRs #57–#64 were stacked,
@@ -40,6 +45,10 @@ so each merged into its already-merged parent and the increment never reached
 than the PR dashboard, and corrected by PR #65. The full account and the rule that
 prevents it are in [`reviewer.md`](../../docs/lab-03/reviewer.md) §1.1 and in the
 README's branch rules.
+
+PR #68 is recorded as merged by the peer, but GitHub exposes no submitted review for
+that evidence-only change. It remains a peer-review record gap to resolve or explicitly
+accept before the final submission; no approval is inferred from the merge itself.
 
 ### Kanban
 
