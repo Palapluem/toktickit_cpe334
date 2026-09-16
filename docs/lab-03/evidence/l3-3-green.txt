@@ -1,0 +1,86 @@
+=== Lab 3 tests, reporter=verbose ===
+ ✓ tests/lab-03/auth.api.test.ts > API-01 · a valid login establishes a session (AC-01) > returns the safe profile 392ms
+ ✓ tests/lab-03/auth.api.test.ts > API-01 · a valid login establishes a session (AC-01) > sets an httpOnly, SameSite=Lax session cookie (SEC-013) 157ms
+ ✓ tests/lab-03/auth.api.test.ts > API-01 · a valid login establishes a session (AC-01) > stores the session server-side so it can be revoked (BR-09) 161ms
+ ✓ tests/lab-03/auth.api.test.ts > API-01 · a valid login establishes a session (AC-01) > reports the role from the server, never from anything the client holds (BR-13) 166ms
+ ✓ tests/lab-03/auth.api.test.ts > API-02 … API-04 · every failure looks the same (AC-03, SEC-002) > refuses an unknown email 310ms
+ ✓ tests/lab-03/auth.api.test.ts > API-02 … API-04 · every failure looks the same (AC-03, SEC-002) > refuses a wrong password 232ms
+ ✓ tests/lab-03/auth.api.test.ts > API-02 … API-04 · every failure looks the same (AC-03, SEC-002) > refuses an inactive account holding the correct password (BR-01) 228ms
+ ✓ tests/lab-03/auth.api.test.ts > API-02 … API-04 · every failure looks the same (AC-03, SEC-002) > returns one body the three cases cannot be told apart by 314ms
+ ✓ tests/lab-03/auth.api.test.ts > API-02 … API-04 · every failure looks the same (AC-03, SEC-002) > rejects a malformed request before it reaches the credential check 78ms
+ ✓ tests/lab-03/auth.api.test.ts > API-02 … API-04 · every failure looks the same (AC-03, SEC-002) > creates no session for a failed attempt 230ms
+ ✓ tests/lab-03/auth.api.test.ts > API-05 · logout revokes access (AC-04, BR-09, SEC-004) > refuses the next request made with the logged-out session 172ms
+ ✓ tests/lab-03/auth.api.test.ts > API-05 · logout revokes access (AC-04, BR-09, SEC-004) > deletes the row rather than marking it 156ms
+ ✓ tests/lab-03/auth.api.test.ts > API-05 · logout revokes access (AC-04, BR-09, SEC-004) > answers 200 when there was no session to end 76ms
+ ✓ tests/lab-03/auth.api.test.ts > API-06 · the must-change gate (AC-02, BR-02, SEC-008) > refuses a guarded endpoint with 403 PASSWORD_CHANGE_REQUIRED 156ms
+ ✓ tests/lab-03/auth.api.test.ts > API-06 · the must-change gate (AC-02, BR-02, SEC-008) > admits the same user once the password is changed 331ms
+ ✓ tests/lab-03/auth.api.test.ts > API-06 · the must-change gate (AC-02, BR-02, SEC-008) > leaves the current-user endpoint open, so the client can learn why 166ms
+ ✓ tests/lab-03/auth.api.test.ts > API-06 · the must-change gate (AC-02, BR-02, SEC-008) > refuses an unauthenticated caller with 401, not 403 82ms
+ ✓ tests/lab-03/auth.api.test.ts > API-07 · a wrong current password changes nothing (AC-05) > refuses the change and leaves the old password working 318ms
+ ✓ tests/lab-03/auth.api.test.ts > API-08 · the new password is validated (AC-06, BR-05) > refuses one shorter than the minimum and keeps the old one working 307ms
+ ✓ tests/lab-03/auth.api.test.ts > API-08 · the new password is validated (AC-06, BR-05) > refuses a new password identical to the current one 226ms
+ ✓ tests/lab-03/auth.api.test.ts > API-08 · the new password is validated (AC-06, BR-05) > accepts one at the minimum length 299ms
+ ✓ tests/lab-03/auth.api.test.ts > API-09 · nothing secret leaves the server (AC-07, SEC-003) > keeps hashes and tokens out of every authentication response 310ms
+ ✓ tests/lab-03/auth.api.test.ts > API-09 · nothing secret leaves the server (AC-07, SEC-003) > never puts the session token in the body 151ms
+ ✓ tests/lab-03/auth.api.test.ts > API-10 · a password change ends the user’s other sessions (BR-07) > refuses the other session and keeps the one that made the change 388ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > MIG-01 · Lab 2 identifiers survive (BR-40) > resolves every Lab 2 requester to a User holding the Requester role 27ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > MIG-02 · Ticket and Attachment data survive (BR-42) > leaves no row pointing at a user that is not there 6ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > MIG-02 · Ticket and Attachment data survive (BR-42) > keeps the foreign keys that make an orphan impossible 5ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > MIG-02 · Ticket and Attachment data survive (BR-42) > keeps every Ticket Owner an active IT Staff or Administrator (BR-16) 12ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > MIG-03 · every account must change its password (BR-41, SEC-011) > sets mustChangePassword on every user 3ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > SEED-06 · no plaintext password is reachable (SEC-006) > stores a bcrypt hash rather than the password itself 2ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > SEED-06 · no plaintext password is reachable (SEC-006) > stores a hash that verifies, so the column holds the real credential 158ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > SEED-06 · no plaintext password is reachable (SEC-006) > never returns a hash from the reference-data endpoint 29ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > SEED-07 · the seed is idempotent > changes no row count on a repeated run 0ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > SEED-07 · the seed is idempotent > seeds the roster composition the specification states 8ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > SEED-07 · the seed is idempotent > gives the queue a Ticket in every status (BR-20) 3ms
+ ✓ tests/lab-03/seed-database.api.test.ts > L3-2 · the migrated database > SEED-07 · the seed is idempotent > leaves the Ticket Number sequence untouched, so the reserved band holds 5ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-01 · password hashing (BR-04, SEC-006, SEC-007) > never returns the plaintext 86ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-01 · password hashing (BR-04, SEC-006, SEC-007) > produces a different hash each time, so the salt is per-password 145ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-01 · password hashing (BR-04, SEC-006, SEC-007) > verifies the password that produced the hash 146ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-01 · password hashing (BR-04, SEC-006, SEC-007) > refuses a wrong password against a real hash 216ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-01 · password hashing (BR-04, SEC-006, SEC-007) > refuses a malformed hash instead of throwing 142ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-02 · password policy (BR-05, SEC-010) > accepts a password at the minimum length 0ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-02 · password policy (BR-05, SEC-010) > accepts one above the minimum 0ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-02 · password policy (BR-05, SEC-010) > refuses one character below the minimum 1ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-02 · password policy (BR-05, SEC-010) > refuses an empty password 0ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-02 · password policy (BR-05, SEC-010) > refuses a value that is not a string 0ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-02 · password policy (BR-05, SEC-010) > refuses a new password identical to the current one 0ms
+ ✓ tests/lab-03/password.unit.test.ts > UNIT-02 · password policy (BR-05, SEC-010) > imposes no composition rule the specification does not state 0ms
+ ✓ tests/lab-03/session.unit.test.ts > UNIT-06 · session tokens > is 32 bytes of base64url, long enough not to be guessed 2ms
+ ✓ tests/lab-03/session.unit.test.ts > UNIT-06 · session tokens > never repeats 1ms
+ ✓ tests/lab-03/session.unit.test.ts > UNIT-06 · session tokens > is not derived from the user id 198ms
+ ✓ tests/lab-03/session.unit.test.ts > UNIT-06 · session resolution (BR-08, SEC-014) > resolves a live session to its user 13ms
+ ✓ tests/lab-03/session.unit.test.ts > UNIT-06 · session resolution (BR-08, SEC-014) > sets the expiry eight hours out 3ms
+ ✓ tests/lab-03/session.unit.test.ts > UNIT-06 · session resolution (BR-08, SEC-014) > refuses a session whose expiry has passed 16ms
+ ✓ tests/lab-03/session.unit.test.ts > UNIT-06 · session resolution (BR-08, SEC-014) > refuses a token that was never issued 5ms
+ ✓ tests/lab-03/session.unit.test.ts > UNIT-06 · session resolution (BR-08, SEC-014) > refuses a session whose user has been deactivated (BR-39) 11ms
+ ✓ tests/lab-03/session.unit.test.ts > UNIT-06 · ending sessions > ends one session and leaves the others alone 6ms
+ ✓ tests/lab-03/session.unit.test.ts > UNIT-06 · ending sessions > ends every session but the one held (BR-07) 12ms
+ ✓ tests/lab-03/session.unit.test.ts > UNIT-06 · ending sessions > ends every session a user holds (BR-39) 6ms
+ ✓ tests/lab-03/session.unit.test.ts > UNIT-06 · ending sessions > leaves another user’s sessions untouched 9ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > holds four active Requesters 2ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > holds one inactive Requester, so BR-01 can be proved 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > holds three active IT Staff 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > holds one inactive IT Staff, so BR-16 ownership can be proved 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > holds exactly one active Administrator and no inactive one 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-01 · the roster covers every role and activation state > assigns every user exactly one of the three named roles (BR-11, BR-34) 1ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-02 · emails are unique and comparable (BR-33) > has no duplicate address 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-02 · emails are unique and comparable (BR-33) > stores every address already lowercased, so the unique index is the rule 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-03 · the Lab 2 requesters survive the migration (BR-40) > names all five Lab 2 requesters 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-03 · the Lab 2 requesters survive the migration (BR-40) > carries each Lab 2 requester forward in the roster, so the upsert matches by email 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-04 · the development password is a bridge, not a credential > meets the length floor the server enforces (BR-05) 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > reaches every one of the eight statuses (BR-20) 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > includes both assigned and unassigned Tickets (BR-17) 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > spreads across more than one priority 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > keeps every Ticket Number inside the reserved band, so runtime allocation cannot collide 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > gives every Ticket Number the BR-04 shape 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > carries Public Comments and Internal Notes, each with an author (BR-30) 1ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > gives every comment and note a distinct identifier, so the seed is idempotent 0ms
+ ✓ tests/lab-03/seed-roster.unit.test.ts > SEED-05 · demo Tickets exercise the queue > never lets a Requester-resolved Ticket sit in a terminal status (BR-23) 0ms
+ Test Files  5 passed (5)
+      Tests  79 passed (79)
+
+=== Full server suite ===
+ Test Files  19 passed (19)
+      Tests  193 passed (193)

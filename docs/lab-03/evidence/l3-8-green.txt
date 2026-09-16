@@ -1,0 +1,32 @@
+=== Server ===
+ Test Files  23 passed (23)
+      Tests  313 passed (313)
+
+=== Client ===
+ Test Files  20 passed (20)
+      Tests  147 passed (147)
+
+=== E2E ===
+  ok  1 [chromium] › e2e\lab-02\attachment-lifecycle.spec.ts:11:5 › E2E-03 covers add, download, soft-remove, and blocked attachment (4.9s)
+  ok  2 [chromium] › e2e\lab-02\requester-isolation.spec.ts:5:5 › E2E-02 isolates tickets between signed-in users (4.6s)
+  ok  3 [chromium] › e2e\lab-02\requester-ticket-flow.spec.ts:5:5 › E2E-01 completes requester creation and My Tickets journey (4.4s)
+  ok  4 [chromium] › e2e\lab-02\responsive.spec.ts:11:5 › RESP-01 renders Create Ticket at desktop, tablet, and mobile (1.9s)
+  ok  5 [chromium] › e2e\lab-02\responsive.spec.ts:24:5 › RESP-02 renders My Tickets at desktop, tablet, and mobile (5.3s)
+  ok  6 [chromium] › e2e\lab-02\responsive.spec.ts:48:5 › RESP-03 renders Ticket Detail at desktop, tablet, and mobile (4.8s)
+  ok  7 [chromium] › e2e\lab-03\authentication.spec.ts:25:5 › AUTH-01 captures the sign-in screen at desktop and mobile (822ms)
+  ok  8 [chromium] › e2e\lab-03\authentication.spec.ts:37:5 › AUTH-02 refuses a wrong password with one safe message (1.3s)
+  ok  9 [chromium] › e2e\lab-03\authentication.spec.ts:50:5 › AUTH-03 signs in and reaches My Tickets (881ms)
+  ok 10 [chromium] › e2e\lab-03\authentication.spec.ts:61:5 › AUTH-04 captures the mandatory Change Password screen (1.4s)
+  ok 11 [chromium] › e2e\lab-03\authentication.spec.ts:83:5 › AUTH-05 refuses every other route until the password is changed (1.0s)
+  ok 12 [chromium] › e2e\lab-03\authentication.spec.ts:99:5 › AUTH-06 logs out and cannot return without signing in again (1.1s)
+  ok 13 [chromium] › e2e\lab-03\staff-queue.spec.ts:27:5 › QUEUE-01 captures the queue at three viewports (3.2s)
+  ok 14 [chromium] › e2e\lab-03\staff-queue.spec.ts:44:5 › QUEUE-02 shows ownership and the resolution marker (1.1s)
+  ok 15 [chromium] › e2e\lab-03\staff-queue.spec.ts:59:5 › QUEUE-03 captures the no-results state (1.9s)
+  ok 16 [chromium] › e2e\lab-03\staff-queue.spec.ts:76:5 › QUEUE-04 captures the empty state (1.0s)
+  ok 17 [chromium] › e2e\lab-03\staff-queue.spec.ts:91:5 › QUEUE-05 refuses a Requester with the forbidden state (1.0s)
+  17 passed (54.8s)
+
+=== Mutation proof: the queue tests bite ===
+role check removed        -> 2 failed
+invalid sort falls back   -> 3 failed
+default sort changed      -> 2 failed

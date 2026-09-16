@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { expect, type APIRequestContext, type Page } from '@playwright/test'
+import { getE2ESeedPassword } from './environment'
 
 export const API_BASE_URL = 'http://127.0.0.1:3002'
 
@@ -21,14 +22,37 @@ export function pngFile(filename: string) {
   }
 }
 
-export async function selectRequester(page: Page, name: string): Promise<void> {
-  await page.goto('/select-requester')
-  const requester = page.getByLabel('Development Requester*')
-  await expect(requester).toBeVisible()
-  await requester.selectOption({ label: name })
-  await page.getByRole('button', { name: 'Continue' }).click()
-  await expect(page).toHaveURL(/\/tickets$/)
-  await expect(page.getByRole('button', { name: 'Change Requester' })).toBeVisible()
+// Read the local-only value from ignored environment configuration (SEC-033).
+export const DEVELOPMENT_PASSWORD = getE2ESeedPassword()
+
+export const EMAIL_FOR: Record<string, string> = {
+  'Jennifer Anderson': 'jennifer.anderson@example.ac.th',
+  'Michael Brown': 'michael.brown@example.ac.th',
+  'Sarah Johnson': 'sarah.johnson@example.ac.th',
+  'David Lee': 'david.lee@example.ac.th',
+}
+
+/**
+ * Replaces selectRequester. The session cookie is established through the API
+ * on the page's own request context, so it reaches the browser (AC-15). The
+ * Login screen that will drive this through the interface arrives with L3-6.
+ */
+export async function signIn(page: Page, name: string): Promise<void> {
+  const email = EMAIL_FOR[name]
+  expect(email, `no seeded account for ${name}`).toBeDefined()
+
+  const login = await page.request.post(`${API_BASE_URL}/api/auth/login`, {
+    data: { email, password: DEVELOPMENT_PASSWORD },
+  })
+  expect(login.ok(), `AC-01 login for ${name}`).toBeTruthy()
+
+  await page.goto('/tickets')
+  await expect(page.getByText(name)).toBeVisible()
+}
+
+/** Ends the session, so the next signIn starts from nothing. */
+export async function signOut(page: Page): Promise<void> {
+  await page.request.post(`${API_BASE_URL}/api/auth/logout`)
 }
 
 export async function createTicket(
@@ -65,18 +89,19 @@ export async function createTicket(
   return { ticketId: ticketId!, ticketNumber: ticketNumber! }
 }
 
-export async function getRequesterId(
+/** An API context already carrying a session, for calls made outside the page. */
+export async function signedInRequest(
   request: APIRequestContext,
-  displayName: string,
-): Promise<string> {
-  const response = await request.get(`${API_BASE_URL}/api/requesters`)
-  expect(response.ok(), 'FR-01 requester reference response').toBeTruthy()
-  const body = (await response.json()) as {
-    data: Array<{ id: string; displayName: string }>
-  }
-  const requester = body.data.find((item) => item.displayName === displayName)
-  expect(requester, `FR-01 requester ${displayName}`).toBeDefined()
-  return requester!.id
+  name: string,
+): Promise<APIRequestContext> {
+  const email = EMAIL_FOR[name]
+  expect(email, `no seeded account for ${name}`).toBeDefined()
+
+  const login = await request.post(`${API_BASE_URL}/api/auth/login`, {
+    data: { email, password: DEVELOPMENT_PASSWORD },
+  })
+  expect(login.ok(), `AC-01 login for ${name}`).toBeTruthy()
+  return request
 }
 
 export async function expectNoPageOverflow(page: Page): Promise<void> {
@@ -93,15 +118,31 @@ export async function expectNoPageOverflow(page: Page): Promise<void> {
   ).toBeLessThanOrEqual(metrics.viewportWidth)
 }
 
-export async function captureScreenshot(
+/**
+ * Lab 3 captures live under artifacts/lab-03 (lab-03 ui-spec §12).
+ *
+ * These specs render the Lab 3 application now, so writing their output over
+ * artifacts/lab-02 would overwrite a submitted Lab 2 deliverable with pictures
+ * of a different application.
+ */
+export async function captureLab3Screenshot(
   page: Page,
-  screen: 'create-ticket' | 'my-tickets' | 'ticket-detail',
+  screen: string,
+  filename: string,
+): Promise<void> {
+  await captureInto(page, 'lab-03', screen, filename)
+}
+
+async function captureInto(
+  page: Page,
+  lab: 'lab-02' | 'lab-03',
+  screen: string,
   filename: string,
 ): Promise<void> {
   const outputPath = path.resolve(
     process.cwd(),
     'artifacts',
-    'lab-02',
+    lab,
     'screenshots',
     screen,
     filename,

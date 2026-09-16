@@ -122,3 +122,13 @@ An Issue is complete only when:
 - Red-phase evidence exists for at least one test in the Issue
 - The full suite passes, not only the tests added by this Issue
 - `tests.md` is updated with the result rows
+
+## 7. Security Audit Procedure
+
+Before requesting review on any Issue that touches authentication, authorization, or user data:
+
+1. `grep -rniE "password|secret|token|hash" --include=*.ts --include=*.tsx server/src client/src` — every hit must be a variable name or a comment, never a literal value.
+2. Confirm no committed file contains a real credential; `.env` and `.env.test` remain untracked.
+3. For every endpoint added or changed, name the test that calls it as the wrong role. If there is none, the Issue is not done.
+4. Confirm no response body in any test snapshot contains a hash, a session identifier, or another user's data.
+5. Record any rule knowingly unmet, with its identifier and reason, in the PR description. An unmet rule that is disclosed is a decision; an unmet rule that is silent is a defect.

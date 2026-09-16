@@ -7,7 +7,7 @@ import { AppShell } from '../../../src/components/AppShell.js'
 function renderAt(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <AppShell requesterName="Jennifer Anderson" />
+      <AppShell userName="Jennifer Anderson" />
     </MemoryRouter>,
   )
 }
@@ -26,29 +26,18 @@ describe('STYLE-07 · application shell', () => {
     expect(screen.getByRole('link', { name: 'Create Ticket' })).toBeInTheDocument()
   })
 
-  it('shows the current development requester', () => {
+  it('shows the authenticated user', () => {
     renderAt('/tickets')
 
     expect(screen.getByText('Jennifer Anderson')).toBeInTheDocument()
   })
 
-  it('offers a Change Requester action', () => {
-    renderAt('/tickets')
-
-    expect(
-      screen.getByRole('button', { name: /change requester/i }),
-    ).toBeInTheDocument()
-  })
-
-  it('uses the header-safe action treatment for both header controls', () => {
+  it('uses the header-safe action treatment for the header control', () => {
     renderAt('/tickets')
 
     expect(screen.getByRole('button', { name: 'Menu' })).toHaveClass(
       'zen-shell__header-action',
     )
-    expect(
-      screen.getByRole('button', { name: /change requester/i }),
-    ).toHaveClass('zen-shell__header-action')
   })
 })
 

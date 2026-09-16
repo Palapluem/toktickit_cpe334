@@ -8,21 +8,18 @@ import prisma from '../../src/prisma.js'
 import type { AttachmentFile, AttachmentStorage } from '../../src/tickets/storage.js'
 import {
   BASE_TICKET_PAYLOAD,
+  loadOtherRequester,
   loadTicketReferences,
   resetTicketData,
   type TicketReferences,
 } from './ticket-fixtures.js'
 
 let references: TicketReferences
-let otherRequesterId: string
+let otherCookie: string
 
 beforeAll(async () => {
   references = await loadTicketReferences()
-  const other = await prisma.requesterUser.findFirstOrThrow({
-    where: { isActive: true, id: { not: references.requesterId } },
-    select: { id: true },
-  })
-  otherRequesterId = other.id
+  otherCookie = (await loadOtherRequester()).cookie
 })
 
 beforeEach(async () => {
@@ -32,7 +29,7 @@ beforeEach(async () => {
 function multipart(app: ReturnType<typeof createApp>) {
   return request(app)
     .post('/api/tickets')
-    .set('X-Requester-Id', references.requesterId)
+    .set('Cookie', references.cookie)
     .field('categoryId', references.categoryId)
     .field('relatedSystemId', references.relatedSystemId)
     .field('summary', BASE_TICKET_PAYLOAD.summary)
@@ -43,7 +40,7 @@ function multipart(app: ReturnType<typeof createApp>) {
 async function createExistingTicket(): Promise<string> {
   const response = await request(createApp())
     .post('/api/tickets')
-    .set('X-Requester-Id', references.requesterId)
+    .set('Cookie', references.cookie)
     .field('categoryId', references.categoryId)
     .field('relatedSystemId', references.relatedSystemId)
     .field('summary', BASE_TICKET_PAYLOAD.summary)
@@ -304,7 +301,7 @@ describe('API-21 · AC-29 · add attachment to an owned Ticket', () => {
 
     const response = await request(createApp({ storage }))
       .post(`/api/tickets/${ticketId}/attachments`)
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
       .attach('attachment', Buffer.from('new image bytes'), {
         filename: 'new-image.png',
         contentType: 'image/png',
@@ -332,7 +329,7 @@ describe('API-22 · AC-30 · BR-28 · active attachment limit', () => {
 
     const response = await request(createApp({ storage }))
       .post(`/api/tickets/${ticketId}/attachments`)
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
       .attach('attachment', Buffer.from('sixth file'), {
         filename: 'sixth.png',
         contentType: 'image/png',
@@ -361,14 +358,14 @@ describe('API-22 · AC-30 · BR-28 · active attachment limit', () => {
     const responses = await Promise.all([
       request(createApp({ storage }))
         .post(`/api/tickets/${ticketId}/attachments`)
-        .set('X-Requester-Id', references.requesterId)
+        .set('Cookie', references.cookie)
         .attach('attachment', Buffer.from('first'), {
           filename: 'first.png',
           contentType: 'image/png',
         }),
       request(createApp({ storage }))
         .post(`/api/tickets/${ticketId}/attachments`)
-        .set('X-Requester-Id', references.requesterId)
+        .set('Cookie', references.cookie)
         .attach('attachment', Buffer.from('second'), {
           filename: 'second.png',
           contentType: 'image/png',
@@ -397,7 +394,7 @@ describe('API-23 · BR-28 · removed attachments do not count toward the limit',
 
     const response = await request(createApp({ storage }))
       .post(`/api/tickets/${ticketId}/attachments`)
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
       .attach('attachment', Buffer.from('replacement bytes'), {
         filename: 'replacement.png',
         contentType: 'image/png',
@@ -422,7 +419,7 @@ describe('API-24 · AC-31 · active attachment download', () => {
 
     const response = await request(createApp({ storage }))
       .get(`/api/attachments/${attachment.id}/download`)
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
 
     expect(response.status).toBe(200)
     expect(response.headers['content-type']).toMatch(/^image\/png/)
@@ -446,7 +443,7 @@ describe('API-24 · AC-31 · active attachment download', () => {
 
     const response = await request(createApp({ storage }))
       .get(`/api/attachments/${attachment.id}/download`)
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
 
     expect(response.status).toBe(200)
     expect(response.headers['content-disposition']).toMatch(
@@ -465,7 +462,7 @@ describe('API-25 · AC-32 · BR-31 · soft removal', () => {
 
     const response = await request(createApp())
       .delete(`/api/attachments/${attachment.id}`)
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
       .send({ reason: 'Uploaded the wrong file' })
 
     expect(response.status).toBe(200)
@@ -494,7 +491,7 @@ describe('API-25 · AC-32 · BR-31 · soft removal', () => {
 
     const response = await request(createApp())
       .delete(`/api/attachments/${attachment.id}`)
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
 
     expect(response.status).toBe(200)
     expect(response.body.data).toMatchObject({
@@ -519,7 +516,7 @@ describe('API-26 · AC-33 · BR-33 · removed attachment download', () => {
 
     const response = await request(createApp({ storage }))
       .get(`/api/attachments/${attachment.id}/download`)
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
 
     expect(response.status).toBe(410)
     expect(response.body.error).toMatchObject({
@@ -534,7 +531,7 @@ describe('route parameter validation', () =>
   it('returns the attachment not-found envelope for a malformed attachment id', async () => {
     const response = await request(createApp())
       .get('/api/attachments/not-a-uuid/download')
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
 
     expect(response.status).toBe(404)
     expect(response.body.error).toMatchObject({
@@ -554,7 +551,7 @@ describe('API-27 · BR-32 · removal reason validation', () => {
 
     const response = await request(createApp())
       .delete(`/api/attachments/${attachment.id}`)
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
       .send(body)
 
     expect(response.status).toBe(400)
@@ -582,13 +579,13 @@ describe('API-28 · AC-34 · BR-17 · cross-requester attachment access', () => 
 
     const metadata = await request(createApp())
       .get(`/api/tickets/${ticketId}/attachments`)
-      .set('X-Requester-Id', otherRequesterId)
+      .set('Cookie', otherCookie)
     const download = await request(createApp({ storage }))
       .get(`/api/attachments/${attachment.id}/download`)
-      .set('X-Requester-Id', otherRequesterId)
+      .set('Cookie', otherCookie)
     const removal = await request(createApp())
       .delete(`/api/attachments/${attachment.id}`)
-      .set('X-Requester-Id', otherRequesterId)
+      .set('Cookie', otherCookie)
       .send({ reason: 'Should not be allowed' })
 
     expect(metadata.status).toBe(404)
@@ -611,7 +608,7 @@ describe('API-29 · BR-30 · generated stored filename', () => {
 
     const response = await request(createApp({ storage }))
       .post(`/api/tickets/${ticketId}/attachments`)
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
       .attach('attachment', Buffer.from('safe bytes'), {
         filename: 'user-visible-name.pdf',
         contentType: 'application/pdf',

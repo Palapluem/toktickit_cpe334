@@ -1,5 +1,6 @@
 // Every endpoint returns { data: ... } (api-spec.md §1) and identifies rows by
-// UUID (§11.1). The requester context travels in a header, never a body (§11.3).
+// UUID (lab-02 §11.1). Identity travels in the session cookie, which is why every
+// request sets credentials: 'include' — nothing here names a user (BR-10).
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001'
 
 export interface HealthResponse {
@@ -23,14 +24,26 @@ export interface Requester {
   email: string
 }
 
+export type Role = 'REQUESTER' | 'IT_STAFF' | 'ADMINISTRATOR'
+
+/** The safe profile /api/auth/me returns. Never carries a hash or a token (SEC-003). */
+export interface SessionUser {
+  id: string
+  displayName: string
+  email: string
+  role: Role
+  mustChangePassword: boolean
+}
+
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 export type TicketStatus =
   | 'NEW'
-  | 'ASSIGNED'
+  | 'OPEN'
   | 'IN_PROGRESS'
-  | 'PENDING_REQUESTER'
+  | 'WAITING_FOR_REQUESTER'
   | 'RESOLVED'
   | 'CLOSED'
+  | 'REOPENED'
   | 'CANCELLED'
 
 export interface TicketAttachment {
@@ -46,6 +59,8 @@ export interface TicketAttachment {
   removedBy?: Pick<Requester, 'id' | 'displayName'> | null
 }
 
+export type AssignableOwner = Pick<Requester, 'id' | 'displayName'>
+
 export interface Ticket {
   id: string
   ticketNo: string
@@ -56,6 +71,8 @@ export interface Ticket {
   requestedPriority: Priority
   itPriority: Priority
   status: TicketStatus
+  /** The Requester's "appears resolved" signal — a timestamp, not a status (§11.7). */
+  requesterResolvedAt: string | null
   requester: Pick<Requester, 'id' | 'displayName'>
   category: Category
   relatedSystem: RelatedSystem
@@ -178,15 +195,10 @@ async function throwApiRequestError(
   throw new ApiRequestError(message, fieldErrors, response.status, code)
 }
 
-async function get<T>(
-  path: string,
-  label: string,
-  requesterId?: string,
-): Promise<T> {
-  const headers: Record<string, string> = {}
-  if (requesterId) headers['X-Requester-Id'] = requesterId
-
-  const response = await fetch(`${API_BASE_URL}${path}`, { headers })
+async function get<T>(path: string, label: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: 'include',
+  })
 
   if (!response.ok) {
     await throwApiRequestError(response, `${label} request failed`)
@@ -206,31 +218,62 @@ export async function fetchHealth(): Promise<HealthResponse> {
   return response.json()
 }
 
-export function fetchCategories(requesterId?: string): Promise<Category[]> {
-  return get<Category[]>('/api/categories', 'Categories', requesterId)
+export function fetchCategories(): Promise<Category[]> {
+  return get<Category[]>('/api/categories', 'Categories')
 }
 
-export function fetchRelatedSystems(
-  requesterId?: string,
-): Promise<RelatedSystem[]> {
-  return get<RelatedSystem[]>(
-    '/api/related-systems',
-    'Related systems',
-    requesterId,
+export function fetchRelatedSystems(): Promise<RelatedSystem[]> {
+  return get<RelatedSystem[]>('/api/related-systems', 'Related systems')
+}
+
+/** The authenticated user. How the client learns its role — never from storage (SEC-005). */
+export function fetchCurrentUser(): Promise<SessionUser> {
+  return get<SessionUser>('/api/auth/me', 'Current user')
+}
+
+async function postJson<T>(
+  path: string,
+  body: unknown,
+  label: string,
+): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    await throwApiRequestError(response, label)
+  }
+
+  return ((await response.json()) as { data: T }).data
+}
+
+/** The session cookie arrives in the response; nothing about it is readable here. */
+export function login(email: string, password: string): Promise<SessionUser> {
+  return postJson<SessionUser>('/api/auth/login', { email, password }, 'Sign in failed')
+}
+
+export function logout(): Promise<{ loggedOut: boolean }> {
+  return postJson<{ loggedOut: boolean }>('/api/auth/logout', {}, 'Sign out failed')
+}
+
+export function changePassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<{ passwordChanged: boolean }> {
+  return postJson<{ passwordChanged: boolean }>(
+    '/api/auth/change-password',
+    { currentPassword, newPassword },
+    'Password change failed',
   )
-}
-
-export function fetchRequesters(): Promise<Requester[]> {
-  return get<Requester[]>('/api/requesters', 'Requesters')
 }
 
 export async function createTicket(
   payload: CreateTicketPayload,
-  requesterId: string,
 ): Promise<CreatedTicket> {
-  const headers: Record<string, string> = {
-    'X-Requester-Id': requesterId,
-  }
+  const headers: Record<string, string> = {}
   let requestBody: BodyInit
 
   if (payload.attachments?.length) {
@@ -255,6 +298,7 @@ export async function createTicket(
 
   const response = await fetch(`${API_BASE_URL}/api/tickets`, {
     method: 'POST',
+    credentials: 'include',
     headers,
     body: requestBody,
   })
@@ -267,8 +311,242 @@ export async function createTicket(
   return responseBody.data
 }
 
+export interface StaffQueueRow {
+  id: string
+  ticketNo: string
+  summary: string
+  category: Category
+  requester: Pick<Requester, 'id' | 'displayName'>
+  requestedPriority: Priority
+  itPriority: Priority
+  status: TicketStatus
+  owner: Pick<Requester, 'id' | 'displayName'> | null
+  requesterResolvedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface StaffQueueQuery {
+  search?: string
+  status?: string
+  itPriority?: string
+  categoryId?: string
+  ownerId?: string
+  sort?: string
+  page?: number
+  pageSize?: number
+}
+
+export interface StaffQueueResponse {
+  data: StaffQueueRow[]
+  pagination: TicketListResponse['pagination']
+  appliedFilters: {
+    search: string | null
+    status: string | null
+    itPriority: string | null
+    categoryId: string | null
+    ownerId: string | null
+    sort: string
+  }
+}
+
+export async function fetchStaffQueue(
+  query: StaffQueueQuery = {},
+): Promise<StaffQueueResponse> {
+  const params = new URLSearchParams()
+  for (const [key, raw] of Object.entries(query)) {
+    const value = typeof raw === 'string' ? raw.trim() : raw
+    if (value === undefined || value === '' || value === null) continue
+    params.set(key, String(value))
+  }
+
+  const queryString = params.toString()
+  const response = await fetch(
+    `${API_BASE_URL}/api/staff/tickets${queryString ? `?${queryString}` : ''}`,
+    { credentials: 'include' },
+  )
+
+  if (!response.ok) {
+    await throwApiRequestError(response, 'Queue request failed')
+  }
+
+  return (await response.json()) as StaffQueueResponse
+}
+
+export interface StaffTicket extends Omit<StaffQueueRow, 'category'> {
+  description: string
+  category: Category
+  relatedSystem: RelatedSystem
+  attachments: TicketAttachment[]
+  assignableOwners: AssignableOwner[]
+  permittedTransitions: TicketStatus[]
+}
+
+async function patchJson<T>(path: string, body: unknown, label: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    await throwApiRequestError(response, label)
+  }
+
+  return ((await response.json()) as { data: T }).data
+}
+
+export function fetchStaffTicket(ticketId: string): Promise<StaffTicket> {
+  return get<StaffTicket>(`/api/staff/tickets/${ticketId}`, 'Ticket request failed')
+}
+
+/** `me` is the claim; null unassigns (api-spec.md §8). */
+export function setTicketOwner(
+  ticketId: string,
+  ownerId: string | null,
+): Promise<StaffTicket> {
+  return patchJson<StaffTicket>(
+    `/api/staff/tickets/${ticketId}/owner`,
+    { ownerId },
+    'Could not change the owner.',
+  )
+}
+
+export function setItPriority(
+  ticketId: string,
+  itPriority: Priority,
+): Promise<StaffTicket> {
+  return patchJson<StaffTicket>(
+    `/api/staff/tickets/${ticketId}/it-priority`,
+    { itPriority },
+    'Could not change the IT priority.',
+  )
+}
+
+export function setTicketStatus(
+  ticketId: string,
+  status: TicketStatus,
+): Promise<StaffTicket> {
+  return patchJson<StaffTicket>(
+    `/api/staff/tickets/${ticketId}/status`,
+    { status },
+    'Could not change the status.',
+  )
+}
+
+/** The Requester's signal. A timestamp, never a status (§11.7). */
+export function indicateRequesterResolution(
+  ticketId: string,
+): Promise<{ requesterResolvedAt: string; status: TicketStatus }> {
+  return postJson<{ requesterResolvedAt: string; status: TicketStatus }>(
+    `/api/tickets/${ticketId}/requester-resolution`,
+    {},
+    'Could not record that the problem appears resolved.',
+  )
+}
+
+export interface ThreadEntry {
+  id: string
+  body: string
+  createdAt: string
+  author: { id: string; displayName: string; role: Role }
+}
+
+export const MAX_ENTRY_LENGTH = 2000
+
+export function fetchComments(ticketId: string): Promise<ThreadEntry[]> {
+  return get<ThreadEntry[]>(`/api/tickets/${ticketId}/comments`, 'Comments request failed')
+}
+
+export function postComment(ticketId: string, body: string): Promise<ThreadEntry> {
+  return postJson<ThreadEntry>(
+    `/api/tickets/${ticketId}/comments`,
+    { body },
+    'The comment could not be posted.',
+  )
+}
+
+export function fetchInternalNotes(ticketId: string): Promise<ThreadEntry[]> {
+  return get<ThreadEntry[]>(
+    `/api/tickets/${ticketId}/internal-notes`,
+    'Internal notes request failed',
+  )
+}
+
+export function postInternalNote(ticketId: string, body: string): Promise<ThreadEntry> {
+  return postJson<ThreadEntry>(
+    `/api/tickets/${ticketId}/internal-notes`,
+    { body },
+    'The note could not be added.',
+  )
+}
+
+export interface ManagedUser {
+  id: string
+  displayName: string
+  email: string
+  role: Role
+  isActive: boolean
+  mustChangePassword: boolean
+}
+
+export interface UserQuery {
+  search?: string
+  role?: string
+}
+
+export function fetchUsers(query: UserQuery = {}): Promise<ManagedUser[]> {
+  const params = new URLSearchParams()
+  for (const [key, raw] of Object.entries(query)) {
+    const value = typeof raw === 'string' ? raw.trim() : raw
+    if (!value) continue
+    params.set(key, String(value))
+  }
+  const queryString = params.toString()
+  return get<ManagedUser[]>(
+    `/api/admin/users${queryString ? `?${queryString}` : ''}`,
+    'Users request failed',
+  )
+}
+
+export type NewUser = {
+  displayName: string
+  email: string
+  role: Role
+  isActive: boolean
+  initialPassword: string
+}
+
+export function createUser(payload: NewUser): Promise<ManagedUser> {
+  return postJson<ManagedUser>('/api/admin/users', payload, 'The user could not be created.')
+}
+
+export type UserChanges = Partial<
+  Pick<ManagedUser, 'displayName' | 'email' | 'role' | 'isActive'>
+>
+
+export function updateUser(userId: string, changes: UserChanges): Promise<ManagedUser> {
+  return patchJson<ManagedUser>(
+    `/api/admin/users/${userId}`,
+    changes,
+    'The user could not be saved.',
+  )
+}
+
+/** The password is never echoed back, so neither is it returned here (SEC-032). */
+export function setUserInitialPassword(
+  userId: string,
+  initialPassword: string,
+): Promise<{ id: string; mustChangePassword: boolean }> {
+  return postJson<{ id: string; mustChangePassword: boolean }>(
+    `/api/admin/users/${userId}/initial-password`,
+    { initialPassword },
+    'The initial password could not be set.',
+  )
+}
+
 export async function fetchTickets(
-  requesterId: string,
   query: TicketListQuery = {},
 ): Promise<TicketListResponse> {
   const params = new URLSearchParams()
@@ -290,7 +568,7 @@ export async function fetchTickets(
   const queryString = params.toString()
   const response = await fetch(
     `${API_BASE_URL}/api/tickets${queryString ? `?${queryString}` : ''}`,
-    { headers: { 'X-Requester-Id': requesterId } },
+    { credentials: 'include' },
   )
 
   if (!response.ok) {
@@ -300,12 +578,9 @@ export async function fetchTickets(
   return (await response.json()) as TicketListResponse
 }
 
-export async function fetchTicket(
-  requesterId: string,
-  ticketId: string,
-): Promise<Ticket> {
+export async function fetchTicket(ticketId: string): Promise<Ticket> {
   const response = await fetch(`${API_BASE_URL}/api/tickets/${ticketId}`, {
-    headers: { 'X-Requester-Id': requesterId },
+    credentials: 'include',
   })
   if (!response.ok) {
     await throwApiRequestError(response, 'Ticket request failed')
@@ -314,7 +589,6 @@ export async function fetchTicket(
 }
 
 export async function uploadAttachment(
-  requesterId: string,
   ticketId: string,
   file: File,
 ): Promise<AttachmentMutationResponse> {
@@ -324,7 +598,7 @@ export async function uploadAttachment(
     `${API_BASE_URL}/api/tickets/${ticketId}/attachments`,
     {
       method: 'POST',
-      headers: { 'X-Requester-Id': requesterId },
+      credentials: 'include',
       body: form,
     },
   )
@@ -335,7 +609,6 @@ export async function uploadAttachment(
 }
 
 export async function removeAttachment(
-  requesterId: string,
   attachmentId: string,
   reason: string,
 ): Promise<AttachmentMutationResponse> {
@@ -343,10 +616,8 @@ export async function removeAttachment(
     `${API_BASE_URL}/api/attachments/${attachmentId}`,
     {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requester-Id': requesterId,
-      },
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ reason }),
     },
   )
@@ -356,13 +627,10 @@ export async function removeAttachment(
   return (await response.json()) as AttachmentMutationResponse
 }
 
-export async function downloadAttachment(
-  requesterId: string,
-  attachmentId: string,
-): Promise<Blob> {
+export async function downloadAttachment(attachmentId: string): Promise<Blob> {
   const response = await fetch(
     `${API_BASE_URL}/api/attachments/${attachmentId}/download`,
-    { headers: { 'X-Requester-Id': requesterId } },
+    { credentials: 'include' },
   )
   if (!response.ok) {
     await throwApiRequestError(response, 'Attachment download failed')

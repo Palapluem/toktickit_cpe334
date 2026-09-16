@@ -3,19 +3,26 @@ import { Link, useParams } from 'react-router-dom'
 import {
   downloadAttachment,
   fetchTicket,
+  indicateRequesterResolution,
   removeAttachment,
   uploadAttachment,
   type Ticket,
   type TicketAttachment,
+  type TicketStatus,
 } from '../api.js'
 import { AttachmentSection } from '../components/AttachmentSection.js'
+// Public Comments only. The Requester gets no Internal Notes affordance at
+// all — not a disabled one (ui-spec §9, AC-09).
+import { PublicCommentsSection } from '../components/ThreadSection.js'
+import { Button } from '../components/Button.js'
 import { PriorityBadge, StatusBadge } from '../components/Badge.js'
 import { ErrorState, LoadingState } from '../components/States.js'
-import { useOptionalRequester } from '../context/RequesterContext.js'
+
+/** Nothing is owed on a Ticket in these, so there is nothing to report about. */
+const CLOSED_STATUSES: TicketStatus[] = ['CLOSED', 'CANCELLED']
 
 export type RequesterTicketDetailProps = {
   ticket?: Ticket
-  requesterId?: string
 }
 
 function formatDate(value: string): string {
@@ -67,16 +74,33 @@ function ReadOnlyBadge({
 
 export function RequesterTicketDetail({
   ticket: initialTicket,
-  requesterId: initialRequesterId,
 }: RequesterTicketDetailProps = {}) {
-  const context = useOptionalRequester()
   const { id: routeTicketId } = useParams<{ id: string }>()
-  const requesterId = initialRequesterId ?? context?.requester?.id ?? ''
   const [ticket, setTicket] = useState<Ticket | null>(initialTicket ?? null)
   const [phase, setPhase] = useState<'loading' | 'ready' | 'error'>(
     initialTicket ? 'ready' : 'loading',
   )
   const [reloadToken, setReloadToken] = useState(0)
+  const [resolving, setResolving] = useState(false)
+  const [resolutionError, setResolutionError] = useState('')
+
+  async function indicateResolution() {
+    if (!ticket || resolving) return
+    setResolving(true)
+    setResolutionError('')
+    try {
+      const result = await indicateRequesterResolution(ticket.id)
+      setTicket((current) =>
+        current
+          ? { ...current, requesterResolvedAt: result.requesterResolvedAt }
+          : current,
+      )
+    } catch {
+      setResolutionError('That could not be recorded. Try again.')
+    } finally {
+      setResolving(false)
+    }
+  }
 
   useEffect(() => {
     if (initialTicket) {
@@ -84,7 +108,7 @@ export function RequesterTicketDetail({
       setPhase('ready')
       return
     }
-    if (!requesterId || !routeTicketId) {
+    if (!routeTicketId) {
       setTicket(null)
       setPhase('error')
       return
@@ -93,7 +117,7 @@ export function RequesterTicketDetail({
     let cancelled = false
     setTicket(null)
     setPhase('loading')
-    fetchTicket(requesterId, routeTicketId)
+    fetchTicket(routeTicketId)
       .then((nextTicket) => {
         if (cancelled) return
         setTicket(nextTicket)
@@ -106,11 +130,11 @@ export function RequesterTicketDetail({
     return () => {
       cancelled = true
     }
-  }, [initialTicket, requesterId, reloadToken, routeTicketId])
+  }, [initialTicket, reloadToken, routeTicketId])
 
   async function addAttachment(file: File): Promise<TicketAttachment> {
     if (!ticket) throw new Error('Ticket is not loaded.')
-    const response = await uploadAttachment(requesterId, ticket.id, file)
+    const response = await uploadAttachment(ticket.id, file)
     setTicket((current) =>
       current
         ? { ...current, attachments: [...current.attachments, response.data] }
@@ -123,7 +147,7 @@ export function RequesterTicketDetail({
     attachmentId: string,
     reason: string,
   ): Promise<TicketAttachment> {
-    const response = await removeAttachment(requesterId, attachmentId, reason)
+    const response = await removeAttachment(attachmentId, reason)
     setTicket((current) =>
       current
         ? {
@@ -140,7 +164,7 @@ export function RequesterTicketDetail({
   async function downloadTicketAttachment(attachmentId: string): Promise<void> {
     const attachment = ticket?.attachments.find(({ id }) => id === attachmentId)
     if (!attachment) throw new Error('Attachment is not available.')
-    const blob = await downloadAttachment(requesterId, attachmentId)
+    const blob = await downloadAttachment(attachmentId)
     const objectUrl = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = objectUrl
@@ -170,7 +194,7 @@ export function RequesterTicketDetail({
         </div>
         <ErrorState
           title="Could not load Ticket details"
-          detail="This Ticket is unavailable in the current requester context."
+          detail="This Ticket is not available to you."
           onRetry={() => setReloadToken((current) => current + 1)}
         />
       </div>
@@ -189,10 +213,33 @@ export function RequesterTicketDetail({
           <h1>Ticket Details</h1>
           <p>Review the information and attachments for this Ticket.</p>
         </div>
-        <Link className="zen-button zen-button--secondary" to="/tickets">
-          Back to My Tickets
-        </Link>
+        <div className="ticket-detail-page__header-actions">
+          {/* The Requester cannot declare a problem solved (BR-22), but is the
+              only person who knows it still is not. This records that. */}
+          {ticket.requesterResolvedAt ? (
+            <p className="staff-queue__resolved-marker">
+              You reported this as appearing resolved
+            </p>
+          ) : CLOSED_STATUSES.includes(ticket.status) ? null : (
+            <Button
+              variant="secondary"
+              busy={resolving}
+              onClick={indicateResolution}
+            >
+              The problem appears resolved
+            </Button>
+          )}
+          <Link className="zen-button zen-button--secondary" to="/tickets">
+            Back to My Tickets
+          </Link>
+        </div>
       </div>
+
+      {resolutionError ? (
+        <p className="zen-auth__error" role="alert">
+          {resolutionError}
+        </p>
+      ) : null}
 
       <section className="zen-card ticket-detail-card" aria-labelledby="ticket-information-heading">
         <h2 id="ticket-information-heading">Ticket Information</h2>
@@ -225,7 +272,6 @@ export function RequesterTicketDetail({
       <div className="zen-card ticket-detail-card">
         <AttachmentSection
           ticketId={ticket.id}
-          requesterId={requesterId}
           attachments={ticket.attachments}
           activeCount={activeCount}
           activeLimit={5}
@@ -234,6 +280,8 @@ export function RequesterTicketDetail({
           onDownload={downloadTicketAttachment}
         />
       </div>
+
+      <PublicCommentsSection ticketId={ticket.id} />
     </div>
   )
 }

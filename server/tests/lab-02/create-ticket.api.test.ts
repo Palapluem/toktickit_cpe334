@@ -29,7 +29,7 @@ describe('API-03/API-04 · AC-06…AC-08 · valid Ticket creation', () => {
   it('creates one server-owned Ticket and returns its generated values', async () => {
     const response = await request(app)
       .post('/api/tickets')
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
       .send(validPayload())
 
     expect(response.status).toBe(201)
@@ -56,7 +56,7 @@ describe('API-03/API-04 · AC-06…AC-08 · valid Ticket creation', () => {
   it('trims the persisted fields and binds the row to the header requester', async () => {
     const response = await request(app)
       .post('/api/tickets')
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
       .send(
         validPayload({
           summary: '  Printer queue is stuck  ',
@@ -87,7 +87,7 @@ describe('API-05 · AC-09/AC-10 · server validation', () => {
 
     const response = await request(app)
       .post('/api/tickets')
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
       .send(payload)
 
     expect(response.status).toBe(400)
@@ -100,7 +100,7 @@ describe('API-05 · AC-09/AC-10 · server validation', () => {
   it('returns field-level errors and persists nothing for an invalid payload', async () => {
     const response = await request(app)
       .post('/api/tickets')
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
       .send({
         categoryId: 'not-a-uuid',
         relatedSystemId: '00000000-0000-4000-8000-000000000000',
@@ -129,7 +129,7 @@ describe('API-05 · AC-09/AC-10 · server validation', () => {
   ])('rejects %s above its documented bound', async (field, value) => {
     const response = await request(app)
       .post('/api/tickets')
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
       .send(validPayload({ [field]: value }))
 
     expect(response.status).toBe(400)
@@ -144,7 +144,7 @@ describe('API-06 · BR-18 · server-controlled properties', () => {
   it('rejects every server-controlled or unknown property instead of ignoring it', async () => {
     const response = await request(app)
       .post('/api/tickets')
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
       .send(
         validPayload({
           ticketNo: 'TKT-2099-000001',
@@ -180,7 +180,7 @@ describe('API-07 · AC-14/BR-05 · concurrent Ticket Number allocation', () => {
       Array.from({ length: 8 }, (_, index) =>
         request(app)
           .post('/api/tickets')
-          .set('X-Requester-Id', references.requesterId)
+          .set('Cookie', references.cookie)
           .send(
             validPayload({
               summary: `Concurrent ticket ${index + 1}`,
@@ -212,14 +212,14 @@ describe('API-07 · TC-024 · the API uses the Bangkok calendar year', () => {
       createApp({ now: () => beforeBoundary }),
     )
       .post('/api/tickets')
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
       .send(validPayload({ summary: 'Before Bangkok boundary' }))
 
     const afterResponse = await request(
       createApp({ now: () => afterBoundary }),
     )
       .post('/api/tickets')
-      .set('X-Requester-Id', references.requesterId)
+      .set('Cookie', references.cookie)
       .send(validPayload({ summary: 'After Bangkok boundary' }))
 
     expect(beforeResponse.status).toBe(201)

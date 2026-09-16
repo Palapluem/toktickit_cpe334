@@ -6,15 +6,17 @@ import app from '../../src/app.js'
 import prisma from '../../src/prisma.js'
 import { expectDataArray } from './envelope.js'
 import { resetTicketData } from './ticket-fixtures.js'
+import { signIn } from '../lab-03/auth-fixtures.js'
 
 type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 type Status =
   | 'NEW'
-  | 'ASSIGNED'
+  | 'OPEN'
   | 'IN_PROGRESS'
-  | 'PENDING_REQUESTER'
+  | 'WAITING_FOR_REQUESTER'
   | 'RESOLVED'
   | 'CLOSED'
+  | 'REOPENED'
   | 'CANCELLED'
 
 type TicketOverrides = Partial<{
@@ -31,16 +33,18 @@ type TicketOverrides = Partial<{
 }>
 
 let requesterIds: string[] = []
+// One session per seeded Requester, so a test can still say "list as this one".
+const cookieByRequesterId = new Map<string, string>()
 let categoryIds: string[] = []
 let relatedSystemIds: string[] = []
 let ticketSequence = 100
 
 beforeAll(async () => {
   const [requesters, categories, relatedSystems] = await Promise.all([
-    prisma.requesterUser.findMany({
-      where: { isActive: true },
+    prisma.user.findMany({
+      where: { isActive: true, role: 'REQUESTER' },
       orderBy: { displayName: 'asc' },
-      select: { id: true },
+      select: { id: true, email: true },
     }),
     prisma.category.findMany({ orderBy: { name: 'asc' }, select: { id: true } }),
     prisma.relatedSystem.findMany({
@@ -49,6 +53,9 @@ beforeAll(async () => {
     }),
   ])
   requesterIds = requesters.map(({ id }) => id)
+  for (const { id, email } of requesters) {
+    cookieByRequesterId.set(id, await signIn(email))
+  }
   categoryIds = categories.map(({ id }) => id)
   relatedSystemIds = relatedSystems.map(({ id }) => id)
 })
@@ -108,7 +115,7 @@ async function addAttachment(
 function listTickets(requesterId: string, query: Record<string, string> = {}) {
   return request(app)
     .get('/api/tickets')
-    .set('X-Requester-Id', requesterId)
+    .set('Cookie', cookieByRequesterId.get(requesterId) ?? '')
     .query(query)
 }
 
@@ -181,7 +188,7 @@ describe('API-14 · AC-21 · filters compose with AND', () => {
       relatedSystemId: relatedSystemIds[1],
       requestedPriority: 'HIGH',
       itPriority: 'URGENT',
-      status: 'ASSIGNED',
+      status: 'OPEN',
       summary: 'Matches every filter',
     })
     await insertTicket({
@@ -190,7 +197,7 @@ describe('API-14 · AC-21 · filters compose with AND', () => {
       relatedSystemId: relatedSystemIds[1],
       requestedPriority: 'HIGH',
       itPriority: 'LOW',
-      status: 'ASSIGNED',
+      status: 'OPEN',
       summary: 'Fails IT priority',
     })
     await insertTicket({
@@ -199,7 +206,7 @@ describe('API-14 · AC-21 · filters compose with AND', () => {
       relatedSystemId: relatedSystemIds[1],
       requestedPriority: 'HIGH',
       itPriority: 'URGENT',
-      status: 'ASSIGNED',
+      status: 'OPEN',
       summary: 'Fails category',
     })
 
@@ -216,7 +223,7 @@ describe('API-14 · AC-21 · filters compose with AND', () => {
       await listTickets(requesterIds[0], { itPriority: 'URGENT' }),
     )
     const statusResults = expectDataArray(
-      await listTickets(requesterIds[0], { status: 'ASSIGNED' }),
+      await listTickets(requesterIds[0], { status: 'OPEN' }),
     )
     const combinedResults = expectDataArray(
       await listTickets(requesterIds[0], {
@@ -224,7 +231,7 @@ describe('API-14 · AC-21 · filters compose with AND', () => {
         relatedSystemId: relatedSystemIds[1],
         requestedPriority: 'HIGH',
         itPriority: 'URGENT',
-        status: 'ASSIGNED',
+        status: 'OPEN',
       }),
     )
 

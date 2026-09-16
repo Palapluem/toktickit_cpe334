@@ -2,43 +2,47 @@
 // underline in --zen-secondary means active state is not colour alone (STY-007).
 import { useRef, useState, type ReactNode } from 'react'
 import { NavLink, Link, useNavigate } from 'react-router-dom'
+import { logout } from '../api.js'
+import { useOptionalSession } from '../context/SessionContext.js'
+import { LOGIN_ROUTE, navigationFor } from '../routes.js'
 import { Button } from './Button.js'
-import { useOptionalRequester } from '../context/RequesterContext.js'
+import { RoleBadge } from './Badge.js'
 
 export type AppShellProps = {
-  requesterName?: string
-  onChangeRequester?: () => void
+  userName?: string
   breadcrumb?: string[]
   showNavigation?: boolean
   children?: ReactNode
 }
 
-const NAV = [
-  { to: '/tickets', label: 'My Tickets' },
-  { to: '/tickets/new', label: 'Create Ticket' },
-]
-
 export function AppShell({
-  requesterName,
-  onChangeRequester,
+  userName,
   breadcrumb,
   showNavigation = true,
   children,
 }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const context = useOptionalRequester()
+  const session = useOptionalSession()
   const navigate = useNavigate()
 
-  const name = requesterName ?? context?.requester?.displayName
-  const changeRequester =
-    onChangeRequester ??
-    (context
-      ? () => {
-          context.clear()
-          navigate('/select-requester', { replace: true })
-        }
-      : undefined)
+  const user = session?.user ?? null
+  const name = userName ?? user?.displayName
+  const destinations = navigationFor(user?.role ?? 'REQUESTER')
   const toggleRef = useRef<HTMLButtonElement>(null)
+
+  async function signOut() {
+    try {
+      await logout()
+    } catch {
+      // Swallowed deliberately: this runs from a click handler nobody awaits,
+      // so a rethrow would surface as an unhandled rejection and change nothing.
+    } finally {
+      // The session ends on screen either way: the server is the authority and
+      // will refuse the next request regardless of what this call did.
+      session?.clear()
+      navigate(LOGIN_ROUTE, { replace: true })
+    }
+  }
 
   // Escape returns focus to the toggle. Without this a keyboard user who
   // dismisses the menu is left focused on a link that is now hidden.
@@ -78,10 +82,10 @@ export function AppShell({
             aria-label="Main"
             className={`zen-shell__nav d-md-flex gap-4 ${menuOpen ? 'd-flex' : 'd-none'}`}
           >
-            {NAV.map(({ to, label }) => (
+            {destinations.map(({ path, label }) => (
               <NavLink
-                key={to}
-                to={to}
+                key={path}
+                to={path}
                 end
                 className={({ isActive }) =>
                   `zen-shell__nav-link${isActive ? ' zen-shell__nav-link--active' : ''}`
@@ -96,13 +100,16 @@ export function AppShell({
         {name ? (
           <div className="ms-auto d-flex align-items-center gap-2">
             <span>{name}</span>
-            <Button
-              variant="tertiary"
-              className="zen-shell__header-action"
-              onClick={changeRequester}
-            >
-              Change Requester
-            </Button>
+            {user ? <RoleBadge value={user.role} /> : null}
+            {session ? (
+              <Button
+                variant="tertiary"
+                className="zen-shell__header-action"
+                onClick={signOut}
+              >
+                Logout
+              </Button>
+            ) : null}
           </div>
         ) : null}
       </header>

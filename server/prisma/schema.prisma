@@ -1,5 +1,6 @@
-// TokTickIT data model. Authority: docs/lab-02/specification.md §7.
-// UUID identifiers (§11.1). Timestamps UTC.
+// TokTickIT data model. Authority: docs/lab-03/specification.md §7,
+// extending docs/lab-02/specification.md §7.
+// UUID identifiers (lab-02 §11.1). Timestamps UTC.
 
 generator client {
   provider = "prisma-client"
@@ -17,28 +18,63 @@ enum Priority {
   URGENT
 }
 
+/// Lab 2 declared seven values of which only NEW was reachable. Lab 3 renames
+/// two and adds REOPENED, making all eight reachable through §5.1.
 enum TicketStatus {
   NEW
-  ASSIGNED
+  OPEN
   IN_PROGRESS
-  PENDING_REQUESTER
+  WAITING_FOR_REQUESTER
   RESOLVED
   CLOSED
+  REOPENED
   CANCELLED
 }
 
-/// Temporary Lab 2 stand-in for the authenticated user (BR-03, BR-42).
-model RequesterUser {
-  id          String   @id @default(uuid()) @db.Uuid
-  displayName String
-  email       String   @unique
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+/// Exactly one per user (BR-11). Only these three are assignable (BR-34).
+enum Role {
+  REQUESTER
+  IT_STAFF
+  ADMINISTRATOR
+}
 
-  tickets             Ticket[]
-  uploadedAttachments Attachment[] @relation("AttachmentUploader")
-  removedAttachments  Attachment[] @relation("AttachmentRemover")
+/// Renamed from Lab 2's RequesterUser, keeping every identifier (BR-40, §11.4).
+model User {
+  id           String @id @default(uuid()) @db.Uuid
+  displayName  String
+  email        String @unique
+  /// Salted slow hash only. Never plaintext, never logged, never returned (BR-04).
+  passwordHash String
+
+  role               Role    @default(REQUESTER)
+  mustChangePassword Boolean @default(true)
+  isActive           Boolean @default(true)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  tickets             Ticket[]        @relation("TicketRequester")
+  ownedTickets        Ticket[]        @relation("TicketOwner")
+  uploadedAttachments Attachment[]    @relation("AttachmentUploader")
+  removedAttachments  Attachment[]    @relation("AttachmentRemover")
+  sessions            Session[]
+  publicComments      PublicComment[]
+  internalNotes       InternalNote[]
+
+  @@index([role, isActive]) // admin list filter and the BR-36 count
+}
+
+/// id is the opaque token itself: 32 random bytes, base64url (api-spec.md §1).
+model Session {
+  id        String   @id
+  userId    String   @db.Uuid
+  expiresAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId]) // invalidating a user's sessions (BR-07, BR-39)
+  @@index([expiresAt]) // expiry sweeps
 }
 
 model Category {
@@ -74,20 +110,29 @@ model Ticket {
   itPriority        Priority
   status            TicketStatus @default(NEW)
 
-  /// Null throughout Lab 2 (BR-07); modelled now so Lab 3 adds a key, not a column.
+  /// Zero or one owner, who must be an active IT Staff or Administrator (BR-16).
   ownerId String? @db.Uuid
+
+  /// The Requester's "appears resolved" signal. A timestamp, not a status (§11.7).
+  requesterResolvedAt DateTime? @db.Timestamptz(3)
 
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
-  requester     RequesterUser @relation(fields: [requesterId], references: [id], onDelete: Restrict)
+  requester     User          @relation("TicketRequester", fields: [requesterId], references: [id], onDelete: Restrict)
+  owner         User?         @relation("TicketOwner", fields: [ownerId], references: [id], onDelete: Restrict)
   category      Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   relatedSystem RelatedSystem @relation(fields: [relatedSystemId], references: [id], onDelete: Restrict)
-  attachments   Attachment[]
 
-  @@index([requesterId, createdAt(sort: Desc)]) // default list query (BR-37)
-  @@index([requesterId, status]) // FR-18 filters
+  attachments    Attachment[]
+  publicComments PublicComment[]
+  internalNotes  InternalNote[]
+
+  @@index([requesterId, createdAt(sort: Desc)]) // default list query (lab-02 BR-37)
+  @@index([requesterId, status]) // lab-02 FR-18 filters
   @@index([requesterId, categoryId])
+  @@index([status, itPriority, createdAt(sort: Desc)]) // staff queue default order
+  @@index([ownerId]) // assigned to me
 }
 
 model Attachment {
@@ -95,7 +140,7 @@ model Attachment {
   ticketId String @db.Uuid
 
   originalFilename String
-  /// Generated, never derived from user input (BR-30).
+  /// Generated, never derived from user input (lab-02 BR-30).
   storedFilename   String @unique
   mimeType         String
   sizeBytes        Int
@@ -103,21 +148,49 @@ model Attachment {
   uploadedById String   @db.Uuid
   createdAt    DateTime @default(now()) @db.Timestamptz(3)
 
-  /// Soft removal (BR-31). removedAt is the only source of truth for active state.
+  /// Soft removal (lab-02 BR-31). removedAt is the only source of truth.
   removedAt     DateTime? @db.Timestamptz(3)
   removedReason String?
   removedById   String?   @db.Uuid
 
-  ticket     Ticket         @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+  ticket     Ticket @relation(fields: [ticketId], references: [id], onDelete: Restrict)
   // Two references to one model, so both are named (§7).
-  uploadedBy RequesterUser  @relation("AttachmentUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
-  removedBy  RequesterUser? @relation("AttachmentRemover", fields: [removedById], references: [id], onDelete: Restrict)
+  uploadedBy User   @relation("AttachmentUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
+  removedBy  User?  @relation("AttachmentRemover", fields: [removedById], references: [id], onDelete: Restrict)
 
-  @@index([ticketId, removedAt]) // active-attachment count (BR-28)
+  @@index([ticketId, removedAt]) // active-attachment count (lab-02 BR-28)
 }
 
-/// One row per Bangkok calendar year (§11.13), locked inside the creation
-/// transaction. Chosen over MAX(ticketNo)+1 and Postgres sequences — see §7.
+/// Append-only. Visible to the owning Requester, IT Staff, and Administrator (BR-26).
+model PublicComment {
+  id        String   @id @default(uuid()) @db.Uuid
+  ticketId  String   @db.Uuid
+  authorId  String   @db.Uuid
+  body      String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+  author User   @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([ticketId, createdAt]) // thread retrieval
+}
+
+/// Append-only. Visible only to IT Staff and Administrator (BR-27).
+model InternalNote {
+  id        String   @id @default(uuid()) @db.Uuid
+  ticketId  String   @db.Uuid
+  authorId  String   @db.Uuid
+  body      String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+  author User   @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([ticketId, createdAt]) // thread retrieval
+}
+
+/// One row per Bangkok calendar year (lab-02 §11.13), locked inside the
+/// creation transaction.
 model TicketNumberSequence {
   year      Int      @id
   lastValue Int      @default(0)
