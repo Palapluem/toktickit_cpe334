@@ -37,7 +37,8 @@ their own work.
 | [#69](https://github.com/Palapluem/toktickit_cpe334/pull/69) | — | `lab3-staging` ← `feature/26-lab3-e2e-owner-wait` | `ea15e1d` | `N0TAW00D` |
 | [#70](https://github.com/Palapluem/toktickit_cpe334/pull/70) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/54-seed-credential-env` | `53e29d0` | `N0TAW00D` |
 | [#71](https://github.com/Palapluem/toktickit_cpe334/pull/71) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/54-release-gate-concrete-auth` | `5baa344` | `N0TAW00D` |
-| _(release)_ | — | `main` ← `lab3-staging` | _(fill after merge)_ | `N0TAW00D` |
+| [#72](https://github.com/Palapluem/toktickit_cpe334/pull/72) | — | `lab3-staging` ← `feature/54-final-release-documentation` | `03ad128` | `N0TAW00D` |
+| [#73](https://github.com/Palapluem/toktickit_cpe334/pull/73) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `main` ← `lab3-staging` | `b6f85b9` | `N0TAW00D` |
 
 **A defect in this workflow, disclosed rather than hidden.** PRs #57–#64 were stacked,
 each targeting the previous feature branch. They were merged in ascending order, and
@@ -55,11 +56,11 @@ accept before the final submission; no approval is inferred from the merge itsel
 ### Kanban
 
 All Lab 3 Issues (#44–#54) tracked on the *TokTickIT Individual Sprints* board through
-Backlog → Specified → Started → PR Review → Done. Cards #44–#53 are in Done; #54 covers
-the release itself.
+Backlog → Specified → Started → PR Review → Done. Issues #44–#54 are now closed after
+the release merge. The #54 board card still needs to be moved to Done manually.
 
-> **Before submitting:** close Issues #44–#54 by hand — they do not auto-close, because
-> their PRs target `lab3-staging` — and move card #54 to Done after the release merge.
+> **Before submitting:** move the #54 board card to Done and capture the board with every
+> Lab 3 card in Done.
 
 > **Screenshot:** the board with every Lab 3 card in Done.
 
@@ -180,16 +181,15 @@ also traced explicitly. Responsive checks remain in the feature specs that captu
 
 ### Final test output
 
-> **Fill §6 of `tests.md` and this table from a run on `main` after the release merge,
-> per the rule the table itself states.** The run below is from
-> `feature/23-e2e-and-release` with the complete feature set:
+The following run was performed from `main` at
+`b6f85b93e82b2758aa5f266bf51c522764e4f497` on 17 September 2026:
 
 | Suite | Command | Result |
 |---|---|---|
-| Server — unit, API, security, migration | `cd server && npm test` | **406 passed** (28 files) |
-| Client — UI component and style | `cd client && npm test` | **199 passed** (24 files) |
-| E2E and responsive | `npm run test:e2e` | **33 passed** |
-| **Total** | `npm run test:all` | **638 passed · 0 failed · 0 skipped** |
+| Server - unit, API, security, migration | `cd server && npm test` | **410 passed** (28 files) |
+| Client - UI component and style | `cd client && npm test` | **203 passed** (24 files) |
+| E2E and responsive | `npm run test:e2e` | **36 passed** |
+| **Total** | three commands above | **749 passed · 0 failed · 0 skipped** |
 
 > **Screenshot:** terminal output of all three suites.
 

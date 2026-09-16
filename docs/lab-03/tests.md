@@ -319,16 +319,22 @@ Connection strings live in `.env.test`, untracked; only `.env.example` is commit
 
 ## 6. Final Results
 
-> Filled in after the release merge, from a run on the final `main` branch (`lab-02 §11.25`).
+Filled in after the release merge, from a run on the final `main` branch
+(`b6f85b93e82b2758aa5f266bf51c522764e4f497`) on 17 September 2026
+(`lab-02 §11.25`).
 
 | Suite | Command | Tests | Result |
 |---|---|---|---|
-| Server (unit + API + security + migration) | `cd server && npm test` | — | ☐ |
-| Client (UI + style) | `cd client && npm test` | — | ☐ |
-| E2E + responsive | `npm run test:e2e` | — | ☐ |
+| Server (unit + API + security + migration) | `cd server && npm test` | 410 (28 files) | Pass |
+| Client (UI + style) | `cd client && npm test` | 203 (24 files) | Pass |
+| E2E + responsive | `npm run test:e2e` | 36 | Pass |
 
 **Environment**
-- Branch: `main` · Commit: — · Date executed: —
+- Branch: `main` · Commit: `b6f85b9` · Date executed: 2026-09-17
+- Server tests used a fresh disposable PostgreSQL database whose name ended in `_test`.
+- All three Lab 3 migrations deployed successfully before the server suite.
+- The E2E run used the dedicated disposable E2E database and one Playwright worker.
+- Total: **749 passed, 0 failed, 0 skipped** across the three suites.
 
 ---
 
