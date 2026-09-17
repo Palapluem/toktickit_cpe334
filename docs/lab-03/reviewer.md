@@ -33,6 +33,8 @@ Unlike Lab 2, review in Lab 3 ran **in both directions** — §4 records the com
 | [#69](https://github.com/Palapluem/toktickit_cpe334/pull/69) | — | `lab3-staging` ← `feature/26-lab3-e2e-owner-wait` | `MERGED` | `ea15e1d` | `N0TAW00D` |
 | [#70](https://github.com/Palapluem/toktickit_cpe334/pull/70) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/54-seed-credential-env` | `MERGED` | `53e29d0` | `N0TAW00D` |
 | [#71](https://github.com/Palapluem/toktickit_cpe334/pull/71) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/54-release-gate-concrete-auth` | `MERGED` | `5baa344` | `N0TAW00D` |
+| [#72](https://github.com/Palapluem/toktickit_cpe334/pull/72) | — | `lab3-staging` ← `feature/54-final-release-documentation` | `MERGED` | `03ad128` | `N0TAW00D` |
+| [#73](https://github.com/Palapluem/toktickit_cpe334/pull/73) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `main` ← `lab3-staging` | `MERGED` | `b6f85b9` | `N0TAW00D` |
 
 PRs #55–#64 contain the substantive review findings recorded below. The later release
 follow-ups are listed with their actual GitHub review state; approval-only reviews and
@@ -46,9 +48,11 @@ This was caught during the release audit, not during review. It is recorded here
 
 The rule that would have prevented it: with stacked PRs, either delete each branch on merge so GitHub retargets the next one, or merge in **descending** order.
 
-PRs #66–#71 are follow-up release-audit, evidence, environment, and traceability
-changes. They all reached `lab3-staging` through a merge performed by `N0TAW00D`.
-GitHub records approval-only reviews for #65, #67, #69, #70, and #71; #68 has no
+PRs #66–#72 are follow-up release-audit, evidence, environment, traceability, and
+documentation changes. They all reached `lab3-staging` through a merge performed by
+`N0TAW00D`. PR #73 promoted that verified staging tree to `main`, also through a
+merge performed by `N0TAW00D`.
+GitHub records approval-only reviews for #65, #67, #69, #70, #71, #72, and #73; #68 has no
 submitted review record even though the peer performed the merge. That evidence-only
 PR is disclosed as a remaining peer-review record gap rather than described as
 approved without evidence.
@@ -149,6 +153,17 @@ registrations and direct wrong-role checks for 20 denied cells. It also makes th
 AC-08, AC-13, AC-34, and AC-36 traceability visible and records the migration-hash,
 specification, and AI-provenance limitations. The merged tree was re-run locally with
 410 server tests, 203 client tests, and 36 E2E tests passing.
+
+### PR #72 - Release review ledger reconciliation
+
+The reviewer approved the documentation follow-up with `solid`. It reconciled the
+merge ledger and the recorded review state with GitHub before the release PR was opened.
+
+### PR #73 - Lab 3 release
+
+The reviewer approved the release PR with `lgtm` and merged it into `main`. The exact
+merge commit is `b6f85b9`. The post-merge verification from that commit passed 410
+server tests, 203 client tests, 36 E2E tests, and both builds.
 
 ---
 
