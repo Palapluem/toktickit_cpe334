@@ -75,6 +75,15 @@ included accidentally in the documentation change.
 | Test-runner change in PR #75 | `server/vitest.config.ts` serializes database-backed files with one worker |
 | Final release tree | Clean before documentation edits |
 
+## Traceability audit note
+
+The simple name-level AC-citation script reports 36 of 37 AC identifiers in individual
+test names and lists `AC-14` as absent. This is intentional: AC-14 is the suite-level
+migration/regression criterion, so `tests.md` maps it to `MIG-04` and to the complete
+Lab 2 suite rather than to one newly named test. The final server run passed all 410
+tests, including that migrated Lab 2 suite. It is therefore a documented suite-level
+trace, not an untested acceptance criterion.
+
 The exact suite counts are repeated in `docs/lab-03/tests.md` §6 and in the submission
 report's Answer Part 3. This evidence file intentionally records the final release
 state separately from the historical `l3-12-final-main-verification.md` record.

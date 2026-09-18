@@ -230,6 +230,11 @@ labsheet §12. Queue and Ticket Detail checks were consolidated into
 `e2e/lab-03/staff-ticket-flow.spec.ts`; the supplementary comments-and-notes suite is
 also traced explicitly. Responsive checks remain in the feature specs that capture them.
 
+**AC-14 is a deliberate suite-level trace.** The name-level citation audit reports it
+outside individual test names because it is the migration/regression criterion for the
+complete Lab 2 suite. `tests.md` maps it to MIG-04, and the final 410-test server run
+includes that migrated suite; it is not an untested criterion.
+
 ### Final test output
 
 The following run was performed from the exact merged `main` release at
