@@ -109,8 +109,8 @@ token, so the final board column is kept as a manual evidence gate rather than g
 | Board evidence item | Status |
 |---|---|
 | Issues #44–#54 closed | Verified |
-| Issue #54 Project card in Done | ☐ Verify in GitHub Project UI |
-| Board screenshot attached to the final submission | ☐ Capture after the card is in Done |
+| Issue #54 Project card in Done | [ ] Verify in GitHub Project UI |
+| Board screenshot attached to the final submission | [ ] Capture after the card is in Done |
 
 > **Screenshot:** the board with every Lab 3 card in Done.
 
