@@ -21,7 +21,7 @@ the existing shared test database was not used.
 | `git diff --check` | Passed |
 | tracked-runtime-file audit | Only `.env.example` files matched; no real `.env`, credentials, uploads, or test output were tracked |
 
-**Combined test result:** 749 passed, 0 failed, 0 skipped.
+**Combined test result:** 649 passed, 0 failed, 0 skipped.
 
 Non-failing runtime warnings were the existing PostgreSQL client deprecation warning,
 the Prisma update notice, and Playwright's colour-environment warning. No test failed.
