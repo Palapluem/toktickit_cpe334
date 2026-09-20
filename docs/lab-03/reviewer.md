@@ -26,7 +26,7 @@ Unlike Lab 2, review in Lab 3 ran **in both directions** — §4 records the com
 | [#62](https://github.com/Palapluem/toktickit_cpe334/pull/62) | [#51](https://github.com/Palapluem/toktickit_cpe334/issues/51) | `feature/19-…` ← `feature/20-staff-ticket-detail` | `MERGED` | `7100fe6` | `N0TAW00D` |
 | [#63](https://github.com/Palapluem/toktickit_cpe334/pull/63) | [#52](https://github.com/Palapluem/toktickit_cpe334/issues/52) | `feature/20-…` ← `feature/21-comments-and-notes` | `MERGED` | `d18ac83` | `N0TAW00D` |
 | [#64](https://github.com/Palapluem/toktickit_cpe334/pull/64) | [#53](https://github.com/Palapluem/toktickit_cpe334/issues/53) | `feature/21-…` ← `feature/22-user-management` | `MERGED` | `d727d28` | `N0TAW00D` |
-| [#65](https://github.com/Palapluem/toktickit_cpe334/pull/65) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/22-user-management` | `MERGED` | `98ec433` | `N0TAW00D` |
+| [#65](https://github.com/Palapluem/toktickit_cpe334/pull/65) | — | `lab3-staging` ← `feature/22-user-management` | `MERGED` | `98ec433` | `N0TAW00D` |
 | [#66](https://github.com/Palapluem/toktickit_cpe334/pull/66) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/23-e2e-and-release` | `MERGED` | `2cad893` | `N0TAW00D` |
 | [#67](https://github.com/Palapluem/toktickit_cpe334/pull/67) | — | `lab3-staging` ← `feature/24-lab3-release-gaps` | `MERGED` | `82b24ad` | `N0TAW00D` |
 | [#68](https://github.com/Palapluem/toktickit_cpe334/pull/68) | — | `lab3-staging` ← `feature/25-lab3-final-evidence` | `MERGED` | `7a26ce2` | `N0TAW00D` |

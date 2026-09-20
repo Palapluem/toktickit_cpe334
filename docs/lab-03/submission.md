@@ -247,7 +247,7 @@ separate fresh disposable E2E database and one Playwright worker.
 | Server - unit, API, security, migration | `cd server && npm test` | **410 passed** (28 files) |
 | Client - UI component and style | `cd client && npm test` | **203 passed** (24 files) |
 | E2E and responsive | `npm run test:e2e` | **36 passed** |
-| **Total** | three commands above | **749 passed · 0 failed · 0 skipped** |
+| **Total** | three commands above | **649 passed · 0 failed · 0 skipped** |
 
 The final release also passed `cd server && npm run build` and `cd client && npm run
 build`. `cd client && npm run lint` completed successfully with three existing

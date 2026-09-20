@@ -340,7 +340,7 @@ The test databases were fresh disposable PostgreSQL databases whose names ended 
 - Lint warnings are the existing Fast Refresh warnings in `SessionContext.tsx` and the
   unused `REQUESTER_B` test fixture constant in `client/tests/lab-02/MyTickets.test.tsx`;
   lint exited successfully.
-- Total: **749 passed, 0 failed, 0 skipped** across the three suites.
+- Total: **649 passed, 0 failed, 0 skipped** across the three suites.
 
 ---
 
