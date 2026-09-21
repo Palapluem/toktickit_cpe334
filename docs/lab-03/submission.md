@@ -100,19 +100,21 @@ no approval is inferred from the merge itself. The later release audit, PR #75, 
 
 All Lab 3 Issues (#44–#54) tracked on the *TokTickIT Individual Sprints* board through
 Backlog → Specified → Started → PR Review → Done. GitHub confirms Issues #44–#54 are
-closed after the release merge. The Project API is not available to the local audit
-token, so the final board column is kept as a manual evidence gate rather than guessed.
+closed after the release merge. The final GitHub Project UI check confirmed that the
+#54 card is now in Done; the complementary board captures are included in the final
+Google Docs submission.
 
-> **Manual submission gate:** move the #54 board card to Done and capture the board with
-> every Lab 3 card in Done. Do not mark this row complete from the Issue state alone.
+The board evidence below is based on the Project UI check, not on the Issue state alone.
 
 | Board evidence item | Status |
 |---|---|
 | Issues #44–#54 closed | Verified |
-| Issue #54 Project card in Done | [ ] Verify in GitHub Project UI |
-| Board screenshot attached to the final submission | [ ] Capture after the card is in Done |
+| Issue #54 Project card in Done | Verified in GitHub Project UI |
+| Board screenshot attached to the final submission | Verified — [complementary captures are in the final Google Docs report](https://docs.google.com/document/d/1LvDrVanne23Pgj6LH7AoiacwpgOu-sGl7Hyr6pycZCo/edit?tab=t.8io2l44yp95s) |
 
-> **Screenshot:** the board with every Lab 3 card in Done.
+> **Screenshot:** the [final Google Docs report](https://docs.google.com/document/d/1LvDrVanne23Pgj6LH7AoiacwpgOu-sGl7Hyr6pycZCo/edit?tab=t.8io2l44yp95s)
+> contains complementary board captures showing the left-side columns and the Done
+> column, including Issue #54.
 
 ### Peer review record
 
