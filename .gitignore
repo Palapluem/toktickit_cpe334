@@ -12,6 +12,9 @@ build/
 client/dist/
 server/dist/
 
+# Local course-report exports stay outside the product repository.
+output/
+
 # Generated Prisma client
 server/src/generated/
 
