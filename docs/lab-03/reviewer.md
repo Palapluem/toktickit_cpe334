@@ -26,13 +26,18 @@ Unlike Lab 2, review in Lab 3 ran **in both directions** — §4 records the com
 | [#62](https://github.com/Palapluem/toktickit_cpe334/pull/62) | [#51](https://github.com/Palapluem/toktickit_cpe334/issues/51) | `feature/19-…` ← `feature/20-staff-ticket-detail` | `MERGED` | `7100fe6` | `N0TAW00D` |
 | [#63](https://github.com/Palapluem/toktickit_cpe334/pull/63) | [#52](https://github.com/Palapluem/toktickit_cpe334/issues/52) | `feature/20-…` ← `feature/21-comments-and-notes` | `MERGED` | `d18ac83` | `N0TAW00D` |
 | [#64](https://github.com/Palapluem/toktickit_cpe334/pull/64) | [#53](https://github.com/Palapluem/toktickit_cpe334/issues/53) | `feature/21-…` ← `feature/22-user-management` | `MERGED` | `d727d28` | `N0TAW00D` |
-| [#65](https://github.com/Palapluem/toktickit_cpe334/pull/65) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/22-user-management` | `MERGED` | `98ec433` | `N0TAW00D` |
+| [#65](https://github.com/Palapluem/toktickit_cpe334/pull/65) | — | `lab3-staging` ← `feature/22-user-management` | `MERGED` | `98ec433` | `N0TAW00D` |
 | [#66](https://github.com/Palapluem/toktickit_cpe334/pull/66) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/23-e2e-and-release` | `MERGED` | `2cad893` | `N0TAW00D` |
 | [#67](https://github.com/Palapluem/toktickit_cpe334/pull/67) | — | `lab3-staging` ← `feature/24-lab3-release-gaps` | `MERGED` | `82b24ad` | `N0TAW00D` |
 | [#68](https://github.com/Palapluem/toktickit_cpe334/pull/68) | — | `lab3-staging` ← `feature/25-lab3-final-evidence` | `MERGED` | `7a26ce2` | `N0TAW00D` |
 | [#69](https://github.com/Palapluem/toktickit_cpe334/pull/69) | — | `lab3-staging` ← `feature/26-lab3-e2e-owner-wait` | `MERGED` | `ea15e1d` | `N0TAW00D` |
 | [#70](https://github.com/Palapluem/toktickit_cpe334/pull/70) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/54-seed-credential-env` | `MERGED` | `53e29d0` | `N0TAW00D` |
 | [#71](https://github.com/Palapluem/toktickit_cpe334/pull/71) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `lab3-staging` ← `feature/54-release-gate-concrete-auth` | `MERGED` | `5baa344` | `N0TAW00D` |
+| [#72](https://github.com/Palapluem/toktickit_cpe334/pull/72) | — | `lab3-staging` ← `feature/54-final-release-documentation` | `MERGED` | `03ad128` | `N0TAW00D` |
+| [#73](https://github.com/Palapluem/toktickit_cpe334/pull/73) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `main` ← `lab3-staging` | `MERGED` | `b6f85b9` | `N0TAW00D` |
+| [#74](https://github.com/Palapluem/toktickit_cpe334/pull/74) | — | `main` ← `docs/lab-03-final-verification` | `MERGED` | `5360834` | `N0TAW00D` |
+| [#75](https://github.com/Palapluem/toktickit_cpe334/pull/75) | — | `lab3-staging` ← `fix/lab-03-test-runner-isolation` | `MERGED` | `de86bfa` | `N0TAW00D` |
+| [#76](https://github.com/Palapluem/toktickit_cpe334/pull/76) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `main` ← `lab3-staging` | `MERGED` | `6842e35` | `N0TAW00D` |
 
 PRs #55–#64 contain the substantive review findings recorded below. The later release
 follow-ups are listed with their actual GitHub review state; approval-only reviews and
@@ -46,12 +51,17 @@ This was caught during the release audit, not during review. It is recorded here
 
 The rule that would have prevented it: with stacked PRs, either delete each branch on merge so GitHub retargets the next one, or merge in **descending** order.
 
-PRs #66–#71 are follow-up release-audit, evidence, environment, and traceability
-changes. They all reached `lab3-staging` through a merge performed by `N0TAW00D`.
-GitHub records approval-only reviews for #65, #67, #69, #70, and #71; #68 has no
+PRs #66–#72 are follow-up release-audit, evidence, environment, traceability, and
+documentation changes. They all reached `lab3-staging` through a merge performed by
+`N0TAW00D`. PR #73 first promoted that verified staging tree to `main`; PR #74 added
+post-merge evidence, PR #75 serialized the database-backed server runner, and PR #76
+promoted the resulting staging tree to `main` again. All three later merges were also
+performed by `N0TAW00D`.
+GitHub records approval-only reviews for #65, #67, #69, #70, #71, #72, and #73; #68 has no
 submitted review record even though the peer performed the merge. That evidence-only
-PR is disclosed as a remaining peer-review record gap rather than described as
-approved without evidence.
+PR is disclosed as a historical peer-review record gap rather than described as approved
+without evidence. PRs #74, #75, and #76 each have a submitted peer approval recorded in
+the sections below.
 
 ---
 
@@ -150,6 +160,42 @@ AC-08, AC-13, AC-34, and AC-36 traceability visible and records the migration-ha
 specification, and AI-provenance limitations. The merged tree was re-run locally with
 410 server tests, 203 client tests, and 36 E2E tests passing.
 
+### PR #72 - Release review ledger reconciliation
+
+The reviewer approved the documentation follow-up with `solid`. It reconciled the
+merge ledger and the recorded review state with GitHub before the release PR was opened.
+
+### PR #73 - Lab 3 release
+
+The reviewer approved the release PR with `lgtm` and merged it into `main`. The exact
+merge commit is `b6f85b9`. The post-merge verification from that commit passed 410
+server tests, 203 client tests, 36 E2E tests, and both builds.
+
+### PR #74 — Final main verification documentation
+
+The reviewer approved the evidence-only documentation PR with:
+
+> Documentation/evidence-only PR — verified the test counts and merge ledger match across the changed files. Approving.
+
+It merged into `main` at `5360834`. This PR recorded the then-current post-merge
+verification; it is retained as historical evidence because the later test-runner
+isolation change required a new release verification.
+
+### PR #75 — Database-backed test-runner isolation
+
+The reviewer approved the test-only change with `lgtm` and merged it into
+`lab3-staging` at `de86bfa`. The change makes the server Vitest files run in one worker,
+so shared seeded PostgreSQL state cannot be changed concurrently by parallel files.
+The isolated tree was then used as the source of release PR #76.
+
+### PR #76 — Final Lab 3 release promotion
+
+The reviewer approved the release PR with `lgtm` and merged `lab3-staging` into `main`
+at `6842e35`. The exact final-main verification is recorded in
+[`evidence/l3-13-final-main-verification.md`](evidence/l3-13-final-main-verification.md):
+410 server tests, 203 client tests, 36 E2E tests, both production builds, and a
+successful lint run with three non-blocking warnings.
+
 ---
 
 ## 3. What the review actually caught
@@ -178,7 +224,7 @@ Cross-checked the document's claims against the repository rather than reading i
 
 One finding: `reviewer.md` stated "Feature PRs #21–#63 targeted `lab2-staging`", but `#62`'s base branch is `main` and it merged after the release PR `#64`, so it was never part of the pre-release staging set. Reported with the command that shows it.
 
-### PR #75 — Lab 3 sprint specification
+### N0TAW00D/TokTickIT PR #75 — Lab 3 sprint specification
 
 Verified the identifier sets are contiguous (FR-01…36, BR-01…42, AC-01…70, D-01…15 with no gaps or duplicates), that all 70 acceptance criteria appear in the traceability matrix, that the 120-test total reconciles with its per-level breakdown, and that every colour token clears WCAG AA — recomputed, not trusted.
 

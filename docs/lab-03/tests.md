@@ -319,16 +319,28 @@ Connection strings live in `.env.test`, untracked; only `.env.example` is commit
 
 ## 6. Final Results
 
-> Filled in after the release merge, from a run on the final `main` branch (`lab-02 §11.25`).
+Filled in after the release merge, from a run on the exact final `main` commit
+`6842e3502fc2b79cc754555e26d9dc9483d0e20a` on 19 September 2026 (`lab-02 §11.25`).
+The test databases were fresh disposable PostgreSQL databases whose names ended in
+`_test`; no development database was used.
 
 | Suite | Command | Tests | Result |
 |---|---|---|---|
-| Server (unit + API + security + migration) | `cd server && npm test` | — | ☐ |
-| Client (UI + style) | `cd client && npm test` | — | ☐ |
-| E2E + responsive | `npm run test:e2e` | — | ☐ |
+| Server (unit + API + security + migration) | `cd server && npm test` | 410 (28 files) | Pass |
+| Client (UI + style) | `cd client && npm test` | 203 (24 files) | Pass |
+| E2E + responsive | `npm run test:e2e` | 36 | Pass |
+| Server production build | `cd server && npm run build` | — | Pass |
+| Client production build | `cd client && npm run build` | — | Pass |
+| Client lint | `cd client && npm run lint` | — | Pass with 3 non-blocking warnings |
 
 **Environment**
-- Branch: `main` · Commit: — · Date executed: —
+- Branch: `main` · Commit: `6842e3502fc2b79cc754555e26d9dc9483d0e20a` · Date executed: 2026-09-19
+- All three Lab 3 migrations deployed successfully before the server suite.
+- The E2E run used a separate fresh disposable E2E database and one Playwright worker.
+- Lint warnings are the existing Fast Refresh warnings in `SessionContext.tsx` and the
+  unused `REQUESTER_B` test fixture constant in `client/tests/lab-02/MyTickets.test.tsx`;
+  lint exited successfully.
+- Total: **649 passed, 0 failed, 0 skipped** across the three suites.
 
 ---
 
