@@ -338,8 +338,8 @@ active Administrator and both succeed.
 between render and submit, so a client-side guard would be wrong at exactly the moment it
 mattered. The attempt reaches the server and the server's message is shown.
 
-> **Screenshots:** `artifacts/lab-03/screenshots/user-management/` — nine captures
-> including both refusals.
+> **Screenshots:** `artifacts/lab-03/screenshots/user-management/` — ten captures
+> including both refusals and the mobile email-wrap viewport evidence.
 
 ---
 
