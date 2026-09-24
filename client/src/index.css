@@ -1196,6 +1196,10 @@ body {
     overflow-wrap: anywhere;
   }
 
+  .user-management__table td[data-label="Email"] {
+    overflow-wrap: anywhere;
+  }
+
   .my-tickets__skeleton {
     padding: var(--zen-space-2) var(--zen-space-4);
   }
