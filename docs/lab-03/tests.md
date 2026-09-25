@@ -319,10 +319,10 @@ Connection strings live in `.env.test`, untracked; only `.env.example` is commit
 
 ## 6. Final Results
 
-Filled in after the release merge, from a run on the exact final `main` commit
-`6842e3502fc2b79cc754555e26d9dc9483d0e20a` on 19 September 2026 (`lab-02 §11.25`).
-The test databases were fresh disposable PostgreSQL databases whose names ended in
-`_test`; no development database was used.
+Verified after PR #82's release merge, from the exact `main` commit
+`da5bf4a842b79991acab0bd2b71b16bc6acea6ad` on 25 September 2026 (`lab-02 §11.25`).
+The server and E2E runs used separate fresh disposable PostgreSQL databases whose names
+ended in `_test`; no development database or previously accumulated test database was used.
 
 | Suite | Command | Tests | Result |
 |---|---|---|---|
@@ -334,13 +334,18 @@ The test databases were fresh disposable PostgreSQL databases whose names ended 
 | Client lint | `cd client && npm run lint` | — | Pass with 3 non-blocking warnings |
 
 **Environment**
-- Branch: `main` · Commit: `6842e3502fc2b79cc754555e26d9dc9483d0e20a` · Date executed: 2026-09-19
+- Branch: `main` · Commit: `da5bf4a842b79991acab0bd2b71b16bc6acea6ad` · Date executed: 2026-09-25
 - All three Lab 3 migrations deployed successfully before the server suite.
 - The E2E run used a separate fresh disposable E2E database and one Playwright worker.
+- The E2E run includes RESP-04: every User Management email cell was checked at the three
+  configured viewports (1280, 834, and 390 px), including the 390 px mobile viewport.
 - Lint warnings are the existing Fast Refresh warnings in `SessionContext.tsx` and the
   unused `REQUESTER_B` test fixture constant in `client/tests/lab-02/MyTickets.test.tsx`;
   lint exited successfully.
+- The server run emitted a non-failing `pg` deprecation warning about overlapping
+  `client.query()` calls. It did not fail a test or either build.
 - Total: **649 passed, 0 failed, 0 skipped** across the three suites.
+- Detailed post-merge record: [`evidence/l3-14-final-main-verification.md`](evidence/l3-14-final-main-verification.md).
 
 ---
 
