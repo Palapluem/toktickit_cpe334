@@ -109,9 +109,9 @@ Part 3.
 
 Issues #44–#54 followed the *TokTickIT Individual Sprints* board workflow through
 Backlog → Specified → Started → PR Review → Done. GitHub confirms Issues #44–#54 and
-the post-release Issue #80 are closed. The final GitHub Project UI check confirmed
-that the #54 card is in Done; Issue #80 is not present on the board, and the attached
-board captures show the earlier #54 release state only.
+the post-release Issue #80 are closed. The GitHub Project UI shows both the #54 and #80
+cards in Done. The earlier board captures document #54; the post-release #80 card has
+its own filtered UI capture in the Google Docs report.
 
 The board evidence below is based on the Project UI check, not on the Issue state alone.
 
@@ -120,22 +120,22 @@ The board evidence below is based on the Project UI check, not on the Issue stat
 | Issues #44–#54 and #80 closed | Verified |
 | Issue #54 Project card in Done | Verified in GitHub Project UI |
 | Issue #80 closed after post-merge verification | Verified in GitHub |
-| Issue #80 Project card present on the board | Not present in the read-only board check on 25 September 2026 |
-| Issue #80 Project card in Done | Pending owner action: add the existing Issue #80 card to Done |
+| Issue #80 Project card present on the board | Verified in GitHub Project UI |
+| Issue #80 Project card in Done | Verified — [Board capture E in the Google Docs report](https://docs.google.com/document/d/1LvDrVanne23Pgj6LH7AoiacwpgOu-sGl7Hyr6pycZCo/edit?tab=t.8io2l44yp95s) |
 | Existing board screenshots | Verified for the earlier #54 release state — [captures are in the Google Docs report](https://docs.google.com/document/d/1LvDrVanne23Pgj6LH7AoiacwpgOu-sGl7Hyr6pycZCo/edit?tab=t.8io2l44yp95s) |
-| Post-release #80 board screenshot | Pending after the card is added to Done |
+| Post-release #80 board screenshot | Captured as Board capture E in the Google Docs report; not copied into this public repository because the Project is private |
 | Main commit history through PR #82 | Verified — Figure 1.2o in the Google Docs report and `evidence/screenshots/main-history-postmerge-2026-09-25.jpg` |
 | Post-merge GitHub Network Graph data | Verified — official data-table view, Figures 1.2p–1.2q and the two left-to-right captures in `evidence/screenshots/` |
 | New post-merge visual-graph screenshot | Not captured; the report distinguishes the existing graph view through 20 September from the official table view through 25 September |
 
 > **Screenshot:** the [final Google Docs report](https://docs.google.com/document/d/1LvDrVanne23Pgj6LH7AoiacwpgOu-sGl7Hyr6pycZCo/edit?tab=t.8io2l44yp95s)
-> contains complementary board captures showing the left-side columns and the Done
-> column, including Issue #54. The read-only board check shows 25 cards in Done and
-> does not show Issue #80 in any column; Issue closure alone is not proof of a Project
-> card update. The board owner must add the existing #80 card to Done and capture that
-> state. Figure 1.2o refreshes the `main` commit history through PR #82; Figures
+> contains the earlier board captures for Issue #54 and Board capture E, a filtered view
+> showing Issue #80 in the `Done` column. The closed Issue and Project-card state are
+> recorded as separate checks. Because the Project is private, the board screenshot is
+> kept in the report rather than mirrored into this public repository. Figure 1.2o
+> refreshes the `main` commit history through PR #82; Figures
 > 1.2p–1.2q use GitHub's official Network Graph data-table option for the post-merge
-> branch state, and are explicitly distinguished from the earlier visual graph captures.
+> branch state and are explicitly distinguished from the earlier visual graph captures.
 
 ### Peer review record
 
@@ -302,6 +302,27 @@ theatre. *"Read the AC text, not the label"* found 26 test names citing the wron
 criterion. *"Do not assume a merged PR reached staging"* caught the branch defect
 in Part 1. *"Reproduce it before you fix it"* turned a reported vulnerability into a
 permanent regression test.
+
+### Rendered AI-use evidence
+
+These captures come from the current Google Docs report export. The opening records the
+tool/model provenance; the following eight full-width views preserve the complete
+three-column prompt table in continuous, overlapping slices; the final view shows the
+provenance note and complete reflection. The editable source remains
+[`ai-use.md`](ai-use.md).
+
+| Figure | Captured evidence |
+|---|---|
+| 4.1 | [Rendered `ai-use.md` opening — title, model/tool provenance, and selected-prompt introduction](evidence/screenshots/ai-use-opening-2026-09-25.jpg) |
+| 4.1a | [Prompt table, slice 1/8 — header and prompt 1, continuing into prompt 2](evidence/screenshots/ai-use-table-01-2026-09-25.jpg) |
+| 4.1b | [Prompt table, slice 2/8 — continuation of prompt 2 through prompt 3](evidence/screenshots/ai-use-table-02-2026-09-25.jpg) |
+| 4.1c | [Prompt table, slice 3/8 — prompt 3 ending, prompt 4, and start of prompt 5](evidence/screenshots/ai-use-table-03-2026-09-25.jpg) |
+| 4.1d | [Prompt table, slice 4/8 — prompt 5 ending and prompt 6 continuation](evidence/screenshots/ai-use-table-04-2026-09-25.jpg) |
+| 4.1e | [Prompt table, slice 5/8 — prompt 6 ending and prompt 7 continuation](evidence/screenshots/ai-use-table-05-2026-09-25.jpg) |
+| 4.1f | [Prompt table, slice 6/8 — prompt 7 ending, prompt 8, and start of prompt 9](evidence/screenshots/ai-use-table-06-2026-09-25.jpg) |
+| 4.1g | [Prompt table, slice 7/8 — prompt 9 ending and prompt 10 continuation](evidence/screenshots/ai-use-table-07-2026-09-25.jpg) |
+| 4.1h | [Prompt table, slice 8/8 — final portion of prompt 10](evidence/screenshots/ai-use-table-08-2026-09-25.jpg) |
+| 4.2 | [Rendered `ai-use.md` final continuation — provenance note and reflection on validation, limitations, and responsible AI use](evidence/screenshots/ai-use-reflection-2026-09-25.jpg) |
 
 ---
 

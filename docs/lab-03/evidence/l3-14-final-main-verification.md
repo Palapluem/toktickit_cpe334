@@ -45,10 +45,11 @@ the post-merge verification at 2026-09-25 06:04 UTC.
 - The E2E harness regenerated some tracked screenshots in its disposable verification
   worktree. Those incidental image changes were not included in this documentation
   update; the official PR #82 screenshot and test changes remain the evidence source.
-- The read-only Project-board check on 25 September shows 25 cards in `Done` and does
-  not show Issue #80 in any column. The existing board captures show the earlier #54
-  release state. The board owner must add the existing #80 card to `Done` and capture
-  the updated board; closing the Issue does not automatically prove the card state.
+- Following the authorized post-merge Project-board update, the GitHub Project UI shows
+  the Issue #80 card in `Done`. Board capture E in the current Google Docs report
+  records the filtered view; Issue closure and Project-card status are verified
+  separately. The screenshot remains in the report and is not mirrored into this public
+  repository because the Project is private.
 - The report now includes a post-merge `main` history capture through PR #82 and two
   overlapping captures of GitHub's official Network Graph data-table view. The original
   visual Network Graph figures end at the 20 September view; the added table captures
@@ -65,3 +66,12 @@ the post-merge verification at 2026-09-25 06:04 UTC.
   `lab3-staging`, and User Management fix rows.
 - `screenshots/network-data-table-right-postmerge-2026-09-25.jpg` — the same table
   viewport continued to the right; the `Commit` column is the overlap.
+- Board capture E in the Google Docs report — filtered GitHub Project view showing the
+  closed Issue #80 card in `Done`; not copied into this public repository because the
+  Project is private.
+- `screenshots/ai-use-opening-2026-09-25.jpg` and
+  `screenshots/ai-use-table-01-2026-09-25.jpg` through
+  `screenshots/ai-use-table-08-2026-09-25.jpg` — opening and eight continuous,
+  full-width prompt-table slices from the current Google Docs report export.
+- `screenshots/ai-use-reflection-2026-09-25.jpg` — rendered provenance note and full
+  reflection continuation (Figure 4.2 in the report).
