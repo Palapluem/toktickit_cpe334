@@ -195,7 +195,7 @@ registration applies the policy.
 | RESP-01 | AC-34 | Login and Change Password at three viewports | No overflow, clipping, or overlap; screenshots captured | `e2e/lab-03/authentication.spec.ts` | Pass |
 | RESP-02 | AC-34 | Staff Queue at three viewports | Readable at mobile; controls reachable; screenshots captured | `e2e/lab-03/staff-ticket-flow.spec.ts` | Pass |
 | RESP-03 | AC-34 | Staff Ticket Detail at three viewports | Comments and notes readable and distinct; screenshots captured | `e2e/lab-03/staff-ticket-flow.spec.ts`, `e2e/lab-03/comments-and-notes.spec.ts` | Pass |
-| RESP-04 | AC-34 | User Management at three viewports | List usable at mobile; screenshots captured | `e2e/lab-03/user-administration.spec.ts` | Pass |
+| RESP-04 | AC-34 | User Management at three viewports | Every email value fits its cell; no horizontal page overflow; full-page and mobile-viewport evidence captured | `e2e/lab-03/user-administration.spec.ts` | Pass |
 | E2E-01 | AC-01, AC-02, AC-04 | Authentication journey | Log in with an initial password → forced change → application opens → log out → protected URL refused | `e2e/lab-03/authentication.spec.ts` | Pass |
 | E2E-02 | AC-18, AC-20, AC-25 | Staff ticket journey | Queue → open → claim → set IT Priority → status change → Public Comment → Internal Note | `e2e/lab-03/staff-ticket-flow.spec.ts`, `e2e/lab-03/comments-and-notes.spec.ts` | Pass |
 | E2E-03 | AC-28, AC-31, AC-33 | User administration journey | Create user with initial password → that user logs in and must change it → self-deactivation refused | `e2e/lab-03/user-administration.spec.ts` | Pass |

@@ -40,6 +40,43 @@ async function signInThroughTheScreen(
   await page.getByRole('button', { name: 'Sign in' }).click()
 }
 
+async function expectEmailValuesNotToBeClipped(
+  page: import('@playwright/test').Page,
+): Promise<void> {
+  const layout = await page.locator('.user-management__table').evaluate((table) => {
+    const cells = Array.from(
+      table.querySelectorAll<HTMLTableCellElement>(
+        'tbody td[data-label="Email"]',
+      ),
+    )
+    const clipped = cells.some((cell) => {
+      const cellBounds = cell.getBoundingClientRect()
+      const range = document.createRange()
+      range.selectNodeContents(cell)
+      return Array.from(range.getClientRects()).some(
+        (rect) => rect.left < cellBounds.left - 1 || rect.right > cellBounds.right + 1,
+      )
+    })
+
+    return {
+      hasEmailCells:
+        cells.length > 0 && cells.every((cell) => Boolean(cell.textContent?.trim())),
+      clippedEmail: clipped,
+      horizontalPageScroll:
+        Math.max(
+          document.documentElement.scrollWidth,
+          document.body?.scrollWidth ?? 0,
+        ) > window.innerWidth,
+    }
+  })
+
+  expect(layout, 'AC-34 / RESP-04: every email value must fit its list cell').toEqual({
+    hasEmailCells: true,
+    clippedEmail: false,
+    horizontalPageScroll: false,
+  })
+}
+
 test('ADMIN-01 · AC-34 captures the user list at three viewports', async ({ page }) => {
   await signIn(page, ADMIN)
 
@@ -48,7 +85,13 @@ test('ADMIN-01 · AC-34 captures the user list at three viewports', async ({ pag
     await page.goto('/admin/users')
     await expect(page.getByRole('heading', { name: 'User Management' })).toBeVisible()
     await expect(page.getByText('Jennifer Anderson')).toBeVisible()
+    await expectEmailValuesNotToBeClipped(page)
     await captureLab3Screenshot(page, 'user-management', `${viewport.name}-list.png`)
+    if (viewport.name === 'mobile') {
+      await page.screenshot({
+        path: 'artifacts/lab-03/screenshots/user-management/mobile-email-wrap.png',
+      })
+    }
   }
 })
 

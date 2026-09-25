@@ -230,6 +230,7 @@ Both are enforced server-side; these are how the refusal reads.
 Lab 2's three viewports and rules are unchanged. Two additions:
 
 - The Queue and User Management tables become cards below 768 px.
+- User Management email values wrap within their mobile card cells; full values stay visible without horizontal page overflow (RESP-04).
 - The Login and Change Password cards are full-width with 16 px margins below 768 px, and never exceed 420 px above it.
 
 ## 12. Screenshot paths
@@ -244,7 +245,7 @@ staff-queue/        desktop-list · tablet-list · mobile-cards ·
 staff-ticket-detail/ desktop-detail · tablet-detail · mobile-detail ·
                     comments-and-notes
 user-management/    desktop-list · mobile-list · create-dialog ·
-                    duplicate-email · last-administrator
+                    duplicate-email · last-administrator · mobile-email-wrap
 ```
 
 The three refusal captures — `login-failure`, `duplicate-email`, `last-administrator` — are named explicitly because Parts 5 and 8 ask for them and a happy-path-only capture session will not produce them.
@@ -252,7 +253,9 @@ The three refusal captures — `login-failure`, `duplicate-email`, `last-adminis
 The post-audit evidence also includes `authentication/admin-created-change-password.png`,
 `staff-ticket-detail/attachments.png`, `staff-ticket-detail/failure.png`,
 `user-management/edit-dialog.png`, `user-management/reset-confirmation.png`, and
-`user-management/self-deactivation-refused.png`.
+`user-management/self-deactivation-refused.png`. The additional
+`user-management/mobile-email-wrap.png` is a viewport-only capture showing the
+longest seeded email wrapping fully inside its mobile card.
 
 ## 13. Visual inspection checklist
 
