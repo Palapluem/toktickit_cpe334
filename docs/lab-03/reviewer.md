@@ -276,17 +276,27 @@ One finding: `api-spec.md` §9 claimed deleting `GET /api/requesters` "Repeals `
 
 ### N0TAW00D/TokTickIT PR #84 — V-10 responsive clipping follow-up
 
-The author requested this review on PR #84. The submitted review is
-`CHANGES_REQUESTED` on head `d98e68c`; PR #84 remains open with no later commit at the
-time of this check. The review noted that the captured desktop, tablet, and mobile
-screens looked good at their tested widths, but the PR still documented a possible
-V-10 clipping gap around 992–1024 px while `tests.md` marked V-10 as Pass.
+The first review requested changes on head `d98e68c`: the PR documented a possible
+V-10 clipping gap around 992–1024 px while `tests.md` marked V-10 as Pass. The review
+asked the author to identify and fix the affected Ticket Information values without
+losing the required desktop two-column layout, add focused regression coverage around
+the affected widths and breakpoint boundary, assert the values themselves are not
+truncated, and reconcile the test result with the known-limitations text.
 
-The review asked the author to identify and fix the affected Ticket Information
-values without losing the required desktop two-column layout, add focused regression
-coverage around the affected widths and breakpoint boundary, assert the values
-themselves are not truncated, and reconcile the test result with the known-limitations
-text. No approval was given; re-review is due after the author pushes a fix.
+The author pushed the follow-up at `5f03af1`. Re-review confirmed that Ticket
+Information values wrap instead of being ellipsized, Ticket Operations controls can
+wrap without being squeezed, and the desktop two-column layout is preserved. R-03b
+checks actual field values and truncation at 991/992/1024/1080/1440 px and a 65-character
+Requester value at 992/1024/1440 px. The updated desktop, tablet, and mobile screenshots
+showed no visible clipping. The PR reports 591 server, 349 client, and 143 E2E tests
+passing; GitHub reported no hosted status checks, so these are author-reported results,
+not independently verified CI results. The follow-up review approved head `5f03af1`,
+and PR #84 was merged by `Palapluem` into `lab3-staging` at merge commit `d0e3d0f`.
+
+This closes the requested review of PR #84, not the partner's Lab 3 release workflow.
+At this check, Issue #74 remains open and the partner still needs a release PR from
+`lab3-staging` to `main`, including an updated reviewer ledger for PR #84 and its
+review history. No claim is made that the partner's Lab 3 is released on `main`.
 
 ---
 
