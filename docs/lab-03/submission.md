@@ -18,8 +18,9 @@
 |---|---|
 | Repository | [TokTickIT repository](https://github.com/Palapluem/toktickit_cpe334) |
 | GitHub Project | [TokTickIT Individual Sprints](https://github.com/users/Palapluem/projects/2) |
-| Release evidence | [main @ 6842e35](https://github.com/Palapluem/toktickit_cpe334/commit/6842e3502fc2b79cc754555e26d9dc9483d0e20a) |
+| Release evidence | [main @ da5bf4a](https://github.com/Palapluem/toktickit_cpe334/commit/da5bf4a842b79991acab0bd2b71b16bc6acea6ad) |
 | Submission source | [`docs/lab-03/submission.md`](https://github.com/Palapluem/toktickit_cpe334/blob/main/docs/lab-03/submission.md) |
+| Post-merge verification | [`l3-14-final-main-verification.md`](https://github.com/Palapluem/toktickit_cpe334/blob/main/docs/lab-03/evidence/l3-14-final-main-verification.md) |
 
 > The PDF filename is `report_lab03_67070501042.pdf`. Headings follow the labsheet §14 order exactly.
 
@@ -28,11 +29,11 @@
 ## Answer Part 1: Git Use with Engineering Workflow
 
 **Branch flow.** Feature work followed `feature/<n>-<slug>` → `lab3-staging` → `main`.
-No implementation was committed directly to either release branch. The post-merge
-evidence PR (#74) and the release PR (#76) targeted `main` deliberately; every PR was
-merged by `N0TAW00D`, and the author never merged their own work. The review records are
-listed below, including the one evidence-only PR whose submitted review record is
-missing.
+No implementation was committed directly to either release branch. PR #81 merged the
+User Management mobile email-wrap fix into `lab3-staging`; PR #82 then promoted it to
+`main` at `da5bf4a`. Every merge listed below was performed by `N0TAW00D`, and the
+author did not merge their own work. Formal approvals are distinguished from peer
+merges with no submitted review record.
 
 ### Pull Requests
 
@@ -60,6 +61,11 @@ missing.
 | [#74](https://github.com/Palapluem/toktickit_cpe334/pull/74) | — | `main` ← `docs/lab-03-final-verification` | `5360834` | `N0TAW00D` |
 | [#75](https://github.com/Palapluem/toktickit_cpe334/pull/75) | — | `lab3-staging` ← `fix/lab-03-test-runner-isolation` | `de86bfa` | `N0TAW00D` |
 | [#76](https://github.com/Palapluem/toktickit_cpe334/pull/76) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `main` ← `lab3-staging` | `6842e35` | `N0TAW00D` |
+| [#77](https://github.com/Palapluem/toktickit_cpe334/pull/77) | — | `main` ← `docs/lab-03-final-submission` | `6c6317c` | `N0TAW00D` |
+| [#78](https://github.com/Palapluem/toktickit_cpe334/pull/78) | — | `main` ← `docs/lab-03-board-evidence-final` | `1c299c0` | `N0TAW00D` |
+| [#79](https://github.com/Palapluem/toktickit_cpe334/pull/79) | — | `main` ← `docs/lab-03-screenshot-refresh-20260922` | `0c8ab1c` | `N0TAW00D` |
+| [#81](https://github.com/Palapluem/toktickit_cpe334/pull/81) | [#80](https://github.com/Palapluem/toktickit_cpe334/issues/80) | `lab3-staging` ← `fix/80-user-management-mobile-email` | `3167bdd` | `N0TAW00D` |
+| [#82](https://github.com/Palapluem/toktickit_cpe334/pull/82) | [#80](https://github.com/Palapluem/toktickit_cpe334/issues/80) | `main` ← `release/lab3-main-promotion-20260925` | `da5bf4a` | `N0TAW00D` |
 
 > The PR numbers in this table belong to `Palapluem/toktickit_cpe334`. The separate
 > reciprocal review of `N0TAW00D/TokTickIT` PR #75 is recorded only in
@@ -81,6 +87,7 @@ missing.
 | [#52](https://github.com/Palapluem/toktickit_cpe334/issues/52) | Public Comments and Internal Notes | CLOSED |
 | [#53](https://github.com/Palapluem/toktickit_cpe334/issues/53) | Administrator User Management | CLOSED |
 | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | E2E, responsive evidence, and release | CLOSED |
+| [#80](https://github.com/Palapluem/toktickit_cpe334/issues/80) | Keep User Management email values visible on mobile | CLOSED after post-merge verification |
 
 **A defect in this workflow, disclosed rather than hidden.** PRs #57–#64 were stacked,
 each targeting the previous feature branch. They were merged in ascending order, and
@@ -91,30 +98,44 @@ than the PR dashboard, and corrected by PR #65. The full account and the rule th
 prevents it are in [`reviewer.md`](../../docs/lab-03/reviewer.md) §1.1 and in the
 README's branch rules.
 
-PR #68 is recorded as merged by the peer, but GitHub exposes no submitted review for
-that evidence-only change. It is retained as an explicit historical review-record gap;
-no approval is inferred from the merge itself. The later release audit, PR #75, and PR
-#76 are separately evidenced with their actual submitted approvals below.
+PRs #68 and #78 are recorded as peer merges without a submitted review object; PR #81
+also has no submitted review or status checks. These remain explicit review-record
+limitations, not inferred approvals. PR #77 and PR #79 have submitted peer approvals,
+and PR #82 was approved by `N0TAW00D` before the release merge. PR #82 itself has no
+hosted status checks in GitHub; the fresh local post-merge results are recorded in
+Part 3.
 
 ### Kanban
 
-All Lab 3 Issues (#44–#54) tracked on the *TokTickIT Individual Sprints* board through
-Backlog → Specified → Started → PR Review → Done. GitHub confirms Issues #44–#54 are
-closed after the release merge. The final GitHub Project UI check confirmed that the
-#54 card is now in Done; the complementary board captures are included in the final
-Google Docs submission.
+Issues #44–#54 followed the *TokTickIT Individual Sprints* board workflow through
+Backlog → Specified → Started → PR Review → Done. GitHub confirms Issues #44–#54 and
+the post-release Issue #80 are closed. The GitHub Project UI shows both the #54 and #80
+cards in Done. The earlier board captures document #54; the post-release #80 card has
+its own filtered UI capture in the Google Docs report.
 
 The board evidence below is based on the Project UI check, not on the Issue state alone.
 
 | Board evidence item | Status |
 |---|---|
-| Issues #44–#54 closed | Verified |
+| Issues #44–#54 and #80 closed | Verified |
 | Issue #54 Project card in Done | Verified in GitHub Project UI |
-| Board screenshot attached to the final submission | Verified — [complementary captures are in the final Google Docs report](https://docs.google.com/document/d/1LvDrVanne23Pgj6LH7AoiacwpgOu-sGl7Hyr6pycZCo/edit?tab=t.8io2l44yp95s) |
+| Issue #80 closed after post-merge verification | Verified in GitHub |
+| Issue #80 Project card present on the board | Verified in GitHub Project UI |
+| Issue #80 Project card in Done | Verified — [Board capture E in the Google Docs report](https://docs.google.com/document/d/1LvDrVanne23Pgj6LH7AoiacwpgOu-sGl7Hyr6pycZCo/edit?tab=t.8io2l44yp95s) |
+| Existing board screenshots | Verified for the earlier #54 release state — [captures are in the Google Docs report](https://docs.google.com/document/d/1LvDrVanne23Pgj6LH7AoiacwpgOu-sGl7Hyr6pycZCo/edit?tab=t.8io2l44yp95s) |
+| Post-release #80 board screenshot | Captured as Board capture E in the Google Docs report; not copied into this public repository because the Project is private |
+| Main commit history through PR #82 | Verified — Figure 1.2o in the Google Docs report and `evidence/screenshots/main-history-postmerge-2026-09-25.jpg` |
+| Post-merge GitHub Network Graph data | Verified — official data-table view, Figures 1.2p–1.2q and the two left-to-right captures in `evidence/screenshots/` |
+| New post-merge visual-graph screenshot | Not captured; the report distinguishes the existing graph view through 20 September from the official table view through 25 September |
 
 > **Screenshot:** the [final Google Docs report](https://docs.google.com/document/d/1LvDrVanne23Pgj6LH7AoiacwpgOu-sGl7Hyr6pycZCo/edit?tab=t.8io2l44yp95s)
-> contains complementary board captures showing the left-side columns and the Done
-> column, including Issue #54.
+> contains the earlier board captures for Issue #54 and Board capture E, a filtered view
+> showing Issue #80 in the `Done` column. The closed Issue and Project-card state are
+> recorded as separate checks. Because the Project is private, the board screenshot is
+> kept in the report rather than mirrored into this public repository. Figure 1.2o
+> refreshes the `main` commit history through PR #82; Figures
+> 1.2p–1.2q use GitHub's official Network Graph data-table option for the post-merge
+> branch state and are explicitly distinguished from the earlier visual graph captures.
 
 ### Peer review record
 
@@ -200,7 +221,7 @@ Attachments 4 → 4, Tickets 7 → 7, requesters 5 → 5 `User` rows. Nothing or
 ## Answer Part 3: Test DD and Traceability
 
 **Rendered:** [`docs/lab-03/tests.md`](../../docs/lab-03/tests.md) · final-main
-verification: [`evidence/l3-13-final-main-verification.md`](../../docs/lab-03/evidence/l3-13-final-main-verification.md)
+verification: [`evidence/l3-14-final-main-verification.md`](../../docs/lab-03/evidence/l3-14-final-main-verification.md)
 
 88 planned tests across eight levels, each naming the identifier it proves, its expected
 result, and the file it lives in. Every AC maps to at least one planned test (§3).
@@ -239,10 +260,10 @@ includes that migrated suite; it is not an untested criterion.
 
 ### Final test output
 
-The following run was performed from the exact merged `main` release at
-`6842e3502fc2b79cc754555e26d9dc9483d0e20a` on 19 September 2026. The server run used
-a fresh disposable PostgreSQL database whose name ended in `_test`; the E2E run used a
-separate fresh disposable E2E database and one Playwright worker.
+The post-merge run was performed from the exact `main` commit
+`da5bf4a842b79991acab0bd2b71b16bc6acea6ad` on 25 September 2026. The server and E2E
+suites used separate fresh disposable PostgreSQL databases whose names ended in
+`_test`; no development database was used. All three suites ran sequentially.
 
 | Suite | Command | Result |
 |---|---|---|
@@ -251,12 +272,15 @@ separate fresh disposable E2E database and one Playwright worker.
 | E2E and responsive | `npm run test:e2e` | **36 passed** |
 | **Total** | three commands above | **649 passed · 0 failed · 0 skipped** |
 
-The final release also passed `cd server && npm run build` and `cd client && npm run
-build`. `cd client && npm run lint` completed successfully with three existing
-non-blocking warnings: two React Fast Refresh warnings in `SessionContext.tsx` and one
-unused test fixture constant in `client/tests/lab-02/MyTickets.test.tsx`.
+The post-merge commit also passed `cd server && npm run build` and `cd client && npm run
+build`. `cd client && npm run lint` completed successfully with three non-blocking
+warnings: two React Fast Refresh warnings in `SessionContext.tsx` and one unused
+`REQUESTER_B` fixture in `client/tests/lab-02/MyTickets.test.tsx`. The server tests
+emitted a non-failing `pg` deprecation warning about overlapping `client.query()`
+calls; it did not fail a test or build.
 
-> **Screenshot:** terminal output of all three suites.
+> **Evidence:** detailed commands, results, warnings, and post-merge limitations are
+> recorded in [`l3-14-final-main-verification.md`](../../docs/lab-03/evidence/l3-14-final-main-verification.md).
 
 ---
 
@@ -278,6 +302,27 @@ theatre. *"Read the AC text, not the label"* found 26 test names citing the wron
 criterion. *"Do not assume a merged PR reached staging"* caught the branch defect
 in Part 1. *"Reproduce it before you fix it"* turned a reported vulnerability into a
 permanent regression test.
+
+### Rendered AI-use evidence
+
+These captures come from the current Google Docs report export. The opening records the
+tool/model provenance; the following eight full-width views preserve the complete
+three-column prompt table in continuous, overlapping slices; the final view shows the
+provenance note and complete reflection. The editable source remains
+[`ai-use.md`](ai-use.md).
+
+| Figure | Captured evidence |
+|---|---|
+| 4.1 | [Rendered `ai-use.md` opening — title, model/tool provenance, and selected-prompt introduction](evidence/screenshots/ai-use-opening-2026-09-25.jpg) |
+| 4.1a | [Prompt table, slice 1/8 — header and prompt 1, continuing into prompt 2](evidence/screenshots/ai-use-table-01-2026-09-25.jpg) |
+| 4.1b | [Prompt table, slice 2/8 — continuation of prompt 2 through prompt 3](evidence/screenshots/ai-use-table-02-2026-09-25.jpg) |
+| 4.1c | [Prompt table, slice 3/8 — prompt 3 ending, prompt 4, and start of prompt 5](evidence/screenshots/ai-use-table-03-2026-09-25.jpg) |
+| 4.1d | [Prompt table, slice 4/8 — prompt 5 ending and prompt 6 continuation](evidence/screenshots/ai-use-table-04-2026-09-25.jpg) |
+| 4.1e | [Prompt table, slice 5/8 — prompt 6 ending and prompt 7 continuation](evidence/screenshots/ai-use-table-05-2026-09-25.jpg) |
+| 4.1f | [Prompt table, slice 6/8 — prompt 7 ending, prompt 8, and start of prompt 9](evidence/screenshots/ai-use-table-06-2026-09-25.jpg) |
+| 4.1g | [Prompt table, slice 7/8 — prompt 9 ending and prompt 10 continuation](evidence/screenshots/ai-use-table-07-2026-09-25.jpg) |
+| 4.1h | [Prompt table, slice 8/8 — final portion of prompt 10](evidence/screenshots/ai-use-table-08-2026-09-25.jpg) |
+| 4.2 | [Rendered `ai-use.md` final continuation — provenance note and reflection on validation, limitations, and responsible AI use](evidence/screenshots/ai-use-reflection-2026-09-25.jpg) |
 
 ---
 
@@ -460,7 +505,7 @@ Lab 3 evidence.
 | Authentication (8) | [`login-desktop`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/login-desktop.png), [`login-tablet`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/login-tablet.png), [`login-mobile`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/login-mobile.png), [`login-failure`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/login-failure.png), [`change-password-desktop`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/change-password-desktop.png), [`change-password-tablet`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/change-password-tablet.png), [`change-password-mobile`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/change-password-mobile.png), [`admin-created-change-password`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/admin-created-change-password.png) | Three viewports, safe login failure, mandatory password change, and the administrator-created account gate. |
 | Staff queue (6) | [`desktop-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-queue/desktop-list.png), [`tablet-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-queue/tablet-list.png), [`mobile-cards`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-queue/mobile-cards.png), [`empty`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-queue/empty.png), [`no-results`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-queue/no-results.png), [`forbidden`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-queue/forbidden.png) | Queue data, three responsive layouts, empty versus no-results, and the Requester forbidden state. |
 | Staff ticket detail (8) | [`desktop-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/desktop-detail.png), [`tablet-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/tablet-detail.png), [`mobile-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/mobile-detail.png), [`comments-and-notes`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/comments-and-notes.png), [`requester-view-no-notes`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/requester-view-no-notes.png), [`forbidden`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/forbidden.png), [`attachments`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/attachments.png), [`failure`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/failure.png) | Claim/assignment, ticket detail, responsive layouts, comments versus notes, ownership refusal, attachments, and retryable load failure. |
-| Administrator user management (9) | [`desktop-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/desktop-list.png), [`tablet-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/tablet-list.png), [`mobile-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/mobile-list.png), [`create-dialog`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/create-dialog.png), [`duplicate-email`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/duplicate-email.png), [`edit-dialog`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/edit-dialog.png), [`reset-confirmation`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/reset-confirmation.png), [`self-deactivation-refused`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/self-deactivation-refused.png), [`last-administrator`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/last-administrator.png) | Three responsive layouts, create/edit/reset flows, duplicate-email validation, and both Administrator safety refusals. |
+| Administrator user management (10) | [`desktop-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/desktop-list.png), [`tablet-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/tablet-list.png), [`mobile-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/mobile-list.png), [`mobile-email-wrap`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/mobile-email-wrap.png), [`create-dialog`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/create-dialog.png), [`duplicate-email`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/duplicate-email.png), [`edit-dialog`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/edit-dialog.png), [`reset-confirmation`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/reset-confirmation.png), [`self-deactivation-refused`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/self-deactivation-refused.png), [`last-administrator`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/last-administrator.png) | Three responsive layouts, full email wrapping at 390 px, create/edit/reset flows, duplicate-email validation, and both Administrator safety refusals. |
 | Lab 2 regression: Create Ticket (3) | [`desktop-initial`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/create-ticket/desktop-initial.png), [`tablet-initial`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/create-ticket/tablet-initial.png), [`mobile-initial`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/create-ticket/mobile-initial.png) | The existing Lab 2 Requester screen remains visually available after authenticated identity replaces the selector. |
 | Lab 2 regression: My Tickets (3) | [`desktop-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/my-tickets/desktop-list.png), [`tablet-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/my-tickets/tablet-list.png), [`mobile-cards`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/my-tickets/mobile-cards.png) | Requester-owned listing and responsive regression evidence. |
 | Lab 2 regression: Ticket Detail (3) | [`desktop-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/ticket-detail/desktop-detail.png), [`tablet-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/ticket-detail/tablet-detail.png), [`mobile-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/ticket-detail/mobile-detail.png) | Requester ticket detail and attachment continuity after the migration. |

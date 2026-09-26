@@ -38,6 +38,11 @@ Unlike Lab 2, review in Lab 3 ran **in both directions** — §4 records the com
 | [#74](https://github.com/Palapluem/toktickit_cpe334/pull/74) | — | `main` ← `docs/lab-03-final-verification` | `MERGED` | `5360834` | `N0TAW00D` |
 | [#75](https://github.com/Palapluem/toktickit_cpe334/pull/75) | — | `lab3-staging` ← `fix/lab-03-test-runner-isolation` | `MERGED` | `de86bfa` | `N0TAW00D` |
 | [#76](https://github.com/Palapluem/toktickit_cpe334/pull/76) | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | `main` ← `lab3-staging` | `MERGED` | `6842e35` | `N0TAW00D` |
+| [#77](https://github.com/Palapluem/toktickit_cpe334/pull/77) | — | `main` ← `docs/lab-03-final-submission` | `MERGED` | `6c6317c` | `N0TAW00D` |
+| [#78](https://github.com/Palapluem/toktickit_cpe334/pull/78) | — | `main` ← `docs/lab-03-board-evidence-final` | `MERGED` | `1c299c0` | `N0TAW00D` |
+| [#79](https://github.com/Palapluem/toktickit_cpe334/pull/79) | — | `main` ← `docs/lab-03-screenshot-refresh-20260922` | `MERGED` | `0c8ab1c` | `N0TAW00D` |
+| [#81](https://github.com/Palapluem/toktickit_cpe334/pull/81) | [#80](https://github.com/Palapluem/toktickit_cpe334/issues/80) | `lab3-staging` ← `fix/80-user-management-mobile-email` | `MERGED` | `3167bdd` | `N0TAW00D` |
+| [#82](https://github.com/Palapluem/toktickit_cpe334/pull/82) | [#80](https://github.com/Palapluem/toktickit_cpe334/issues/80) | `main` ← `release/lab3-main-promotion-20260925` | `MERGED` | `da5bf4a` | `N0TAW00D` |
 
 PRs #55–#64 contain the substantive review findings recorded below. The later release
 follow-ups are listed with their actual GitHub review state; approval-only reviews and
@@ -55,13 +60,15 @@ PRs #66–#72 are follow-up release-audit, evidence, environment, traceability, 
 documentation changes. They all reached `lab3-staging` through a merge performed by
 `N0TAW00D`. PR #73 first promoted that verified staging tree to `main`; PR #74 added
 post-merge evidence, PR #75 serialized the database-backed server runner, and PR #76
-promoted the resulting staging tree to `main` again. All three later merges were also
-performed by `N0TAW00D`.
-GitHub records approval-only reviews for #65, #67, #69, #70, #71, #72, and #73; #68 has no
-submitted review record even though the peer performed the merge. That evidence-only
-PR is disclosed as a historical peer-review record gap rather than described as approved
-without evidence. PRs #74, #75, and #76 each have a submitted peer approval recorded in
-the sections below.
+promoted the resulting staging tree to `main` again. PRs #77–#79 then updated the
+submission, board evidence, and tracked screenshots. PR #81 merged the User Management
+mobile email-wrap fix into `lab3-staging`; approved release PR #82 promoted it to
+`main` at `da5bf4a`. Every merge was performed by `N0TAW00D`.
+
+GitHub exposes no submitted review for #68, #78, or #81; no approval is inferred from
+their merges. PR #82 also has no hosted status checks, so the post-merge test results
+are recorded separately in `evidence/l3-14-final-main-verification.md`. Submitted
+approval records for #77, #79, and #82 are described below.
 
 ---
 
@@ -188,13 +195,50 @@ The reviewer approved the test-only change with `lgtm` and merged it into
 so shared seeded PostgreSQL state cannot be changed concurrently by parallel files.
 The isolated tree was then used as the source of release PR #76.
 
-### PR #76 — Final Lab 3 release promotion
+### PR #76 — Initial Lab 3 release promotion (historical checkpoint)
 
-The reviewer approved the release PR with `lgtm` and merged `lab3-staging` into `main`
-at `6842e35`. The exact final-main verification is recorded in
+At the first release checkpoint, the reviewer approved the release PR with `lgtm` and
+merged `lab3-staging` into `main` at `6842e35`. This was the final-main verification
+for that checkpoint, not the post-PR #82 state. The archived run is recorded in
 [`evidence/l3-13-final-main-verification.md`](evidence/l3-13-final-main-verification.md):
 410 server tests, 203 client tests, 36 E2E tests, both production builds, and a
 successful lint run with three non-blocking warnings.
+
+### PR #77 — Final submission evidence
+
+The reviewer first submitted two data-accuracy findings, then approved after the
+author's correction at `576233c`. The approval explicitly rechecked the combined
+649-test total, Issue linkage, merge hashes and parents, review states, and the
+historical absence of a submitted review for PR #68. PR #77 merged into `main` at
+`6c6317c`.
+
+### PR #78 — Project-board evidence
+
+PR #78 merged the board-evidence follow-up into `main` at `1c299c0`. GitHub exposes
+no submitted review for this PR; the merge is recorded without inferring approval.
+Its board captures document the #54 release-time state, not the later #80 follow-up.
+
+### PR #79 — Tracked screenshot refresh
+
+The reviewer approved PR #79, which refreshed tracked Lab 3 screenshot evidence. It
+merged into `main` at `0c8ab1c`. The later PR #82 adds the corrected User Management
+mobile-email evidence to the release.
+
+### PR #81 — User Management mobile email wrapping
+
+The author added wrapping for long email values in mobile User Management cards,
+RESP-04 E2E checks for email clipping and horizontal page overflow, and the mobile
+email-wrap screenshot. The PR merged into `lab3-staging` at `3167bdd`, performed by
+`N0TAW00D`. GitHub exposes no submitted review or status checks for #81, so this is
+recorded as a peer merge without formal approval evidence.
+
+### PR #82 — Post-release promotion of the mobile fix
+
+The reviewer submitted an approval (`lgtm`) on PR #82, then merged it into `main` at
+`da5bf4a`. GitHub reports no hosted status checks for the PR. The exact merged
+`main` commit was independently verified locally after promotion: 410 server tests,
+203 client tests, 36 E2E tests, both builds, and lint passed. The detailed record is
+[`evidence/l3-14-final-main-verification.md`](evidence/l3-14-final-main-verification.md).
 
 ---
 
@@ -229,6 +273,20 @@ One finding: `reviewer.md` stated "Feature PRs #21–#63 targeted `lab2-staging`
 Verified the identifier sets are contiguous (FR-01…36, BR-01…42, AC-01…70, D-01…15 with no gaps or duplicates), that all 70 acceptance criteria appear in the traceability matrix, that the 120-test total reconciles with its per-level breakdown, and that every colour token clears WCAG AA — recomputed, not trusted.
 
 One finding: `api-spec.md` §9 claimed deleting `GET /api/requesters` "Repeals `L2-BR-35`", but `specification.md` §7.4 item 8 lists a different repeal set that excludes BR-35, and BR-35 also governs two endpoints that survive. Two authoritative documents disagreeing about the same rule. Fixed by the author in `06b2433` before merge, and re-verified.
+
+### N0TAW00D/TokTickIT PR #84 — V-10 responsive clipping follow-up
+
+The author requested this review on PR #84. The submitted review is
+`CHANGES_REQUESTED` on head `d98e68c`; PR #84 remains open with no later commit at the
+time of this check. The review noted that the captured desktop, tablet, and mobile
+screens looked good at their tested widths, but the PR still documented a possible
+V-10 clipping gap around 992–1024 px while `tests.md` marked V-10 as Pass.
+
+The review asked the author to identify and fix the affected Ticket Information
+values without losing the required desktop two-column layout, add focused regression
+coverage around the affected widths and breakpoint boundary, assert the values
+themselves are not truncated, and reconcile the test result with the known-limitations
+text. No approval was given; re-review is due after the author pushes a fix.
 
 ---
 
