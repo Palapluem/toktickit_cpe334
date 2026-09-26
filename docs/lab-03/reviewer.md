@@ -43,6 +43,7 @@ Unlike Lab 2, review in Lab 3 ran **in both directions** — §4 records the com
 | [#79](https://github.com/Palapluem/toktickit_cpe334/pull/79) | — | `main` ← `docs/lab-03-screenshot-refresh-20260922` | `MERGED` | `0c8ab1c` | `N0TAW00D` |
 | [#81](https://github.com/Palapluem/toktickit_cpe334/pull/81) | [#80](https://github.com/Palapluem/toktickit_cpe334/issues/80) | `lab3-staging` ← `fix/80-user-management-mobile-email` | `MERGED` | `3167bdd` | `N0TAW00D` |
 | [#82](https://github.com/Palapluem/toktickit_cpe334/pull/82) | [#80](https://github.com/Palapluem/toktickit_cpe334/issues/80) | `main` ← `release/lab3-main-promotion-20260925` | `MERGED` | `da5bf4a` | `N0TAW00D` |
+| [#83](https://github.com/Palapluem/toktickit_cpe334/pull/83) | — | `main` ← `docs/lab-03-postmerge-final-evidence-20260925` | `MERGED` | `f4265f4` | `N0TAW00D` |
 
 PRs #55–#64 contain the substantive review findings recorded below. The later release
 follow-ups are listed with their actual GitHub review state; approval-only reviews and
@@ -63,12 +64,14 @@ post-merge evidence, PR #75 serialized the database-backed server runner, and PR
 promoted the resulting staging tree to `main` again. PRs #77–#79 then updated the
 submission, board evidence, and tracked screenshots. PR #81 merged the User Management
 mobile email-wrap fix into `lab3-staging`; approved release PR #82 promoted it to
-`main` at `da5bf4a`. Every merge was performed by `N0TAW00D`.
+`main` at `da5bf4a`. PR #83 then added approved post-merge verification evidence to
+`main` at `f4265f4`; it changed documentation only and did not change product behavior.
+Every merge was performed by `N0TAW00D`.
 
 GitHub exposes no submitted review for #68, #78, or #81; no approval is inferred from
 their merges. PR #82 also has no hosted status checks, so the post-merge test results
 are recorded separately in `evidence/l3-14-final-main-verification.md`. Submitted
-approval records for #77, #79, and #82 are described below.
+approval records for #77, #79, #82, and #83 are described below.
 
 ---
 
@@ -239,6 +242,13 @@ The reviewer submitted an approval (`lgtm`) on PR #82, then merged it into `main
 `main` commit was independently verified locally after promotion: 410 server tests,
 203 client tests, 36 E2E tests, both builds, and lint passed. The detailed record is
 [`evidence/l3-14-final-main-verification.md`](evidence/l3-14-final-main-verification.md).
+
+### PR #83 — Post-merge verification evidence
+
+The reviewer approved this documentation-only follow-up with `Great` and merged it
+into `main` at `f4265f4`. It records post-PR #82 verification and refreshed submission
+evidence; the product test results remain attributed to the exact release commit
+`da5bf4a`, not to this documentation merge.
 
 ---
 
