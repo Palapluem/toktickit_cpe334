@@ -43,6 +43,7 @@ Unlike Lab 2, review in Lab 3 ran **in both directions** — §4 records the com
 | [#79](https://github.com/Palapluem/toktickit_cpe334/pull/79) | — | `main` ← `docs/lab-03-screenshot-refresh-20260922` | `MERGED` | `0c8ab1c` | `N0TAW00D` |
 | [#81](https://github.com/Palapluem/toktickit_cpe334/pull/81) | [#80](https://github.com/Palapluem/toktickit_cpe334/issues/80) | `lab3-staging` ← `fix/80-user-management-mobile-email` | `MERGED` | `3167bdd` | `N0TAW00D` |
 | [#82](https://github.com/Palapluem/toktickit_cpe334/pull/82) | [#80](https://github.com/Palapluem/toktickit_cpe334/issues/80) | `main` ← `release/lab3-main-promotion-20260925` | `MERGED` | `da5bf4a` | `N0TAW00D` |
+| [#83](https://github.com/Palapluem/toktickit_cpe334/pull/83) | — | `main` ← `docs/lab-03-postmerge-final-evidence-20260925` | `MERGED` | `f4265f4` | `N0TAW00D` |
 
 PRs #55–#64 contain the substantive review findings recorded below. The later release
 follow-ups are listed with their actual GitHub review state; approval-only reviews and
@@ -63,12 +64,14 @@ post-merge evidence, PR #75 serialized the database-backed server runner, and PR
 promoted the resulting staging tree to `main` again. PRs #77–#79 then updated the
 submission, board evidence, and tracked screenshots. PR #81 merged the User Management
 mobile email-wrap fix into `lab3-staging`; approved release PR #82 promoted it to
-`main` at `da5bf4a`. Every merge was performed by `N0TAW00D`.
+`main` at `da5bf4a`. PR #83 then added approved post-merge verification evidence to
+`main` at `f4265f4`; it changed documentation only and did not change product behavior.
+Every merge was performed by `N0TAW00D`.
 
 GitHub exposes no submitted review for #68, #78, or #81; no approval is inferred from
 their merges. PR #82 also has no hosted status checks, so the post-merge test results
 are recorded separately in `evidence/l3-14-final-main-verification.md`. Submitted
-approval records for #77, #79, and #82 are described below.
+approval records for #77, #79, #82, and #83 are described below.
 
 ---
 
@@ -240,6 +243,13 @@ The reviewer submitted an approval (`lgtm`) on PR #82, then merged it into `main
 203 client tests, 36 E2E tests, both builds, and lint passed. The detailed record is
 [`evidence/l3-14-final-main-verification.md`](evidence/l3-14-final-main-verification.md).
 
+### PR #83 — Post-merge verification evidence
+
+The reviewer approved this documentation-only follow-up with `Great` and merged it
+into `main` at `f4265f4`. It records post-PR #82 verification and refreshed submission
+evidence; the product test results remain attributed to the exact release commit
+`da5bf4a`, not to this documentation merge.
+
 ---
 
 ## 3. What the review actually caught
@@ -276,17 +286,27 @@ One finding: `api-spec.md` §9 claimed deleting `GET /api/requesters` "Repeals `
 
 ### N0TAW00D/TokTickIT PR #84 — V-10 responsive clipping follow-up
 
-The author requested this review on PR #84. The submitted review is
-`CHANGES_REQUESTED` on head `d98e68c`; PR #84 remains open with no later commit at the
-time of this check. The review noted that the captured desktop, tablet, and mobile
-screens looked good at their tested widths, but the PR still documented a possible
-V-10 clipping gap around 992–1024 px while `tests.md` marked V-10 as Pass.
+The first review requested changes on head `d98e68c`: the PR documented a possible
+V-10 clipping gap around 992–1024 px while `tests.md` marked V-10 as Pass. The review
+asked the author to identify and fix the affected Ticket Information values without
+losing the required desktop two-column layout, add focused regression coverage around
+the affected widths and breakpoint boundary, assert the values themselves are not
+truncated, and reconcile the test result with the known-limitations text.
 
-The review asked the author to identify and fix the affected Ticket Information
-values without losing the required desktop two-column layout, add focused regression
-coverage around the affected widths and breakpoint boundary, assert the values
-themselves are not truncated, and reconcile the test result with the known-limitations
-text. No approval was given; re-review is due after the author pushes a fix.
+The author pushed the follow-up at `5f03af1`. Re-review confirmed that Ticket
+Information values wrap instead of being ellipsized, Ticket Operations controls can
+wrap without being squeezed, and the desktop two-column layout is preserved. R-03b
+checks actual field values and truncation at 991/992/1024/1080/1440 px and a 65-character
+Requester value at 992/1024/1440 px. The updated desktop, tablet, and mobile screenshots
+showed no visible clipping. The PR reports 591 server, 349 client, and 143 E2E tests
+passing; GitHub reported no hosted status checks, so these are author-reported results,
+not independently verified CI results. The follow-up review approved head `5f03af1`,
+and PR #84 was merged by `Palapluem` into `lab3-staging` at merge commit `d0e3d0f`.
+
+This closes the requested review of PR #84, not the partner's Lab 3 release workflow.
+At this check, Issue #74 remains open and the partner still needs a release PR from
+`lab3-staging` to `main`, including an updated reviewer ledger for PR #84 and its
+review history. No claim is made that the partner's Lab 3 is released on `main`.
 
 ---
 

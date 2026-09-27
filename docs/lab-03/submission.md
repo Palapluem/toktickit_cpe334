@@ -35,6 +35,15 @@ User Management mobile email-wrap fix into `lab3-staging`; PR #82 then promoted 
 author did not merge their own work. Formal approvals are distinguished from peer
 merges with no submitted review record.
 
+**Product release and course-delivery closeout are separate gates.** PR #82 released
+the product and the final-main tests are pinned to its exact commit. The subsequent
+documentation-only PR #83 was approved and merged at `f4265f4`; it changed evidence and
+documentation, not product code. This post-release sequence matches the prior lab
+reports: Lab 1 records docs-only PRs #13–#15 after release PR #12, and Lab 2 records
+docs-only PRs #41–#43 after release PR #39. The one-PDF course submission is finalized
+only after the evidence/ledger closeout is merged; no pending item is presented as
+complete.
+
 ### Pull Requests
 
 | PR | Issue | Base ← head | Merge commit | Merged by |
@@ -66,6 +75,7 @@ merges with no submitted review record.
 | [#79](https://github.com/Palapluem/toktickit_cpe334/pull/79) | — | `main` ← `docs/lab-03-screenshot-refresh-20260922` | `0c8ab1c` | `N0TAW00D` |
 | [#81](https://github.com/Palapluem/toktickit_cpe334/pull/81) | [#80](https://github.com/Palapluem/toktickit_cpe334/issues/80) | `lab3-staging` ← `fix/80-user-management-mobile-email` | `3167bdd` | `N0TAW00D` |
 | [#82](https://github.com/Palapluem/toktickit_cpe334/pull/82) | [#80](https://github.com/Palapluem/toktickit_cpe334/issues/80) | `main` ← `release/lab3-main-promotion-20260925` | `da5bf4a` | `N0TAW00D` |
+| [#83](https://github.com/Palapluem/toktickit_cpe334/pull/83) | — | `main` ← `docs/lab-03-postmerge-final-evidence-20260925` | `f4265f4` | `N0TAW00D` |
 
 > The PR numbers in this table belong to `Palapluem/toktickit_cpe334`. The separate
 > reciprocal review of `N0TAW00D/TokTickIT` PR #75 is recorded only in
@@ -124,18 +134,19 @@ The board evidence below is based on the Project UI check, not on the Issue stat
 | Issue #80 Project card in Done | Verified — [Board capture E in the Google Docs report](https://docs.google.com/document/d/1LvDrVanne23Pgj6LH7AoiacwpgOu-sGl7Hyr6pycZCo/edit?tab=t.8io2l44yp95s) |
 | Existing board screenshots | Verified for the earlier #54 release state — [captures are in the Google Docs report](https://docs.google.com/document/d/1LvDrVanne23Pgj6LH7AoiacwpgOu-sGl7Hyr6pycZCo/edit?tab=t.8io2l44yp95s) |
 | Post-release #80 board screenshot | Captured as Board capture E in the Google Docs report; not copied into this public repository because the Project is private |
-| Main commit history through PR #82 | Verified — Figure 1.2o in the Google Docs report and `evidence/screenshots/main-history-postmerge-2026-09-25.jpg` |
+| Main commit history after docs-only PR #83 | Verified — Figure 1.2r in the Google Docs report; product-release test results remain pinned to `da5bf4a` |
 | Post-merge GitHub Network Graph data | Verified — official data-table view, Figures 1.2p–1.2q and the two left-to-right captures in `evidence/screenshots/` |
-| New post-merge visual-graph screenshot | Not captured; the report distinguishes the existing graph view through 20 September from the official table view through 25 September |
+| Current visual Network Graph continuation | Verified — Figure 1.2s continues from the endpoint of Figure 1.2d and shows later branches through the PR #83 evidence branch; it is explicitly a recent-commit view, not complete history |
 
 > **Screenshot:** the [final Google Docs report](https://docs.google.com/document/d/1LvDrVanne23Pgj6LH7AoiacwpgOu-sGl7Hyr6pycZCo/edit?tab=t.8io2l44yp95s)
 > contains the earlier board captures for Issue #54 and Board capture E, a filtered view
 > showing Issue #80 in the `Done` column. The closed Issue and Project-card state are
 > recorded as separate checks. Because the Project is private, the board screenshot is
-> kept in the report rather than mirrored into this public repository. Figure 1.2o
-> refreshes the `main` commit history through PR #82; Figures
+> kept in the report rather than mirrored into this public repository. Figure 1.2r
+> refreshes the `main` commit history after documentation-only PR #83; Figures
 > 1.2p–1.2q use GitHub's official Network Graph data-table option for the post-merge
-> branch state and are explicitly distinguished from the earlier visual graph captures.
+> branch state, and Figure 1.2s is a horizontally continuous visual-graph continuation.
+> These views are distinguished from a complete repository history.
 
 ### Peer review record
 
@@ -143,6 +154,15 @@ The board evidence below is based on the Project UI check, not on the Issue stat
 merge ledger above taken from GitHub's own `mergeCommit`/`mergedBy`, every review
 finding with the response to it, and §4 the reviews *given* on the reviewer's
 repository, since Lab 3 review ran in both directions.
+
+**Reciprocal review — N0TAW00D/TokTickIT PR #84.** The first review requested changes
+on `d98e68c` for the V-10 responsive-clipping gap. Re-review of `5f03af1` verified
+wrapping and field-value regression checks at the requested widths; the approval and
+the author's reported test totals are recorded in `reviewer.md` §4. The PR merged by
+`Palapluem` into the partner's `lab3-staging` at `d0e3d0f`. GitHub exposed no hosted
+status checks, so the reported 591 server, 349 client, and 143 E2E tests are not
+described as CI results. The partner's Issue #74 and staging-to-main release remain
+their separate open workflow; this review does not claim that their Lab 3 is released.
 
 ### README and .gitignore
 
