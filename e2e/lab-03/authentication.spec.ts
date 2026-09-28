@@ -62,6 +62,11 @@ test('AUTH-03 signs in and reaches My Tickets', async ({ page }) => {
   // exact: the status filter offers WAITING_FOR_REQUESTER, which contains it.
   await expect(page.getByText('REQUESTER', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible()
+  // Keep this identity proof focused on the shell: the adjacent Lab 2 ticket
+  // table has a separate responsive-evidence finding and is not needed here.
+  await page.locator('.zen-shell__header').screenshot({
+    path: 'artifacts/lab-03/screenshots/authentication/authenticated-shell.png',
+  })
 })
 
 test('AUTH-04 · AC-34 captures the mandatory Change Password screen', async ({ page }) => {
@@ -113,4 +118,10 @@ test('AUTH-06 logs out and cannot return without signing in again', async ({ pag
 
   await page.goto('/tickets')
   await expect(page).toHaveURL(/\/login$/)
+  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
+  await captureLab3Screenshot(
+    page,
+    'authentication',
+    'logout-direct-access-blocked.png',
+  )
 })
