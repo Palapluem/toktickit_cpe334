@@ -11,12 +11,14 @@ The labsheet's instruction is the test: *"New screens must look like part of the
 
 ## 1. New tokens
 
-Only one addition. Everything else reuses Lab 2's palette.
+Three additions are needed: two semantic aliases for the forbidden state and one
+non-semantic modal scrim. Everything else reuses Lab 2's palette.
 
 | Token | Value | Use |
 |---|---|---|
 | `--zen-forbidden-bg` | `#FFF4E0` | The forbidden state's surface — Lab 2's `--zen-warning-bg` value, aliased |
 | `--zen-forbidden-text` | `#8A5A00` | Forbidden state text — Lab 2's `--zen-warning` value, aliased |
+| `--zen-overlay` | `rgba(28, 43, 36, 0.45)` | Neutral scrim behind modal dialogs; defined only in the global `:root` token block |
 
 **Why an alias rather than reuse.** Forbidden is not a warning and not an error: the system is working correctly and the user is not permitted. It shares warning's palette because amber reads as "stop, but nothing is broken", which is exactly right — but it gets its own token names so that changing warning later does not silently restyle every permission refusal. Same reasoning as `lab-02 §11.17`, where priority got its own tokens rather than borrowing the semantic ones.
 
@@ -140,9 +142,11 @@ The shell renders the identity and Logout but **no navigation** — there is now
 
 **Excluded, deliberately:** Category and Requested Priority are filterable but not columns — Category is rarely the thing you scan for, and showing both priorities side by side invites reading the wrong one. Created Date loses to Updated: a queue asks what has gone quiet, not what is old.
 
-**Controls above the table:** search · status filter · IT Priority filter · owner filter (`Anyone` / `Unassigned` / `Assigned to me`) · Clear Filters. One row on desktop, stacked on mobile.
+**Controls above the table:** search · status filter · IT Priority filter · owner filter (`Anyone` / `Unassigned` / `Assigned to me`) · Clear Filters. One row on wide desktop, two columns at tablet width, and stacked on mobile.
 
-**Mobile (<768 px):** cards, not a table. Ticket No. and IT Priority on the first line, summary on the second, status and owner as badges on the third. Lab 2's My Tickets already established the table-to-cards pattern; this reuses it.
+**Tablet (768–991 px) and mobile (<768 px):** labelled cards, not a horizontally clipped table. Every column, including Updated, remains visible. At 992 px and above the queue uses the desktop table. Lab 2's My Tickets established the table-to-cards pattern; this reuses it.
+
+**Sort controls:** shared tertiary `Button` components show the active direction with an arrow; the containing column also exposes its `aria-sort` value.
 
 **Unassigned tickets** are visually distinct — the Owner cell renders `Unassigned` in `--zen-text-muted` italic rather than an empty cell, because an empty cell reads as a loading failure.
 
@@ -206,6 +210,10 @@ One screen, list plus a modal for create and edit. The labsheet's long "not requ
 **Table:** Name · Email · Role (badge) · Status (Active / Inactive badge) · Edit
 **Controls:** search by name or email · role filter · **New User**
 
+The list, filters, and create action render only after the authorized user-list request
+succeeds. During loading and on failure or forbidden responses, no Administrator-only
+controls are offered; a Requester who opens the route directly sees the forbidden state.
+
 **Create / Edit dialogue** — the same dialogue, differing in title and in whether the password field appears:
 
 | Field | Create | Edit |
@@ -229,7 +237,7 @@ Both are enforced server-side; these are how the refusal reads.
 
 Lab 2's three viewports and rules are unchanged. Two additions:
 
-- The Queue and User Management tables become cards below 768 px.
+- The Queue becomes labelled cards below 992 px; User Management keeps its Lab 2 card breakpoint below 768 px.
 - User Management email values wrap within their mobile card cells; full values stay visible without horizontal page overflow (RESP-04).
 - The Login and Change Password cards are full-width with 16 px margins below 768 px, and never exceed 420 px above it.
 
@@ -238,15 +246,25 @@ Lab 2's three viewports and rules are unchanged. Two additions:
 `artifacts/lab-03/screenshots/`
 
 ```
-authentication/     login-desktop · login-mobile · login-failure ·
-                    change-password-desktop · change-password-mobile
-staff-queue/        desktop-list · tablet-list · mobile-cards ·
-                    empty · no-results
+authentication/     login-desktop · login-tablet · login-mobile · login-failure ·
+                    authenticated-shell · logout-direct-access-blocked ·
+                    change-password-desktop · change-password-tablet · change-password-mobile ·
+                    admin-created-change-password
+staff-queue/        desktop-list · tablet-list · mobile-cards · empty · no-results ·
+                    forbidden · pagination · pagination-page-2
 staff-ticket-detail/ desktop-detail · tablet-detail · mobile-detail ·
-                    comments-and-notes
+                    comments-and-notes · requester-view-no-notes · attachments · failure · forbidden
 user-management/    desktop-list · mobile-list · create-dialog ·
-                    duplicate-email · last-administrator · mobile-email-wrap
+                    tablet-list · duplicate-email · edit-dialog · last-administrator ·
+                    reset-confirmation · self-deactivation-refused · mobile-email-wrap ·
+                    search-filter · forbidden
 ```
+
+The `authenticated-shell`, `logout-direct-access-blocked`, Queue pagination, corrected
+empty-state, refreshed Queue responsive, Requester note-isolation, User Management
+search/filter, and User Management forbidden captures are audit-follow-up candidates in
+PR #86. Until that PR completes review and release, these files are branch evidence, not
+evidence present on `main`.
 
 The three refusal captures — `login-failure`, `duplicate-email`, `last-administrator` — are named explicitly because Parts 5 and 8 ask for them and a happy-path-only capture session will not produce them.
 
@@ -265,8 +283,7 @@ Run before the release, in addition to Lab 2's §13 checklist which still applie
 feature set. Each row names what was checked, so the tick is auditable rather than
 asserted.
 
-- [x] Every new screen uses only `--zen-*` tokens; the audit grep returns nothing
-      — `grep -rE "#[0-9a-fA-F]{3,6}" client/src/screens client/src/components` is empty
+- [x] Every new screen uses only `--zen-*` tokens; the audit checks hex, `rgb(a)`, and `hsl(a)` literals across `client/src`, allowing literals only inside the global `theme.css` `:root` token block.
 - [x] No Bootstrap colour utility on any new themed surface
       — grep for `bg-|text-|btn-` + Bootstrap colour names is empty
 - [x] Role badge renders text on all three roles
@@ -279,7 +296,8 @@ asserted.
 - [x] Forbidden state does not offer Try again
       — `ForbiddenState` takes no `onRetry`; retrying a refusal cannot change its outcome
 - [x] Login failure message is identical for all three causes
-      — one constant, `Login.test.tsx`; the server side is `API-02` byte-for-byte
+      — one client constant; `API-02`…`API-04` compare the public error code, message,
+      and field-error shape. The decoy-hash path is not a statistical timing guarantee.
 - [x] Public Comments and Internal Notes are unmistakably distinct
       — `ThreadSection.test.tsx` UI-13: own surface, own heading, own composer, private marker
 - [x] Requester Ticket Detail shows no Internal Notes affordance

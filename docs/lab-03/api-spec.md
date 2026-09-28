@@ -100,7 +100,7 @@ Anonymous. Establishes a session.
 ```
 
 **Failures**
-- `401 INVALID_CREDENTIALS` — **identical body for an unknown email, a wrong password, and an inactive account** (BR-03). The three cases must be indistinguishable, including response timing where practical.
+- `401 INVALID_CREDENTIALS` — the same public error object for an unknown email, a wrong password, and an inactive account (BR-03). The implementation performs a password comparison for each path, using a memoized decoy hash for an unknown email. This is an equal-work mitigation; the test suite does not statistically benchmark response-time equality.
 - `400 VALIDATION_FAILED` — missing or malformed email or password.
 
 Never returns a hash, the session token in the body, or any indication of which check failed (AC-07).
@@ -226,7 +226,7 @@ Same shape as comments. Author and timestamp are server-set.
 
 **The refusal that matters.** A Requester — even the Ticket's owner — receives **403 `FORBIDDEN`** with an empty `fieldErrors`, and the body carries no count, no empty array, and no indication of whether notes exist (BR-28, AC-09).
 
-Returning `{ "data": [] }` would be a leak: it distinguishes "you may not see these" from "there are none", and over several tickets that difference maps out where the notes are. The response is identical whether the Ticket has zero notes or fifty.
+Returning `{ "data": [] }` would be a leak: it distinguishes "you may not see these" from "there are none", and over several tickets that difference maps out where the notes are. The refusal carries no note count or existence signal regardless of how many notes the Ticket has.
 
 ---
 

@@ -278,3 +278,47 @@ test('ADMIN-06 captures the last-Administrator refusal', async ({ page }) => {
   })
   expect((await stored.json()).data[0].role).toBe('ADMINISTRATOR')
 })
+
+test('ADMIN-07 captures search and role-filtered results', async ({ page }) => {
+  await signIn(page, ADMIN)
+  await page.setViewportSize(VIEWPORTS[0])
+  await page.goto('/admin/users')
+
+  const search = page.getByRole('searchbox', { name: 'Search' })
+  const searchRequest = page.waitForRequest((request) => {
+    const url = new URL(request.url())
+    return url.pathname === '/api/admin/users' && url.searchParams.get('search') === 'Patricia'
+  })
+  await search.fill('Patricia')
+  await searchRequest
+  await expect(page.locator('.user-management__table tbody tr')).toHaveCount(1)
+  await expect(page.getByText('Patricia Evans', { exact: true })).toBeVisible()
+
+  const roleFilter = page.getByRole('combobox', { name: 'Role' })
+  const roleRequest = page.waitForRequest((request) => {
+    const url = new URL(request.url())
+    return url.pathname === '/api/admin/users' && url.searchParams.get('role') === 'IT_STAFF'
+  })
+  await roleFilter.selectOption('IT_STAFF')
+  await roleRequest
+  await expect(roleFilter).toHaveValue('IT_STAFF')
+  const result = page.locator('.user-management__table tbody tr')
+  await expect(result).toHaveCount(1)
+  await expect(result).toContainText('Patricia Evans')
+  await expect(result).toContainText('IT STAFF')
+  await captureLab3Screenshot(page, 'user-management', 'search-filter.png')
+})
+
+test('ADMIN-08 captures the forbidden state for a Requester', async ({ page }) => {
+  await signIn(page, REQUESTER)
+  await page.setViewportSize(VIEWPORTS[0])
+  await page.goto('/admin/users')
+
+  await expect(page.getByRole('alert')).toContainText(
+    'User Management is available to Administrators.',
+  )
+  await captureLab3Screenshot(page, 'user-management', 'forbidden.png')
+
+  const direct = await page.request.get(`${API}/api/admin/users`)
+  expect(direct.status()).toBe(403)
+})

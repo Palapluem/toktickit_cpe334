@@ -3,6 +3,10 @@
 **Version:** 1.0 — approved for implementation, 11 September 2026
 **Status:** planned-test table derived from `specification.md` §9. Written **before** implementation; not to be reconstructed afterwards from whatever tests the coding agent happened to generate.
 
+The original plan remains an 88-case pre-implementation baseline. Audit-driven
+follow-up tests and corrected evidence are identified separately below; they are not
+retroactively described as part of the original plan.
+
 ---
 
 ## 1. Test Strategy
@@ -92,8 +96,8 @@ Red → Green → Refactor, per `testing-contract.md` §5. One exception, record
 | SEC-T06 | AC-09 | Requester creates an Internal Note | Refused | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
 | SEC-T07 | AC-10 | Requester calls an Administrator endpoint | 403 on every admin route | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-T08 | AC-11 | IT Staff calls an Administrator endpoint | 403 on every admin route | `server/tests/lab-03/authorization.api.test.ts` | Pass |
-| SEC-T09 | AC-10 | Requester calls the Staff Queue | 403 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
-| SEC-T10 | AC-24, BR-22 | Requester sends `RESOLVED` / `CLOSED` | Refused; status unchanged | `server/tests/lab-03/authorization.api.test.ts` | Pass |
+| SEC-T09 | BR-12; no dedicated AC | Requester calls the Staff Queue | 403 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
+| SEC-T10 | AC-24, BR-22 | Requester sends `RESOLVED` / `CLOSED` | Refused; status unchanged | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
 | SEC-T11 | BR-13 | Role sent by the client | Ignored; the session's role decides | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-T12 | BR-39 | Deactivated user's session | Refused on the next request | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
 | SEC-T13 | SEC-025 | Error bodies | No stack trace, SQL fragment, file path, or other user's data in any failure | `server/tests/lab-03/authorization.api.test.ts` | Pass |
@@ -125,11 +129,11 @@ registration applies the policy.
 | ID | AC | What it tests | Expected result | File | Final |
 |---|---|---|---|---|---|
 | API-19 | AC-16, BR-26 | Requester posts a Public Comment | Stored with author and server-set time; visible to IT Staff | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
-| API-20 | BR-30 | Client-supplied author or timestamp | Ignored; the server's values are used | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
+| API-20 | BR-30 | Client-supplied author or timestamp | Rejected with HTTP 400; clients cannot set server-owned fields | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
 | API-21 | AC-25, BR-27 | Internal Note visibility | Visible to IT Staff and Administrator only | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
 | API-22 | BR-31 | Empty and whitespace content | Rejected for both comments and notes | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
 | API-23 | BR-29 | Append-only | No edit or delete endpoint exists for either | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
-| API-24 | AC-17, BR-23 | Resolution indication | Recorded as a timestamp; status unchanged | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
+| API-24 | AC-17, BR-23 | Resolution indication | Recorded as a timestamp; status unchanged | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
 
 ### API — Administrator
 
@@ -182,9 +186,9 @@ registration applies the policy.
 
 | ID | Requirement | What it tests | Expected result | File | Final |
 |---|---|---|---|---|---|
-| STYLE-01 | STY-001, STY-003 | Tokens on new screens | No colour literal, no Bootstrap colour utility | `client/tests/lab-03/Login.test.tsx`, `client/tests/lab-03/StaffTicketQueue.test.tsx`, `client/tests/lab-03/StaffTicketDetail.test.tsx`, `client/tests/lab-03/UserManagement.test.tsx` | Pass |
+| STYLE-01 | STY-001, STY-003 | Source-level theme contract | Colour literals stay in the global token block; no Bootstrap colour utility is used | `client/tests/lab-03/StyleContract.test.tsx` | Pass |
 | STYLE-02 | STY-019, ui-spec | Role badges | Role rendered as text, not colour alone | `client/tests/lab-03/AppShell.test.tsx` | Pass |
-| STYLE-03 | STY-019 | New status badges | All eight statuses render their text label | `client/tests/lab-03/StaffTicketQueue.test.tsx`, `client/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
+| STYLE-03 | STY-019 | New status badges | Each of the eight status values renders its text label | `client/tests/lab-03/Badge.test.tsx` | Pass |
 | STYLE-04 | STY-026 | Login and admin labelling | Every input has a programmatic label | `client/tests/lab-03/Login.test.tsx`, `client/tests/lab-03/ChangePassword.test.tsx`, `client/tests/lab-03/UserManagement.test.tsx` | Pass |
 | STYLE-05 | STY-012 | Validation placement | Messages below their field and associated by `aria-describedby` | `client/tests/lab-03/Login.test.tsx`, `client/tests/lab-03/ChangePassword.test.tsx` | Pass |
 
@@ -193,7 +197,7 @@ registration applies the policy.
 | ID | AC | What it tests | Expected result | File | Final |
 |---|---|---|---|---|---|
 | RESP-01 | AC-34 | Login and Change Password at three viewports | No overflow, clipping, or overlap; screenshots captured | `e2e/lab-03/authentication.spec.ts` | Pass |
-| RESP-02 | AC-34 | Staff Queue at three viewports | Readable at mobile; controls reachable; screenshots captured | `e2e/lab-03/staff-ticket-flow.spec.ts` | Pass |
+| RESP-02 | AC-34 | Staff Queue at three viewports | Every field remains visible at 1280, 834, and 390 px; no horizontal page overflow | `e2e/lab-03/staff-ticket-flow.spec.ts` | Pass |
 | RESP-03 | AC-34 | Staff Ticket Detail at three viewports | Comments and notes readable and distinct; screenshots captured | `e2e/lab-03/staff-ticket-flow.spec.ts`, `e2e/lab-03/comments-and-notes.spec.ts` | Pass |
 | RESP-04 | AC-34 | User Management at three viewports | Every email value fits its cell; no horizontal page overflow; full-page and mobile-viewport evidence captured | `e2e/lab-03/user-administration.spec.ts` | Pass |
 | E2E-01 | AC-01, AC-02, AC-04 | Authentication journey | Log in with an initial password → forced change → application opens → log out → protected URL refused | `e2e/lab-03/authentication.spec.ts` | Pass |
@@ -207,6 +211,53 @@ creating new acceptance criteria: `DETAIL-07` proves attachment continuity, `DET
 proves reassignment through the Staff Detail control, `DETAIL-09` proves safe retry
 recovery, `AUTH-02` includes inactive-account refusal, and `ADMIN-04` proves the
 create/edit/reset/forced-change journey.
+
+### Executed E2E names mapped to the planned journeys
+
+The test names in code are more granular than the three planned journeys. This crosswalk
+keeps the executable IDs used in the report traceable to the original plan:
+
+| Executed test names | Planned journey | Evidence |
+|---|---|---|
+| `AUTH-01`…`AUTH-06` | `E2E-01` | `e2e/lab-03/authentication.spec.ts` |
+| `QUEUE-01`…`QUEUE-03`, `QUEUE-05`, `QUEUE-07`, `DETAIL-01`…`DETAIL-09`, `THREAD-01`…`THREAD-04` | `E2E-02` | `e2e/lab-03/staff-ticket-flow.spec.ts`, `e2e/lab-03/comments-and-notes.spec.ts` |
+| `ADMIN-01`…`ADMIN-06` | `E2E-03` | `e2e/lab-03/user-administration.spec.ts` |
+| `QUEUE-04` | Fixture-backed Playwright UI evidence outside the 88-case baseline; `FR-36` (UI state only; not a server/API proof) | `e2e/lab-03/staff-ticket-flow.spec.ts` |
+| `QUEUE-06` | Fixture-backed pagination UI evidence outside the 88-case baseline; `AC-19` (UI pagination only; server-side AC-19 evidence is `API-12`) | `e2e/lab-03/staff-ticket-flow.spec.ts` |
+| `QUEUE-07` | Real-server filter-composition check outside the 88-case baseline; `AC-19` (each individual filter has a positive result before the combined result) | `e2e/lab-03/staff-ticket-flow.spec.ts` |
+| `ADMIN-07` | Audit follow-up outside the 88-case baseline; `AC-27` | `e2e/lab-03/user-administration.spec.ts` |
+| `ADMIN-08` | Audit follow-up outside the 88-case baseline; `AC-10`, `AC-36` | `e2e/lab-03/user-administration.spec.ts` |
+
+Responsive IDs are attached to their capture journeys: `RESP-01` to `AUTH-01` / `AUTH-04`,
+`RESP-02` to `QUEUE-01`, `RESP-03` to `DETAIL-01` / `THREAD-01` / `THREAD-03`, and
+`RESP-04` to `ADMIN-01`. The final E2E runner total also includes the six Lab 2 regression
+journeys; the crosswalk does not count those again.
+
+`QUEUE-04`, `QUEUE-06`, `QUEUE-07`, `ADMIN-07`, and `ADMIN-08` are separate execution
+follow-ups outside the 88-case pre-implementation plan. `QUEUE-04` and `QUEUE-06` run
+in a real browser against the application shell but intercept the entire
+`/api/staff/tickets` request. They are explicitly **fixture-backed UI evidence**, not
+proof that the Staff Queue API or server-side pagination returns those states.
+`QUEUE-04` supplies an unfiltered empty response and distinguishes “No tickets in the
+queue” from the searched no-results state. `QUEUE-06` supplies a deterministic 21-row
+fixture to exercise both pagination pages, captured in
+`artifacts/lab-03/screenshots/staff-queue/pagination.png` and `pagination-page-2.png`.
+The prior real-server `QUEUE-04` check for `CANCELLED` plus “Assigned to me” was not
+replaced by `QUEUE-03` (which covers search); that combined-filter check is restored as
+`QUEUE-07`, runs against the real server, and captures
+`artifacts/lab-03/screenshots/staff-queue/filtered-cancelled-assigned.png`. The
+test first verifies the seeded `CANCELLED` Ticket while unassigned, then verifies
+that “Assigned to me” alone has matching Tickets after clearing status; the combined
+intersection is empty as expected.
+`ADMIN-07` captures search plus role-filtered results in
+`artifacts/lab-03/screenshots/user-management/search-filter.png`; `ADMIN-08` captures
+the Requester-facing forbidden state in
+`artifacts/lab-03/screenshots/user-management/forbidden.png` and makes a direct 403 API
+call. `QUEUE-03` and `QUEUE-04` separately capture no-results and true-empty states.
+These follow-ups are not retroactively counted among the 88 pre-implementation planned
+cases or relabelled as part of `E2E-02` / `E2E-03`. Their current candidate evidence is
+in PR #86 and becomes main-release evidence only after the reviewer-led merge and a new
+verification on the resulting `main` commit.
 
 ## 3. Acceptance-Criterion Traceability
 
@@ -223,7 +274,7 @@ Every criterion in `specification.md` §9 maps to at least one planned test.
 | AC-07 | API-09 |
 | AC-08 | SEC-T02 |
 | AC-09 | SEC-T05 · SEC-T06 |
-| AC-10 | SEC-T07 · SEC-T09 |
+| AC-10 | SEC-T07 |
 | AC-11 | SEC-T08 |
 | AC-12 | SEC-T01 |
 | AC-13 | SEC-T03 · SEC-T04 |
@@ -257,7 +308,7 @@ is the result of running the complete Lab 2 suite against the migrated,
 authenticated implementation, so it is recorded in the final-suite table
 below rather than manufactured as a standalone Lab 3 test name.
 
-**Business rules covered without a dedicated AC:** BR-05 (UNIT-02) · BR-07 (API-10) · BR-08 (UNIT-06) · BR-12 (UNIT-04) · BR-13 (SEC-T11) · BR-24 (API-14) · BR-29 (API-23) · BR-30 (API-20) · BR-31 (UNIT-05, API-22) · BR-38 (API-33) · BR-39 (SEC-T12) · BR-40–42 (MIG-01…03).
+**Business rules covered without a dedicated AC:** BR-05 (UNIT-02) · BR-07 (API-10) · BR-08 (UNIT-06) · BR-12 (UNIT-04, SEC-T09) · BR-13 (SEC-T11) · BR-24 (API-14) · BR-29 (API-23) · BR-30 (API-20) · BR-31 (UNIT-05, API-22) · BR-38 (API-33) · BR-39 (SEC-T12) · BR-40–42 (MIG-01…03). `SEC-T09` is retained as additional role-boundary coverage; it is not attributed to AC-10, which specifically covers Administrator endpoints.
 
 ---
 
@@ -276,11 +327,13 @@ The labsheet §12 names the files it expects. Mapped:
 | `client/tests/lab-03/Login.test.tsx` | UI-01 … UI-03 |
 | `client/tests/lab-03/ChangePassword.test.tsx` | UI-04, UI-05 |
 | `client/tests/lab-03/StaffTicketQueue.test.tsx` | UI-08 … UI-10, UI-18 |
+| `client/tests/lab-03/Badge.test.tsx` | STYLE-03 · all eight status labels |
+| `client/tests/lab-03/StyleContract.test.tsx` | STYLE-01 · token and Bootstrap utility audit |
 | `client/tests/lab-03/StaffTicketDetail.test.tsx` | UI-11, UI-12 |
 | `client/tests/lab-03/UserManagement.test.tsx` | UI-15 … UI-17 |
 | `e2e/lab-03/authentication.spec.ts` | RESP-01, E2E-01 |
-| `e2e/lab-03/staff-ticket-flow.spec.ts` | RESP-02, RESP-03, E2E-02 |
-| `e2e/lab-03/user-administration.spec.ts` | RESP-04, E2E-03 |
+| `e2e/lab-03/staff-ticket-flow.spec.ts` | RESP-02, RESP-03, E2E-02 live-server journeys; fixture-backed UI evidence `QUEUE-04` / `QUEUE-06`; restored real-server filter check `QUEUE-07` |
+| `e2e/lab-03/user-administration.spec.ts` | RESP-04, E2E-03; PR #86 audit follow-ups `ADMIN-07` search/filter and `ADMIN-08` forbidden-state evidence |
 
 Additional delivered files beyond the labsheet's minimum are also traced explicitly:
 
@@ -319,16 +372,52 @@ Connection strings live in `.env.test`, untracked; only `.env.example` is commit
 
 ## 6. Final Results
 
-> Filled in after the release merge, from a run on the final `main` branch (`lab-02 §11.25`).
+### 6.1 Released-main checkpoint — PR #82
+
+This is the verified product-release checkpoint from the exact `main` commit
+`da5bf4a842b79991acab0bd2b71b16bc6acea6ad`, following PR #82. It is historical
+baseline evidence, not verification of the unreleased PR #86 candidate. The full
+command/environment record is in the final-main evidence linked from `submission.md`.
 
 | Suite | Command | Tests | Result |
 |---|---|---|---|
-| Server (unit + API + security + migration) | `cd server && npm test` | — | ☐ |
-| Client (UI + style) | `cd client && npm test` | — | ☐ |
-| E2E + responsive | `npm run test:e2e` | — | ☐ |
+| Server (unit + API + security + migration) | `cd server && npm test` | 410 (28 files) | Pass |
+| Client (UI + style) | `cd client && npm test` | 203 (24 files) | Pass |
+| E2E + responsive | `npm run test:e2e` | 36 | Pass |
+| Server production build | `cd server && npm run build` | — | Pass |
+| Client production build | `cd client && npm run build` | — | Pass |
+| Client lint | `cd client && npm run lint` | — | Pass with 3 non-blocking warnings |
 
 **Environment**
-- Branch: `main` · Commit: — · Date executed: —
+- Branch: `main` · Commit: `da5bf4a842b79991acab0bd2b71b16bc6acea6ad` · Date executed: 2026-09-25
+- Total: **649 passed · 0 failed · 0 skipped** across the three suites.
+- This checkpoint remains valid for the released product at `da5bf4a`; candidate and
+  later release results must be recorded separately rather than silently rewriting it.
+
+### 6.2 PR #86 candidate verification — complete locally, not released
+
+The review-remediation candidate was tested locally in a working tree based on PR #86
+head `d620ff8`. N0TAW00D requested changes on that head; the follow-up fixes are in the
+same PR for re-review but remain unmerged, and no new release verification has been run
+on `main`. These results do not replace §6.1.
+
+| Suite | Command | Result |
+|---|---|---|
+| Server (unit + API + security + migration) | `cd server && npm test` | **410 passed** (28 files) |
+| Client (UI + style) | `cd client && npm test` | **216 passed** (26 files) |
+| Playwright | `npm run test:e2e` | **40 passed**: 6 Lab 2 regression + 34 Lab 3 checks, including 2 fixture-backed UI checks |
+| **Executed total** | Three suites | **666 passed · 0 failed · 0 skipped** |
+
+Both production builds passed. Client lint exited 0 with three non-blocking warnings:
+two React Fast Refresh warnings in `SessionContext.tsx` and one unused `REQUESTER_B`
+fixture in the Lab 2 `MyTickets.test.tsx` suite. E2E ran against a newly created,
+disposable `_test` database; no development database was used, and the temporary audit
+databases were removed after verification. The Playwright fixture-backed checks are
+UI evidence only; they do not prove the API's empty-state or pagination responses.
+GitHub reported no hosted status checks for PR #86, so the results are local evidence
+rather than CI results. Full command-level
+details are in
+[`evidence/l3-15-pr86-candidate-verification.md`](evidence/l3-15-pr86-candidate-verification.md).
 
 ---
 
@@ -336,8 +425,8 @@ Connection strings live in `.env.test`, untracked; only `.env.example` is commit
 
 - **CSRF is argued, not tested.** `SameSite=Lax` plus same-origin is the position (`specification.md` §11.3); no automated test exercises a cross-site request, because the harness serves both from one origin. Recorded rather than silently omitted.
 - **Rate limiting is out of scope.** Lecture 5 (p17) recommends slowing repeated login attempts. The labsheet does not require it and it is not implemented; the safe-failure requirement it supports is covered by API-02 … API-04.
-- **Password hashing cost is not benchmarked.** UNIT-01 proves the hash is salted and verifiable, not that the work factor is high enough to be slow for an attacker.
+- **Password hashing cost and response-time equality are not benchmarked.** UNIT-01 proves the hash is salted and verifiable, not that the work factor is high enough to be slow for an attacker. The unknown-email path uses a memoized decoy hash as an equal-work mitigation, but the suite does not statistically prove identical response latency.
 - **Session fixation is not tested.** The session identifier is generated fresh at login rather than accepted from the request, so fixation is structurally prevented; no test asserts it.
 - **Release-audit disclosure — migration hash.** The applied Lab 3 migration contains one bcrypt backfill value because `specification.md` §7.4 / BR-41 requires existing Lab 2 users to receive the documented initial password before `passwordHash` becomes non-null. This is a literal conflict with the broader §10 wording that forbids a hash in any committed file; it is recorded here rather than silently claimed as clean. The source, response, log, fixture, and screenshot scans found no additional credential or session-value literal.
-- **Release-audit disclosure — traceability gaps.** FR-31 (editing a user) has no dedicated AC, and SEC-T09 is currently listed under AC-10 even though AC-10 names Administrator endpoints. The implementation and tests are retained; adding or rewording an AC requires the student's explicit specification decision.
+- **Release-audit disclosure — traceability gap.** FR-31 (editing a user) has no dedicated AC. `SEC-T09` is additional role-boundary coverage mapped to BR-12; it is not represented as satisfying AC-10, which specifically covers Administrator endpoints. The implementation and tests are retained; adding or rewording an AC requires the student's explicit specification decision.
 - **Release-audit disclosure — AI provenance.** `ai-use.md` contains ten selected prompt renderings, while the private running log preserves three prompt entries. The rows were cross-checked against repository history and evidence, but wording not preserved in the private log is not claimed to be verbatim.

@@ -1011,8 +1011,96 @@ body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .staff-queue .my-tickets__filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .my-tickets__filters .zen-field:first-child {
     grid-column: span 2;
+  }
+
+  .staff-queue .my-tickets__filters .zen-field:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .staff-queue .my-tickets__table-container {
+    overflow: visible;
+  }
+
+  .staff-queue__table,
+  .staff-queue__table tbody,
+  .staff-queue__table tr,
+  .staff-queue__table td {
+    display: block;
+    width: auto;
+  }
+
+  .staff-queue__table thead {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  .staff-queue__table tbody tr {
+    padding: var(--zen-space-2) 0;
+  }
+
+  .staff-queue__table tbody tr + tr {
+    border-top: 1px solid var(--zen-border);
+  }
+
+  .staff-queue__table td {
+    align-items: center;
+    border-bottom: 0;
+    display: grid;
+    gap: var(--zen-space-3);
+    grid-template-columns: minmax(8rem, 32%) minmax(0, 1fr);
+    padding: var(--zen-space-2) var(--zen-space-4);
+  }
+
+  .staff-queue__table td::before {
+    color: var(--zen-text-muted);
+    content: attr(data-label);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .staff-queue__table td[data-label="Ticket No."],
+  .staff-queue__table td[data-label="Summary"],
+  .staff-queue__table td[data-label="Status"] {
+    display: block;
+  }
+
+  .staff-queue__table td[data-label="Ticket No."],
+  .staff-queue__table td[data-label="Summary"] {
+    padding-top: var(--zen-space-3);
+  }
+
+  .staff-queue__table td[data-label="Ticket No."]::before,
+  .staff-queue__table td[data-label="Summary"]::before {
+    display: none;
+  }
+
+  .staff-queue__table td[data-label="Summary"] {
+    overflow-wrap: anywhere;
+    padding-bottom: var(--zen-space-3);
+  }
+
+  .staff-queue__table td[data-label="IT Priority"] > * {
+    justify-self: start;
+  }
+
+  .staff-queue__table td[data-label="Status"]::before {
+    display: block;
+    margin-bottom: var(--zen-space-1);
   }
 }
 
@@ -1093,7 +1181,15 @@ body {
     grid-template-columns: 1fr;
   }
 
+  .staff-queue .my-tickets__filters {
+    grid-template-columns: 1fr;
+  }
+
   .my-tickets__filters .zen-field:first-child {
+    grid-column: auto;
+  }
+
+  .staff-queue .my-tickets__filters .zen-field:first-child {
     grid-column: auto;
   }
 
@@ -1400,7 +1496,7 @@ body {
 .zen-modal {
   position: fixed;
   inset: 0;
-  background: rgba(28, 43, 36, 0.45);
+  background: var(--zen-overlay);
   display: flex;
   align-items: flex-start;
   justify-content: center;

@@ -50,6 +50,14 @@ beforeEach(() => {
 })
 
 describe('AC-17 · the Requester may say the problem appears resolved', () => {
+  it('does not show a false Ticket Owner value on the Requester screen', () => {
+    renderDetail()
+
+    // ui-spec §9 keeps the staff-only Owner control off the Requester detail.
+    expect(screen.queryByText('Ticket Owner', { exact: true })).not.toBeInTheDocument()
+    expect(screen.queryByText('Not yet assigned', { exact: true })).not.toBeInTheDocument()
+  })
+
   it('offers the action on an open Ticket', async () => {
     renderDetail()
 
