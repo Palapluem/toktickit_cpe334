@@ -416,7 +416,7 @@ commit-by-commit attribution are not recorded. PR #86 contains the post-release 
 corrections and remains pending peer review and the required release workflow; it is not
 described as merged or released.
 
-Ten selected prompts, each with what the agent produced and what I took from it: the red,
+Eleven selected prompts, each with what the agent produced and what I took from it: the red,
 green, security-audit and review-response phase templates, and the judgment prompts used
 between phases and at release.
 
@@ -428,12 +428,13 @@ criterion. *"Do not assume a merged PR reached staging"* caught the branch defec
 in Part 1. *"Reproduce it before you fix it"* turned a reported vulnerability into a
 permanent regression test.
 
-### Rendered AI-use evidence
+### Existing AI-use capture set — stale draft
 
-These captures come from the current Google Docs report export. The opening records the
-tool/model provenance; the following eight full-width views preserve the complete
-three-column prompt table in continuous, overlapping slices; the final view shows the
-provenance note and complete reflection. The editable source remains
+These captures are the 10-prompt version from 2026-09-25. They predate the Codex
+audit-remediation row and the updated provenance in `ai-use.md`, so they do not prove
+the current source is fully rendered. Keep them only as historical evidence; replace
+the entire Part 4 capture sequence with current overlapping slices after the final
+Google Docs tab has been refreshed. The editable source remains
 [`ai-use.md`](ai-use.md).
 
 | Figure | Captured evidence |
