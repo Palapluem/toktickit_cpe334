@@ -3,6 +3,10 @@
 **Version:** 1.0 — approved for implementation, 11 September 2026
 **Status:** planned-test table derived from `specification.md` §9. Written **before** implementation; not to be reconstructed afterwards from whatever tests the coding agent happened to generate.
 
+The original plan remains an 88-case pre-implementation baseline. Audit-driven
+follow-up tests and corrected evidence are identified separately below; they are not
+retroactively described as part of the original plan.
+
 ---
 
 ## 1. Test Strategy
@@ -93,7 +97,7 @@ Red → Green → Refactor, per `testing-contract.md` §5. One exception, record
 | SEC-T07 | AC-10 | Requester calls an Administrator endpoint | 403 on every admin route | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-T08 | AC-11 | IT Staff calls an Administrator endpoint | 403 on every admin route | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-T09 | AC-10 | Requester calls the Staff Queue | 403 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
-| SEC-T10 | AC-24, BR-22 | Requester sends `RESOLVED` / `CLOSED` | Refused; status unchanged | `server/tests/lab-03/authorization.api.test.ts` | Pass |
+| SEC-T10 | AC-24, BR-22 | Requester sends `RESOLVED` / `CLOSED` | Refused; status unchanged | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
 | SEC-T11 | BR-13 | Role sent by the client | Ignored; the session's role decides | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-T12 | BR-39 | Deactivated user's session | Refused on the next request | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
 | SEC-T13 | SEC-025 | Error bodies | No stack trace, SQL fragment, file path, or other user's data in any failure | `server/tests/lab-03/authorization.api.test.ts` | Pass |
@@ -125,11 +129,11 @@ registration applies the policy.
 | ID | AC | What it tests | Expected result | File | Final |
 |---|---|---|---|---|---|
 | API-19 | AC-16, BR-26 | Requester posts a Public Comment | Stored with author and server-set time; visible to IT Staff | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
-| API-20 | BR-30 | Client-supplied author or timestamp | Ignored; the server's values are used | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
+| API-20 | BR-30 | Client-supplied author or timestamp | Rejected with HTTP 400; clients cannot set server-owned fields | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
 | API-21 | AC-25, BR-27 | Internal Note visibility | Visible to IT Staff and Administrator only | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
 | API-22 | BR-31 | Empty and whitespace content | Rejected for both comments and notes | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
 | API-23 | BR-29 | Append-only | No edit or delete endpoint exists for either | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
-| API-24 | AC-17, BR-23 | Resolution indication | Recorded as a timestamp; status unchanged | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
+| API-24 | AC-17, BR-23 | Resolution indication | Recorded as a timestamp; status unchanged | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
 
 ### API — Administrator
 
@@ -182,9 +186,9 @@ registration applies the policy.
 
 | ID | Requirement | What it tests | Expected result | File | Final |
 |---|---|---|---|---|---|
-| STYLE-01 | STY-001, STY-003 | Tokens on new screens | No colour literal, no Bootstrap colour utility | `client/tests/lab-03/Login.test.tsx`, `client/tests/lab-03/StaffTicketQueue.test.tsx`, `client/tests/lab-03/StaffTicketDetail.test.tsx`, `client/tests/lab-03/UserManagement.test.tsx` | Pass |
+| STYLE-01 | STY-001, STY-003 | Source-level theme contract | Colour literals stay in the global token block; no Bootstrap colour utility is used | `client/tests/lab-03/StyleContract.test.tsx` | Pass |
 | STYLE-02 | STY-019, ui-spec | Role badges | Role rendered as text, not colour alone | `client/tests/lab-03/AppShell.test.tsx` | Pass |
-| STYLE-03 | STY-019 | New status badges | All eight statuses render their text label | `client/tests/lab-03/StaffTicketQueue.test.tsx`, `client/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
+| STYLE-03 | STY-019 | New status badges | Each of the eight status values renders its text label | `client/tests/lab-03/Badge.test.tsx` | Pass |
 | STYLE-04 | STY-026 | Login and admin labelling | Every input has a programmatic label | `client/tests/lab-03/Login.test.tsx`, `client/tests/lab-03/ChangePassword.test.tsx`, `client/tests/lab-03/UserManagement.test.tsx` | Pass |
 | STYLE-05 | STY-012 | Validation placement | Messages below their field and associated by `aria-describedby` | `client/tests/lab-03/Login.test.tsx`, `client/tests/lab-03/ChangePassword.test.tsx` | Pass |
 
@@ -193,7 +197,7 @@ registration applies the policy.
 | ID | AC | What it tests | Expected result | File | Final |
 |---|---|---|---|---|---|
 | RESP-01 | AC-34 | Login and Change Password at three viewports | No overflow, clipping, or overlap; screenshots captured | `e2e/lab-03/authentication.spec.ts` | Pass |
-| RESP-02 | AC-34 | Staff Queue at three viewports | Readable at mobile; controls reachable; screenshots captured | `e2e/lab-03/staff-ticket-flow.spec.ts` | Pass |
+| RESP-02 | AC-34 | Staff Queue at three viewports | Every field remains visible at 1280, 834, and 390 px; no horizontal page overflow | `e2e/lab-03/staff-ticket-flow.spec.ts` | Pass |
 | RESP-03 | AC-34 | Staff Ticket Detail at three viewports | Comments and notes readable and distinct; screenshots captured | `e2e/lab-03/staff-ticket-flow.spec.ts`, `e2e/lab-03/comments-and-notes.spec.ts` | Pass |
 | RESP-04 | AC-34 | User Management at three viewports | Every email value fits its cell; no horizontal page overflow; full-page and mobile-viewport evidence captured | `e2e/lab-03/user-administration.spec.ts` | Pass |
 | E2E-01 | AC-01, AC-02, AC-04 | Authentication journey | Log in with an initial password → forced change → application opens → log out → protected URL refused | `e2e/lab-03/authentication.spec.ts` | Pass |
@@ -207,6 +211,33 @@ creating new acceptance criteria: `DETAIL-07` proves attachment continuity, `DET
 proves reassignment through the Staff Detail control, `DETAIL-09` proves safe retry
 recovery, `AUTH-02` includes inactive-account refusal, and `ADMIN-04` proves the
 create/edit/reset/forced-change journey.
+
+### Executed E2E names mapped to the planned journeys
+
+The test names in code are more granular than the three planned journeys. This crosswalk
+keeps the executable IDs used in the report traceable to the original plan:
+
+| Executed test names | Planned journey | Evidence |
+|---|---|---|
+| `AUTH-01`…`AUTH-06` | `E2E-01` | `e2e/lab-03/authentication.spec.ts` |
+| `QUEUE-01`…`QUEUE-05`, `DETAIL-01`…`DETAIL-09`, `THREAD-01`…`THREAD-04` | `E2E-02` | `staff-ticket-flow.spec.ts`, `comments-and-notes.spec.ts` |
+| `ADMIN-01`…`ADMIN-06` | `E2E-03` | `e2e/lab-03/user-administration.spec.ts` |
+
+Responsive IDs are attached to their capture journeys: `RESP-01` to `AUTH-01` / `AUTH-04`,
+`RESP-02` to `QUEUE-01`, `RESP-03` to `DETAIL-01` / `THREAD-01` / `THREAD-03`, and
+`RESP-04` to `ADMIN-01`. The final E2E runner total also includes the six Lab 2 regression
+journeys; the crosswalk does not count those again.
+
+`QUEUE-06`, `ADMIN-07`, and `ADMIN-08` are separate audit follow-up additions.
+`QUEUE-06` exercises the existing pagination control with a deterministic 21-row UI
+fixture and captures both pages in `artifacts/lab-03/screenshots/staff-queue/pagination.png`
+and `pagination-page-2.png`; `ADMIN-07` captures search plus role-filtered results in
+`artifacts/lab-03/screenshots/user-management/search-filter.png`; `ADMIN-08` captures
+the Requester-facing forbidden state in
+`artifacts/lab-03/screenshots/user-management/forbidden.png` and makes a direct 403 API
+call. `QUEUE-03` and `QUEUE-04` separately capture no-results and true-empty states.
+These follow-ups are not retroactively counted among the 88 pre-implementation planned
+cases or relabelled as part of `E2E-02` / `E2E-03`.
 
 ## 3. Acceptance-Criterion Traceability
 
@@ -276,11 +307,13 @@ The labsheet §12 names the files it expects. Mapped:
 | `client/tests/lab-03/Login.test.tsx` | UI-01 … UI-03 |
 | `client/tests/lab-03/ChangePassword.test.tsx` | UI-04, UI-05 |
 | `client/tests/lab-03/StaffTicketQueue.test.tsx` | UI-08 … UI-10, UI-18 |
+| `client/tests/lab-03/Badge.test.tsx` | STYLE-03 · all eight status labels |
+| `client/tests/lab-03/StyleContract.test.tsx` | STYLE-01 · token and Bootstrap utility audit |
 | `client/tests/lab-03/StaffTicketDetail.test.tsx` | UI-11, UI-12 |
 | `client/tests/lab-03/UserManagement.test.tsx` | UI-15 … UI-17 |
 | `e2e/lab-03/authentication.spec.ts` | RESP-01, E2E-01 |
-| `e2e/lab-03/staff-ticket-flow.spec.ts` | RESP-02, RESP-03, E2E-02 |
-| `e2e/lab-03/user-administration.spec.ts` | RESP-04, E2E-03 |
+| `e2e/lab-03/staff-ticket-flow.spec.ts` | RESP-02, RESP-03, E2E-02; post-release `QUEUE-06` pagination audit and empty/no-results evidence |
+| `e2e/lab-03/user-administration.spec.ts` | RESP-04, E2E-03; post-release `ADMIN-07` search/filter and `ADMIN-08` forbidden-state evidence |
 
 Additional delivered files beyond the labsheet's minimum are also traced explicitly:
 

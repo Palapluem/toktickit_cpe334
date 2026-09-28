@@ -11,12 +11,14 @@ The labsheet's instruction is the test: *"New screens must look like part of the
 
 ## 1. New tokens
 
-Only one addition. Everything else reuses Lab 2's palette.
+Three additions are needed: two semantic aliases for the forbidden state and one
+non-semantic modal scrim. Everything else reuses Lab 2's palette.
 
 | Token | Value | Use |
 |---|---|---|
 | `--zen-forbidden-bg` | `#FFF4E0` | The forbidden state's surface — Lab 2's `--zen-warning-bg` value, aliased |
 | `--zen-forbidden-text` | `#8A5A00` | Forbidden state text — Lab 2's `--zen-warning` value, aliased |
+| `--zen-overlay` | `rgba(28, 43, 36, 0.45)` | Neutral scrim behind modal dialogs; defined only in the global `:root` token block |
 
 **Why an alias rather than reuse.** Forbidden is not a warning and not an error: the system is working correctly and the user is not permitted. It shares warning's palette because amber reads as "stop, but nothing is broken", which is exactly right — but it gets its own token names so that changing warning later does not silently restyle every permission refusal. Same reasoning as `lab-02 §11.17`, where priority got its own tokens rather than borrowing the semantic ones.
 
@@ -140,9 +142,11 @@ The shell renders the identity and Logout but **no navigation** — there is now
 
 **Excluded, deliberately:** Category and Requested Priority are filterable but not columns — Category is rarely the thing you scan for, and showing both priorities side by side invites reading the wrong one. Created Date loses to Updated: a queue asks what has gone quiet, not what is old.
 
-**Controls above the table:** search · status filter · IT Priority filter · owner filter (`Anyone` / `Unassigned` / `Assigned to me`) · Clear Filters. One row on desktop, stacked on mobile.
+**Controls above the table:** search · status filter · IT Priority filter · owner filter (`Anyone` / `Unassigned` / `Assigned to me`) · Clear Filters. One row on wide desktop, two columns at tablet width, and stacked on mobile.
 
-**Mobile (<768 px):** cards, not a table. Ticket No. and IT Priority on the first line, summary on the second, status and owner as badges on the third. Lab 2's My Tickets already established the table-to-cards pattern; this reuses it.
+**Tablet (768–991 px) and mobile (<768 px):** labelled cards, not a horizontally clipped table. Every column, including Updated, remains visible. At 992 px and above the queue uses the desktop table. Lab 2's My Tickets established the table-to-cards pattern; this reuses it.
+
+**Sort controls:** shared tertiary `Button` components show the active direction with an arrow; the containing column also exposes its `aria-sort` value.
 
 **Unassigned tickets** are visually distinct — the Owner cell renders `Unassigned` in `--zen-text-muted` italic rather than an empty cell, because an empty cell reads as a loading failure.
 
@@ -206,6 +210,10 @@ One screen, list plus a modal for create and edit. The labsheet's long "not requ
 **Table:** Name · Email · Role (badge) · Status (Active / Inactive badge) · Edit
 **Controls:** search by name or email · role filter · **New User**
 
+The list, filters, and create action render only after the authorized user-list request
+succeeds. During loading and on failure or forbidden responses, no Administrator-only
+controls are offered; a Requester who opens the route directly sees the forbidden state.
+
 **Create / Edit dialogue** — the same dialogue, differing in title and in whether the password field appears:
 
 | Field | Create | Edit |
@@ -229,7 +237,7 @@ Both are enforced server-side; these are how the refusal reads.
 
 Lab 2's three viewports and rules are unchanged. Two additions:
 
-- The Queue and User Management tables become cards below 768 px.
+- The Queue becomes labelled cards below 992 px; User Management keeps its Lab 2 card breakpoint below 768 px.
 - User Management email values wrap within their mobile card cells; full values stay visible without horizontal page overflow (RESP-04).
 - The Login and Change Password cards are full-width with 16 px margins below 768 px, and never exceed 420 px above it.
 
@@ -265,8 +273,7 @@ Run before the release, in addition to Lab 2's §13 checklist which still applie
 feature set. Each row names what was checked, so the tick is auditable rather than
 asserted.
 
-- [x] Every new screen uses only `--zen-*` tokens; the audit grep returns nothing
-      — `grep -rE "#[0-9a-fA-F]{3,6}" client/src/screens client/src/components` is empty
+- [x] Every new screen uses only `--zen-*` tokens; the audit checks hex, `rgb(a)`, and `hsl(a)` literals across `client/src`, allowing literals only inside the global `theme.css` `:root` token block.
 - [x] No Bootstrap colour utility on any new themed surface
       — grep for `bg-|text-|btn-` + Bootstrap colour names is empty
 - [x] Role badge renders text on all three roles

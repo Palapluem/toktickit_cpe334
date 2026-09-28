@@ -258,7 +258,6 @@ export function RequesterTicketDetail({
           <ReadOnlyBadge label="Current Status">
             <StatusBadge value={ticket.status} />
           </ReadOnlyBadge>
-          <ReadOnlyValue label="Ticket Owner" value="Not yet assigned" wide />
           <ReadOnlyValue label="Summary" value={ticket.summary} wide />
           <ReadOnlyValue
             label="Description"
