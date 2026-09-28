@@ -122,7 +122,7 @@ describe('UI-08 · AC-18 · the queue shows ownership and status', () => {
     ).toHaveAttribute('href', '/staff/tickets/t-1')
   })
 
-  it('labels every cell, so the table becomes cards below 768px', async () => {
+  it('labels every cell for the responsive tablet and mobile card layouts', async () => {
     renderQueue()
     await screen.findByText('TKT-2026-000001')
 
@@ -141,7 +141,7 @@ describe('UI-08 · AC-18 · the queue shows ownership and status', () => {
     ])
   })
 
-  it('keeps the wide table in its own scrollable container', async () => {
+  it('keeps the queue table inside its responsive container', async () => {
     renderQueue()
 
     const table = await screen.findByRole('table')
@@ -150,6 +150,22 @@ describe('UI-08 · AC-18 · the queue shows ownership and status', () => {
 })
 
 describe('UI-09 · AC-19 · the controls issue the query', () => {
+  it('uses the shared tertiary Button and exposes sort direction', async () => {
+    renderQueue()
+
+    const sort = await screen.findByRole('button', { name: 'Sort by IT Priority' })
+    expect(sort).toHaveClass('zen-button', 'zen-button--tertiary')
+    expect(sort).toHaveAttribute('aria-pressed', 'true')
+    expect(sort).toHaveTextContent('IT Priority ↓')
+
+    await userEvent.click(sort)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Sort by IT Priority' }))
+        .toHaveTextContent('IT Priority ↑')
+    })
+  })
+
   it('asks for the default queue on first load', async () => {
     renderQueue()
 

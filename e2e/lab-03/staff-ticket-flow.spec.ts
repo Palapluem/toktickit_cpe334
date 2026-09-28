@@ -54,6 +54,17 @@ test('QUEUE-01 · AC-34 captures the queue at three viewports', async ({ page })
     await expect(page.getByRole('heading', { name: 'Ticket Queue' })).toBeVisible()
     await expect(page.locator('tbody tr').first()).toBeVisible()
 
+    if (viewport.name === 'tablet') {
+      const updated = page.locator('.staff-queue__table td[data-label="Updated"]').first()
+      await expect(updated).toBeVisible()
+      const updatedBounds = await updated.boundingBox()
+      expect(updatedBounds).not.toBeNull()
+      expect(updatedBounds!.x + updatedBounds!.width).toBeLessThanOrEqual(viewport.width)
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
+      ).toBe(false)
+    }
+
     await captureLab3Screenshot(
       page,
       'staff-queue',
@@ -95,11 +106,40 @@ test('QUEUE-03 captures the no-results state', async ({ page }) => {
 test('QUEUE-04 captures the empty state', async ({ page }) => {
   await signIn(page, STAFF)
   await page.setViewportSize(VIEWPORTS[0])
-  await page.goto('/staff/tickets')
-  await page.getByRole('combobox', { name: 'Status' }).selectOption('CANCELLED')
-  await page.getByRole('combobox', { name: 'Owner' }).selectOption('me')
 
-  await expect(page.getByText('No tickets match these filters.')).toBeVisible()
+  // This deterministic empty-response fixture differs from an applied filter:
+  // the UI should show the true no-records state and not the no-results state.
+  await page.route('**/api/staff/tickets**', async (route) => {
+    const requestedSort = new URL(route.request().url()).searchParams.get('sort')
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: [],
+        pagination: {
+          page: 1,
+          pageSize: 20,
+          totalItems: 0,
+          totalPages: 0,
+          hasPreviousPage: false,
+          hasNextPage: false,
+        },
+        appliedFilters: {
+          search: null,
+          status: null,
+          itPriority: null,
+          categoryId: null,
+          ownerId: null,
+          sort: requestedSort ?? 'itPriority:desc',
+        },
+      }),
+    })
+  })
+
+  await page.goto('/staff/tickets')
+
+  await expect(page.getByText('No tickets in the queue.')).toBeVisible()
+  await expect(page.getByText('No tickets match these filters.')).toHaveCount(0)
   await captureLab3Screenshot(page, 'staff-queue', 'empty.png')
 })
 
@@ -283,4 +323,65 @@ test('DETAIL-09 shows a safe load failure and recovers with Try again', async ({
   await page.unroute(detailRoute)
   await page.getByRole('button', { name: 'Try again' }).click()
   await expect(page.getByRole('heading', { name: 'TKT-2026-900003' })).toBeVisible()
+})
+
+test('QUEUE-06 demonstrates pagination across a deterministic 21-ticket UI fixture', async ({ page }) => {
+  test.setTimeout(60_000)
+  await signIn(page, STAFF)
+  await page.setViewportSize(VIEWPORTS[0])
+
+  await page.route('**/api/staff/tickets**', async (route) => {
+    const requestUrl = new URL(route.request().url())
+    const requestedPage = Number(requestUrl.searchParams.get('page') ?? '1')
+    const allRows = Array.from({ length: 21 }, (_, index) => ({
+      id: `pagination-demo-${index + 1}`,
+      ticketNo: `TKT-2026-${String(910001 + index).padStart(6, '0')}`,
+      summary: `Pagination demonstration request ${index + 1}`,
+      category: { id: 'category-demo', name: 'Hardware' },
+      requester: { id: 'requester-demo', displayName: 'Jennifer Anderson' },
+      requestedPriority: 'MEDIUM',
+      itPriority: index < 5 ? 'HIGH' : 'MEDIUM',
+      status: 'OPEN',
+      owner: { id: 'staff-demo', displayName: 'Patricia Evans' },
+      requesterResolvedAt: null,
+      createdAt: '2026-09-15T08:00:00.000Z',
+      updatedAt: '2026-09-15T09:00:00.000Z',
+    }))
+    const data = requestedPage === 2 ? allRows.slice(20) : allRows.slice(0, 20)
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data,
+        pagination: {
+          page: requestedPage,
+          pageSize: 20,
+          totalItems: 21,
+          totalPages: 2,
+          hasPreviousPage: requestedPage > 1,
+          hasNextPage: requestedPage < 2,
+        },
+        appliedFilters: {
+          search: null,
+          status: null,
+          itPriority: null,
+          categoryId: null,
+          ownerId: null,
+          sort: requestUrl.searchParams.get('sort') ?? 'itPriority:desc',
+        },
+      }),
+    })
+  })
+
+  await page.goto('/staff/tickets')
+  await expect(page.getByText('Page 1 of 2, 21 tickets')).toBeVisible()
+  await expect(page.locator('.staff-queue__table tbody tr')).toHaveCount(20)
+  await captureLab3Screenshot(page, 'staff-queue', 'pagination.png')
+
+  await page.getByRole('button', { name: 'Next' }).click()
+  await expect(page.getByText('Page 2 of 2, 21 tickets')).toBeVisible()
+  await expect(page.locator('.staff-queue__table tbody tr')).toHaveCount(1)
+  await expect(page.getByRole('link', { name: 'TKT-2026-910021' })).toBeVisible()
+  await captureLab3Screenshot(page, 'staff-queue', 'pagination-page-2.png')
 })
