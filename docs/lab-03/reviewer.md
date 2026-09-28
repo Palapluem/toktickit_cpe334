@@ -46,11 +46,12 @@ Lab 3 review ran in both directions. Section 2 records reviews received on this 
 | [#83](https://github.com/Palapluem/toktickit_cpe334/pull/83) | — | `main` ← `docs/lab-03-postmerge-final-evidence-20260925` | `MERGED` | `f4265f4` | `N0TAW00D` |
 | [#84](https://github.com/Palapluem/toktickit_cpe334/pull/84) | — | `main` ← `docs/lab-03-reciprocal-review-closeout-20260926` | `MERGED` | `d198064` | `N0TAW00D` |
 
-**Open follow-up — PR #86 (not a merge-ledger entry).** GitHub currently shows
+**Open follow-up — PR #86 (not a merge-ledger entry).** GitHub shows
 [`PR #86`](https://github.com/Palapluem/toktickit_cpe334/pull/86) open against
-`lab3-staging`, from `feature/85-lab3-audit-remediation` at `2710137`, with Issue #85
-linked and `N0TAW00D` requested as reviewer. At this report snapshot, no submitted
-review or hosted status check is recorded. The candidate verification is documented in
+`lab3-staging`, from `feature/85-lab3-audit-remediation`. N0TAW00D submitted
+`CHANGES_REQUESTED` on head `d620ff8`; there are no hosted status checks. Issue #85
+still needs its Development-panel link and manual close/Done update after the staging
+merge. The candidate verification is documented in
 [`evidence/l3-15-pr86-candidate-verification.md`](evidence/l3-15-pr86-candidate-verification.md).
 It is intentionally excluded from the merged-PR table; no approval, staging merge,
 main promotion, or release is inferred.
@@ -76,7 +77,8 @@ submission, board evidence, and tracked screenshots. PR #81 merged the User Mana
 mobile email-wrap fix into `lab3-staging`; approved release PR #82 promoted it to
 `main` at `da5bf4a`. PR #83 added approved post-merge verification evidence at
 `f4265f4`, and PR #84 added a further documentation-only reciprocal-review closeout at
-`d198064`. Neither documentation PR changed product behavior.
+`d198064`. Neither documentation PR changed product behavior. PR #86 is a separate,
+still-open code and evidence follow-up; its review state is recorded below.
 Every merge was performed by `N0TAW00D`.
 
 GitHub exposes no submitted review for #68, #78, #81, or #84; no approval is inferred
@@ -266,9 +268,26 @@ evidence; the product test results remain attributed to the exact release commit
 This documentation-only PR updated the reciprocal-review ledger and closeout evidence.
 GitHub reports that `N0TAW00D` merged it into `main` at `d198064`. No submitted review
 object or completed hosted status check is recorded for this PR, so it is listed as a
-peer merge rather than an approved review. The source-code audit corrections currently
-being prepared are not part of this merge and must pass the course's staging and review
-workflow before they can be described as released.
+peer merge rather than an approved review. The later source-code audit corrections are
+not part of this merge and must pass the course's staging and review workflow before
+they can be described as released.
+
+### PR #86 — Audit-remediation review (open)
+
+N0TAW00D submitted `CHANGES_REQUESTED` on head `d620ff8`. The blocking findings were
+that `QUEUE-04` and `QUEUE-06` stub the complete Staff Queue endpoint and therefore
+must be labelled as fixture-backed UI evidence, and that the prior real-server
+`CANCELLED` + “Assigned to me” check had been displaced without being recorded. The
+follow-up retains the fixture tests with explicit scope labels and restores the real
+filter check as `QUEUE-07`; it does not claim that `QUEUE-03` covers the old behavior.
+
+The review also noted three non-blocking improvements. The follow-up removes redundant
+`aria-pressed` while retaining `aria-sort`, makes the style-contract audit handle
+multiple `:root` token blocks and repository-root invocation, and adds `AC-01` to the
+authenticated-shell screenshot comment. Local verification passed 410 server tests,
+216 client tests, and 40 Playwright tests (including two fixture-backed UI checks), plus
+both production builds. GitHub reported no hosted checks. The follow-up is awaiting
+re-review; no approval, merge, or release is inferred.
 
 ---
 

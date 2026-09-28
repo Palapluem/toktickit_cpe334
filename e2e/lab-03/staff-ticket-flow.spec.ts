@@ -103,7 +103,7 @@ test('QUEUE-03 captures the no-results state', async ({ page }) => {
   await expect(page.locator('tbody tr').first()).toBeVisible()
 })
 
-test('QUEUE-04 captures the empty state', async ({ page }) => {
+test('QUEUE-04 · fixture-backed UI evidence captures the true empty state', async ({ page }) => {
   await signIn(page, STAFF)
   await page.setViewportSize(VIEWPORTS[0])
 
@@ -155,6 +155,25 @@ test('QUEUE-05 refuses a Requester with the forbidden state', async ({ page }) =
 
   const direct = await page.request.get(`${API}/api/staff/tickets`)
   expect(direct.status()).toBe(403)
+})
+
+test('QUEUE-07 · AC-19 preserves the live CANCELLED and Assigned to me filter check', async ({ page }) => {
+  await signIn(page, STAFF)
+  await page.setViewportSize(VIEWPORTS[0])
+  await page.goto('/staff/tickets')
+  await expect(page.locator('tbody tr').first()).toBeVisible()
+
+  // The CANCELLED seed is unassigned; prove the status filter returns it before
+  // combining with "me", then prove the owner filter has results on its own.
+  await page.getByRole('combobox', { name: 'Status' }).selectOption('CANCELLED')
+  await expect(page.getByRole('link', { name: 'TKT-2026-900009' })).toBeVisible()
+  await page.getByRole('combobox', { name: 'Owner' }).selectOption('me')
+
+  await expect(page.getByText('No tickets match these filters.')).toBeVisible()
+  await captureLab3Screenshot(page, 'staff-queue', 'filtered-cancelled-assigned.png')
+
+  await page.getByRole('combobox', { name: 'Status' }).selectOption('')
+  await expect(page.getByRole('link', { name: 'TKT-2026-900003' })).toBeVisible()
 })
 
 test('DETAIL-01 · AC-34 captures the staff Ticket Detail at three viewports', async ({ page }) => {
@@ -325,7 +344,7 @@ test('DETAIL-09 shows a safe load failure and recovers with Try again', async ({
   await expect(page.getByRole('heading', { name: 'TKT-2026-900003' })).toBeVisible()
 })
 
-test('QUEUE-06 demonstrates pagination across a deterministic 21-ticket UI fixture', async ({ page }) => {
+test('QUEUE-06 · fixture-backed UI evidence demonstrates 21-ticket pagination', async ({ page }) => {
   test.setTimeout(60_000)
   await signIn(page, STAFF)
   await page.setViewportSize(VIEWPORTS[0])

@@ -62,8 +62,7 @@ test('AUTH-03 signs in and reaches My Tickets', async ({ page }) => {
   // exact: the status filter offers WAITING_FOR_REQUESTER, which contains it.
   await expect(page.getByText('REQUESTER', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible()
-  // Keep this identity proof focused on the shell: the adjacent Lab 2 ticket
-  // table has a separate responsive-evidence finding and is not needed here.
+  // AC-01: keep the authenticated Requester identity proof focused on the shell.
   await page.locator('.zen-shell__header').screenshot({
     path: 'artifacts/lab-03/screenshots/authentication/authenticated-shell.png',
   })

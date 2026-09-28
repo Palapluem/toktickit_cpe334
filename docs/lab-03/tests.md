@@ -220,9 +220,11 @@ keeps the executable IDs used in the report traceable to the original plan:
 | Executed test names | Planned journey | Evidence |
 |---|---|---|
 | `AUTH-01`…`AUTH-06` | `E2E-01` | `e2e/lab-03/authentication.spec.ts` |
-| `QUEUE-01`…`QUEUE-05`, `DETAIL-01`…`DETAIL-09`, `THREAD-01`…`THREAD-04` | `E2E-02` | `e2e/lab-03/staff-ticket-flow.spec.ts`, `e2e/lab-03/comments-and-notes.spec.ts` |
+| `QUEUE-01`…`QUEUE-03`, `QUEUE-05`, `QUEUE-07`, `DETAIL-01`…`DETAIL-09`, `THREAD-01`…`THREAD-04` | `E2E-02` | `e2e/lab-03/staff-ticket-flow.spec.ts`, `e2e/lab-03/comments-and-notes.spec.ts` |
 | `ADMIN-01`…`ADMIN-06` | `E2E-03` | `e2e/lab-03/user-administration.spec.ts` |
-| `QUEUE-06` | Audit follow-up outside the 88-case baseline; `AC-19` | `e2e/lab-03/staff-ticket-flow.spec.ts` |
+| `QUEUE-04` | Fixture-backed Playwright UI evidence outside the 88-case baseline; `FR-36` (UI state only; not a server/API proof) | `e2e/lab-03/staff-ticket-flow.spec.ts` |
+| `QUEUE-06` | Fixture-backed pagination UI evidence outside the 88-case baseline; `AC-19` (UI pagination only; server-side AC-19 evidence is `API-12`) | `e2e/lab-03/staff-ticket-flow.spec.ts` |
+| `QUEUE-07` | Real-server filter-composition check outside the 88-case baseline; `AC-19` (each individual filter has a positive result before the combined result) | `e2e/lab-03/staff-ticket-flow.spec.ts` |
 | `ADMIN-07` | Audit follow-up outside the 88-case baseline; `AC-27` | `e2e/lab-03/user-administration.spec.ts` |
 | `ADMIN-08` | Audit follow-up outside the 88-case baseline; `AC-10`, `AC-36` | `e2e/lab-03/user-administration.spec.ts` |
 
@@ -231,10 +233,23 @@ Responsive IDs are attached to their capture journeys: `RESP-01` to `AUTH-01` / 
 `RESP-04` to `ADMIN-01`. The final E2E runner total also includes the six Lab 2 regression
 journeys; the crosswalk does not count those again.
 
-`QUEUE-06`, `ADMIN-07`, and `ADMIN-08` are separate audit follow-up additions in PR #86; they are not part of the 88-case pre-implementation plan.
-`QUEUE-06` exercises the existing pagination control with a deterministic 21-row UI
-fixture and captures both pages in `artifacts/lab-03/screenshots/staff-queue/pagination.png`
-and `pagination-page-2.png`; `ADMIN-07` captures search plus role-filtered results in
+`QUEUE-04`, `QUEUE-06`, `QUEUE-07`, `ADMIN-07`, and `ADMIN-08` are separate execution
+follow-ups outside the 88-case pre-implementation plan. `QUEUE-04` and `QUEUE-06` run
+in a real browser against the application shell but intercept the entire
+`/api/staff/tickets` request. They are explicitly **fixture-backed UI evidence**, not
+proof that the Staff Queue API or server-side pagination returns those states.
+`QUEUE-04` supplies an unfiltered empty response and distinguishes “No tickets in the
+queue” from the searched no-results state. `QUEUE-06` supplies a deterministic 21-row
+fixture to exercise both pagination pages, captured in
+`artifacts/lab-03/screenshots/staff-queue/pagination.png` and `pagination-page-2.png`.
+The prior real-server `QUEUE-04` check for `CANCELLED` plus “Assigned to me” was not
+replaced by `QUEUE-03` (which covers search); that combined-filter check is restored as
+`QUEUE-07`, runs against the real server, and captures
+`artifacts/lab-03/screenshots/staff-queue/filtered-cancelled-assigned.png`. The
+test first verifies the seeded `CANCELLED` Ticket while unassigned, then verifies
+that “Assigned to me” alone has matching Tickets after clearing status; the combined
+intersection is empty as expected.
+`ADMIN-07` captures search plus role-filtered results in
 `artifacts/lab-03/screenshots/user-management/search-filter.png`; `ADMIN-08` captures
 the Requester-facing forbidden state in
 `artifacts/lab-03/screenshots/user-management/forbidden.png` and makes a direct 403 API
@@ -317,7 +332,7 @@ The labsheet §12 names the files it expects. Mapped:
 | `client/tests/lab-03/StaffTicketDetail.test.tsx` | UI-11, UI-12 |
 | `client/tests/lab-03/UserManagement.test.tsx` | UI-15 … UI-17 |
 | `e2e/lab-03/authentication.spec.ts` | RESP-01, E2E-01 |
-| `e2e/lab-03/staff-ticket-flow.spec.ts` | RESP-02, RESP-03, E2E-02; PR #86 audit follow-up `QUEUE-06` pagination and empty/no-results evidence |
+| `e2e/lab-03/staff-ticket-flow.spec.ts` | RESP-02, RESP-03, E2E-02 live-server journeys; fixture-backed UI evidence `QUEUE-04` / `QUEUE-06`; restored real-server filter check `QUEUE-07` |
 | `e2e/lab-03/user-administration.spec.ts` | RESP-04, E2E-03; PR #86 audit follow-ups `ADMIN-07` search/filter and `ADMIN-08` forbidden-state evidence |
 
 Additional delivered files beyond the labsheet's minimum are also traced explicitly:
@@ -381,23 +396,26 @@ command/environment record is in the final-main evidence linked from `submission
 
 ### 6.2 PR #86 candidate verification — complete locally, not released
 
-The audit-remediation candidate at code commit `2710137` was tested locally. The
-reviewer has not yet merged PR #86 into `lab3-staging`, and no new release verification
-has been run on `main`; therefore these results do not replace §6.1.
+The review-remediation candidate was tested locally in a working tree based on PR #86
+head `d620ff8`. N0TAW00D requested changes on that head; the follow-up fixes are in the
+same PR for re-review but remain unmerged, and no new release verification has been run
+on `main`. These results do not replace §6.1.
 
 | Suite | Command | Result |
 |---|---|---|
 | Server (unit + API + security + migration) | `cd server && npm test` | **410 passed** (28 files) |
-| Client (UI + style) | `cd client && npm test` | **215 passed** (26 files) |
-| E2E + responsive | `npm run test:e2e` | **39 passed**: 6 Lab 2 regression + 33 Lab 3 |
-| **Executed total** | Three suites | **664 passed · 0 failed · 0 skipped** |
+| Client (UI + style) | `cd client && npm test` | **216 passed** (26 files) |
+| Playwright | `npm run test:e2e` | **40 passed**: 6 Lab 2 regression + 34 Lab 3 checks, including 2 fixture-backed UI checks |
+| **Executed total** | Three suites | **666 passed · 0 failed · 0 skipped** |
 
 Both production builds passed. Client lint exited 0 with three non-blocking warnings:
 two React Fast Refresh warnings in `SessionContext.tsx` and one unused `REQUESTER_B`
 fixture in the Lab 2 `MyTickets.test.tsx` suite. E2E ran against a newly created,
 disposable `_test` database; no development database was used, and the temporary audit
-databases were removed after verification. GitHub reported no hosted status checks for
-PR #86, so the results are local evidence rather than CI results. Full command-level
+databases were removed after verification. The Playwright fixture-backed checks are
+UI evidence only; they do not prove the API's empty-state or pagination responses.
+GitHub reported no hosted status checks for PR #86, so the results are local evidence
+rather than CI results. Full command-level
 details are in
 [`evidence/l3-15-pr86-candidate-verification.md`](evidence/l3-15-pr86-candidate-verification.md).
 

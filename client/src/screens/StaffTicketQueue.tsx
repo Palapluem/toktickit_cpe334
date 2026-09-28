@@ -100,7 +100,6 @@ function SortButton({
       type="button"
       className="my-tickets__sort-button"
       aria-label={`Sort by ${label}`}
-      aria-pressed={active}
       onClick={() => onSort(field)}
     >
       {label}

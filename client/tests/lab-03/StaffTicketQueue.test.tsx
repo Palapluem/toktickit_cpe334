@@ -155,12 +155,14 @@ describe('UI-09 · AC-19 · the controls issue the query', () => {
 
     const sort = await screen.findByRole('button', { name: 'Sort by IT Priority' })
     expect(sort).toHaveClass('zen-button', 'zen-button--tertiary')
-    expect(sort).toHaveAttribute('aria-pressed', 'true')
+    const sortHeader = sort.closest('th')!
+    expect(sortHeader).toHaveAttribute('aria-sort', 'descending')
     expect(sort).toHaveTextContent('IT Priority ↓')
 
     await userEvent.click(sort)
 
     await waitFor(() => {
+      expect(sortHeader).toHaveAttribute('aria-sort', 'ascending')
       expect(screen.getByRole('button', { name: 'Sort by IT Priority' }))
         .toHaveTextContent('IT Priority ↑')
     })

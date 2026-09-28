@@ -46,13 +46,15 @@ docs-only PRs #41–#43 after release PR #39. The one-PDF course submission is f
 only after the evidence/ledger closeout is merged; no pending item is presented as
 complete.
 
-**Audit follow-up is still pending.** PR #86 is open against `lab3-staging`; its code and
-new evidence are not in `main` at `d198064`. The 649-test result below remains the
+**Audit follow-up is still pending.** PR #86 is open against `lab3-staging`; N0TAW00D
+requested changes on head `d620ff8`. The requested corrections are now in the same PR
+for re-review, but remain outside `main` at `d198064`. The 649-test result below remains the
 verified baseline for the earlier product release at `da5bf4a`. A reviewer-led staging
 merge, a separate release promotion, and a fresh post-merge verification are required
-before those audit corrections can be described as released. The candidate code at
-`2710137` has since passed 410 server, 215 client, and 39 combined Lab 2/Lab 3 E2E tests,
-as well as both production builds; those local results are recorded separately in
+before those audit corrections can be described as released. The review-remediation
+working tree based on `d620ff8` passed 410 server, 216 client, and 40 Playwright tests
+(including two fixture-backed UI checks), as well as both production builds; those
+local results are recorded separately in
 [`l3-15-pr86-candidate-verification.md`](../../docs/lab-03/evidence/l3-15-pr86-candidate-verification.md)
 and are not represented as a new `main` result.
 
@@ -111,7 +113,7 @@ and are not represented as a new `main` result.
 | [#53](https://github.com/Palapluem/toktickit_cpe334/issues/53) | Administrator User Management | CLOSED |
 | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | E2E, responsive evidence, and release | CLOSED |
 | [#80](https://github.com/Palapluem/toktickit_cpe334/issues/80) | Keep User Management email values visible on mobile | CLOSED after post-merge verification |
-| [#85](https://github.com/Palapluem/toktickit_cpe334/issues/85) | Close audit findings in Queue and Requester detail | OPEN — linked to PR #86; staging review and release verification pending |
+| [#85](https://github.com/Palapluem/toktickit_cpe334/issues/85) | Close audit findings in Queue and Requester detail | OPEN — tracked by PR #86; Development-panel link, staging merge, and release verification remain pending |
 
 **A defect in this workflow, disclosed rather than hidden.** PRs #57–#64 were stacked,
 each targeting the previous feature branch. They were merged in ascending order, and
@@ -412,11 +414,12 @@ calls; it did not fail a test or build.
 implementation work for Issues #45–#52 and Claude Sonnet 5 on User Management work
 (including `79286c8`) and selected review follow-ups. The author confirms using Codex for
 Lab 3 follow-up work after 16 September 2026; the exact Codex model variant and
-commit-by-commit attribution are not recorded. PR #86 contains the post-release code
-corrections and remains pending peer review and the required release workflow; it is not
-described as merged or released.
+commit-by-commit attribution are not recorded. PR #86 received a `CHANGES_REQUESTED`
+review from `N0TAW00D`; the review-remediation follow-up is locally verified but still
+awaits re-review and the required release workflow. It is not described as merged or
+released.
 
-Eleven selected prompts, each with what the agent produced and what I took from it: the red,
+Twelve selected prompts, each with what the agent produced and what I took from it: the red,
 green, security-audit and review-response phase templates, and the judgment prompts used
 between phases and at release.
 
@@ -484,22 +487,26 @@ or prove identical response latency.
 | Queue spans all Requesters, IT Priority desc then oldest first | `API-11`, `desktop-list.png` |
 | Search on ticket number and summary | `API-12`, `UI-09` |
 | Filters — status, IT Priority, owner incl. unassigned | `API-12`, `UI-09` |
-| Sorting and pagination | `API-12`, `UI-09`; PR #86 audit follow-up `QUEUE-06` demonstrates page 1/2 and page 2/2 with a deterministic 21-row UI fixture |
+| Sorting and pagination | `API-12`, `UI-09`; `QUEUE-06` is fixture-backed UI evidence for page 1/2 and page 2/2, while `API-12` verifies real-server query composition and pagination |
+| Combined status and owner filtering | `QUEUE-07` restores the pre-PR #86 real-server check for `CANCELLED` + “Assigned to me” (`AC-19`), with positive results for each filter individually |
 | Invalid parameter is a 400, never a silent fallback | `API-13` |
 | Assigned vs unassigned ownership | `OwnerCell`, `UI-08` |
 | Status and priority badges | `StatusBadge`, `PriorityBadge` — text always rendered |
 | Empty, no-results, forbidden, failure states | `UI-10`, `empty.png`, `no-results.png`, `forbidden.png` |
 | Responsive — desktop table; all seven labelled fields visible in tablet/mobile cards | `desktop-list` · refreshed `tablet-list` · `mobile-cards` |
 
-**Empty and no-results are different states.** `QUEUE-04` supplies a deterministic
-unfiltered empty API response and captures “No tickets in the queue.”; `QUEUE-03` applies
-a search and captures “No tickets match these filters.” The older main-branch screenshot
-showed the no-results message in both figure slots, so it must not be mistaken for the
-corrected evidence.
+**Empty and no-results are different states.** `QUEUE-04` intercepts the queue API with
+an unfiltered empty fixture and proves the browser UI displays “No tickets in the
+queue”; it does not prove the real server returns an empty queue. `QUEUE-03` applies a
+search to the live queue and captures “No tickets match these filters.” `QUEUE-07`
+restores the prior real-server combined-filter check; it is not claimed that `QUEUE-03`
+covers that behavior. The older main-branch screenshot showed the no-results message in
+both figure slots, so it must not be mistaken for the corrected evidence.
 
-> **Screenshots:** `artifacts/lab-03/screenshots/staff-queue/` — eight captures in the
-> PR #86 audit candidate: desktop, tablet, mobile, empty, no-results, pagination pages 1
-> and 2, and forbidden. They are not main-release evidence until the reviewer-led
+> **Screenshots:** `artifacts/lab-03/screenshots/staff-queue/` — nine selected captures
+> in the PR #86 audit candidate: desktop, tablet, mobile, fixture-backed empty,
+> no-results, combined-filter, pagination pages 1 and 2, and forbidden. The fixture-backed
+> captures are labelled as UI evidence, not server E2E proof. They are not main-release evidence until the reviewer-led
 > staging and release workflow completes.
 
 ---
@@ -647,7 +654,7 @@ Lab 3 evidence.
 | Evidence group | Captures attached | What the captures prove |
 |---|---|---|
 | Authentication (10) | [`login-desktop`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/login-desktop.png), [`login-tablet`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/login-tablet.png), [`login-mobile`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/login-mobile.png), [`authenticated-shell`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/authenticated-shell.png), [`login-failure`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/login-failure.png), [`logout-direct-access-blocked`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/logout-direct-access-blocked.png), [`change-password-desktop`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/change-password-desktop.png), [`change-password-tablet`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/change-password-tablet.png), [`change-password-mobile`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/change-password-mobile.png), [`admin-created-change-password`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/admin-created-change-password.png) | Login and Change Password at three viewports, authenticated identity/role, safe login failure, post-logout route protection, and the administrator-created account gate. |
-| Staff queue (8) | [`desktop-list`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/desktop-list.png), [`tablet-list`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/tablet-list.png), [`mobile-cards`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/mobile-cards.png), [`empty`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/empty.png), [`no-results`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/no-results.png), [`pagination · page 1`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/pagination.png), [`pagination · page 2`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/pagination-page-2.png), [`forbidden`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/forbidden.png) | Queue data, three responsive layouts, distinguishable empty and no-results states, both pagination pages, and the Requester forbidden state. |
+| Staff queue (9) | [`desktop-list`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/desktop-list.png), [`tablet-list`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/tablet-list.png), [`mobile-cards`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/mobile-cards.png), [`empty`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/empty.png), [`no-results`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/no-results.png), [`combined filters`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/filtered-cancelled-assigned.png), [`pagination · page 1`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/pagination.png), [`pagination · page 2`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/pagination-page-2.png), [`forbidden`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/forbidden.png) | Queue data, three responsive layouts, fixture-backed empty-state UI evidence, live search and combined-filter results, both fixture-backed pagination pages, and the Requester forbidden state. |
 | Staff ticket detail (8) | [`desktop-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/desktop-detail.png), [`tablet-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/tablet-detail.png), [`mobile-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/mobile-detail.png), [`comments-and-notes`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/comments-and-notes.png), [`requester-view-no-notes`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/requester-view-no-notes.png), [`forbidden`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/forbidden.png), [`attachments`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/attachments.png), [`failure`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/failure.png) | Claim/assignment, ticket detail, responsive layouts, comments versus notes, ownership refusal, attachments, and retryable load failure. |
 | Administrator user management (12) | [`desktop-list`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/desktop-list.png), [`tablet-list`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/tablet-list.png), [`mobile-list`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/mobile-list.png), [`mobile-email-wrap`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/mobile-email-wrap.png), [`search-filter`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/search-filter.png), [`forbidden`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/forbidden.png), [`create-dialog`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/create-dialog.png), [`duplicate-email`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/duplicate-email.png), [`edit-dialog`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/edit-dialog.png), [`reset-confirmation`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/reset-confirmation.png), [`self-deactivation-refused`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/self-deactivation-refused.png), [`last-administrator`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/last-administrator.png) | Three responsive layouts, search and role filtering, the Requester forbidden state, full email wrapping at 390 px, create/edit/reset flows, duplicate-email validation, and both Administrator safety refusals. |
 | Lab 2 regression: Create Ticket (3) | [`desktop-initial`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/create-ticket/desktop-initial.png), [`tablet-initial`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/create-ticket/tablet-initial.png), [`mobile-initial`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/create-ticket/mobile-initial.png) | The existing Lab 2 Requester screen remains visually available after authenticated identity replaces the selector. |
