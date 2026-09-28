@@ -203,11 +203,13 @@ tracked.
 
 ### Repository structure — verified paths on the PR #86 candidate branch
 
-The tree below names paths present in the candidate checkout at `2710137`, rather than
+The tree below names actual paths in the PR #86 candidate branch, rather than
 conceptual test groups. The audit additions are candidate-branch work and must not be
-read as already released on `main`. The graph and commit-history captures shown in the
-Google Docs report are embedded report evidence; they are not files under a
-`docs/lab-03/evidence/screenshots/` directory in this repository.
+read as already released on `main`. A dagger marks the two style-test files added or
+expanded for audit follow-up; they are not extra cases in the original 88-case plan.
+The graph and commit-history captures shown in the Google Docs report are embedded
+report evidence; they are not files under a `docs/lab-03/evidence/screenshots/`
+directory in this repository.
 
 ```
 docs/lab-03/
