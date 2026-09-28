@@ -84,16 +84,27 @@ function ariaSortFor(field: SortField, sort: Filters['sort']) {
 function SortButton({
   field,
   label,
+  sort,
   onSort,
 }: {
   field: SortField
   label: string
+  sort: Filters['sort']
   onSort: (field: SortField) => void
 }) {
+  const active = sort.field === field
+  const direction = sort.direction === 'asc' ? 'ascending' : 'descending'
   return (
-    <button type="button" className="my-tickets__sort-button" onClick={() => onSort(field)}>
+    <Button
+      variant="tertiary"
+      type="button"
+      className="my-tickets__sort-button"
+      aria-label={`Sort by ${label}`}
+      onClick={() => onSort(field)}
+    >
       {label}
-    </button>
+      <span aria-hidden="true"> {active ? (direction === 'ascending' ? '↑' : '↓') : '↕'}</span>
+    </Button>
   )
 }
 
@@ -307,26 +318,26 @@ export function StaffTicketQueue() {
             <thead>
               <tr>
                 <th scope="col" aria-sort={ariaSortFor('ticketNo', filters.sort)}>
-                  <SortButton field="ticketNo" label="Ticket No." onSort={sortBy} />
+                  <SortButton field="ticketNo" label="Ticket No." sort={filters.sort} onSort={sortBy} />
                 </th>
                 <th scope="col">Summary</th>
                 <th scope="col">Requester</th>
                 <th scope="col" aria-sort={ariaSortFor('itPriority', filters.sort)}>
-                  <SortButton field="itPriority" label="IT Priority" onSort={sortBy} />
+                  <SortButton field="itPriority" label="IT Priority" sort={filters.sort} onSort={sortBy} />
                 </th>
                 <th scope="col" aria-sort={ariaSortFor('status', filters.sort)}>
-                  <SortButton field="status" label="Status" onSort={sortBy} />
+                  <SortButton field="status" label="Status" sort={filters.sort} onSort={sortBy} />
                 </th>
                 <th scope="col">Owner</th>
                 <th scope="col" aria-sort={ariaSortFor('lastActivityAt', filters.sort)}>
-                  <SortButton field="lastActivityAt" label="Updated" onSort={sortBy} />
+                  <SortButton field="lastActivityAt" label="Updated" sort={filters.sort} onSort={sortBy} />
                 </th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
-                // data-label drives the table-to-cards switch below 768px,
-                // the pattern lab-02 My Tickets established (ui-spec §8).
+                // data-label drives the table-to-cards layout on tablet and
+                // mobile, preserving every field without horizontal clipping.
                 <tr key={row.id}>
                   <td data-label="Ticket No.">
                     <Link to={`/staff/tickets/${row.id}`}>{row.ticketNo}</Link>

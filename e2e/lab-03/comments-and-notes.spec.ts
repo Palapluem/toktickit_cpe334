@@ -14,6 +14,9 @@ const STAFF = 'patricia.evans@example.ac.th'
 // for the L3-6 captures, so signing in as them never reaches a Ticket.
 const OWNING_REQUESTER = 'sarah.johnson@example.ac.th'
 const TICKET_NO = 'TKT-2026-900003'
+// Keep the append-only THREAD-02 mutation away from the ticket used by the
+// screenshot evidence and requester-visibility checks.
+const POST_TICKET_NO = 'TKT-2026-900001'
 const NOTE_FRAGMENT = 'Relay allow-list'
 
 async function signIn(
@@ -28,10 +31,11 @@ async function signIn(
 
 async function openStaffTicket(
   page: import('@playwright/test').Page,
+  ticketNo = TICKET_NO,
 ): Promise<string> {
   await page.goto('/staff/tickets')
-  await page.getByPlaceholder('Search by ticket number or summary…').fill(TICKET_NO)
-  const link = page.getByRole('link', { name: TICKET_NO })
+  await page.getByPlaceholder('Search by ticket number or summary…').fill(ticketNo)
+  const link = page.getByRole('link', { name: ticketNo })
   await expect(link).toBeVisible()
   const href = (await link.getAttribute('href'))!
   await page.goto(href)
@@ -61,7 +65,7 @@ test('THREAD-01 captures both threads, visually distinct', async ({ page }) => {
 
 test('THREAD-02 posts to each thread through its own composer', async ({ page }) => {
   await signIn(page, STAFF)
-  const ticketId = await openStaffTicket(page)
+  const ticketId = await openStaffTicket(page, POST_TICKET_NO)
 
   const stamp = Date.now()
   await page.getByLabel('Add a comment').fill(`Public update ${stamp}`)
