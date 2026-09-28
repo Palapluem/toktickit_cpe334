@@ -246,15 +246,25 @@ Lab 2's three viewports and rules are unchanged. Two additions:
 `artifacts/lab-03/screenshots/`
 
 ```
-authentication/     login-desktop · login-mobile · login-failure ·
-                    change-password-desktop · change-password-mobile
-staff-queue/        desktop-list · tablet-list · mobile-cards ·
-                    empty · no-results
+authentication/     login-desktop · login-tablet · login-mobile · login-failure ·
+                    authenticated-shell · logout-direct-access-blocked ·
+                    change-password-desktop · change-password-tablet · change-password-mobile ·
+                    admin-created-change-password
+staff-queue/        desktop-list · tablet-list · mobile-cards · empty · no-results ·
+                    forbidden · pagination · pagination-page-2
 staff-ticket-detail/ desktop-detail · tablet-detail · mobile-detail ·
-                    comments-and-notes
+                    comments-and-notes · requester-view-no-notes · attachments · failure · forbidden
 user-management/    desktop-list · mobile-list · create-dialog ·
-                    duplicate-email · last-administrator · mobile-email-wrap
+                    tablet-list · duplicate-email · edit-dialog · last-administrator ·
+                    reset-confirmation · self-deactivation-refused · mobile-email-wrap ·
+                    search-filter · forbidden
 ```
+
+The `authenticated-shell`, `logout-direct-access-blocked`, Queue pagination, corrected
+empty-state, refreshed Queue responsive, Requester note-isolation, User Management
+search/filter, and User Management forbidden captures are audit-follow-up candidates in
+PR #86. Until that PR completes review and release, these files are branch evidence, not
+evidence present on `main`.
 
 The three refusal captures — `login-failure`, `duplicate-email`, `last-administrator` — are named explicitly because Parts 5 and 8 ask for them and a happy-path-only capture session will not produce them.
 
@@ -286,7 +296,8 @@ asserted.
 - [x] Forbidden state does not offer Try again
       — `ForbiddenState` takes no `onRetry`; retrying a refusal cannot change its outcome
 - [x] Login failure message is identical for all three causes
-      — one constant, `Login.test.tsx`; the server side is `API-02` byte-for-byte
+      — one client constant; `API-02`…`API-04` compare the public error code, message,
+      and field-error shape. The decoy-hash path is not a statistical timing guarantee.
 - [x] Public Comments and Internal Notes are unmistakably distinct
       — `ThreadSection.test.tsx` UI-13: own surface, own heading, own composer, private marker
 - [x] Requester Ticket Detail shows no Internal Notes affordance

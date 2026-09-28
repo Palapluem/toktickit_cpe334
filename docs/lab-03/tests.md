@@ -96,7 +96,7 @@ Red → Green → Refactor, per `testing-contract.md` §5. One exception, record
 | SEC-T06 | AC-09 | Requester creates an Internal Note | Refused | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
 | SEC-T07 | AC-10 | Requester calls an Administrator endpoint | 403 on every admin route | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-T08 | AC-11 | IT Staff calls an Administrator endpoint | 403 on every admin route | `server/tests/lab-03/authorization.api.test.ts` | Pass |
-| SEC-T09 | AC-10 | Requester calls the Staff Queue | 403 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
+| SEC-T09 | BR-12; no dedicated AC | Requester calls the Staff Queue | 403 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-T10 | AC-24, BR-22 | Requester sends `RESOLVED` / `CLOSED` | Refused; status unchanged | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
 | SEC-T11 | BR-13 | Role sent by the client | Ignored; the session's role decides | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-T12 | BR-39 | Deactivated user's session | Refused on the next request | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
@@ -220,15 +220,18 @@ keeps the executable IDs used in the report traceable to the original plan:
 | Executed test names | Planned journey | Evidence |
 |---|---|---|
 | `AUTH-01`…`AUTH-06` | `E2E-01` | `e2e/lab-03/authentication.spec.ts` |
-| `QUEUE-01`…`QUEUE-05`, `DETAIL-01`…`DETAIL-09`, `THREAD-01`…`THREAD-04` | `E2E-02` | `staff-ticket-flow.spec.ts`, `comments-and-notes.spec.ts` |
+| `QUEUE-01`…`QUEUE-05`, `DETAIL-01`…`DETAIL-09`, `THREAD-01`…`THREAD-04` | `E2E-02` | `e2e/lab-03/staff-ticket-flow.spec.ts`, `e2e/lab-03/comments-and-notes.spec.ts` |
 | `ADMIN-01`…`ADMIN-06` | `E2E-03` | `e2e/lab-03/user-administration.spec.ts` |
+| `QUEUE-06` | Audit follow-up outside the 88-case baseline; `AC-19` | `e2e/lab-03/staff-ticket-flow.spec.ts` |
+| `ADMIN-07` | Audit follow-up outside the 88-case baseline; `AC-27` | `e2e/lab-03/user-administration.spec.ts` |
+| `ADMIN-08` | Audit follow-up outside the 88-case baseline; `AC-10`, `AC-36` | `e2e/lab-03/user-administration.spec.ts` |
 
 Responsive IDs are attached to their capture journeys: `RESP-01` to `AUTH-01` / `AUTH-04`,
 `RESP-02` to `QUEUE-01`, `RESP-03` to `DETAIL-01` / `THREAD-01` / `THREAD-03`, and
 `RESP-04` to `ADMIN-01`. The final E2E runner total also includes the six Lab 2 regression
 journeys; the crosswalk does not count those again.
 
-`QUEUE-06`, `ADMIN-07`, and `ADMIN-08` are separate audit follow-up additions.
+`QUEUE-06`, `ADMIN-07`, and `ADMIN-08` are separate audit follow-up additions in PR #86; they are not part of the 88-case pre-implementation plan.
 `QUEUE-06` exercises the existing pagination control with a deterministic 21-row UI
 fixture and captures both pages in `artifacts/lab-03/screenshots/staff-queue/pagination.png`
 and `pagination-page-2.png`; `ADMIN-07` captures search plus role-filtered results in
@@ -237,7 +240,9 @@ the Requester-facing forbidden state in
 `artifacts/lab-03/screenshots/user-management/forbidden.png` and makes a direct 403 API
 call. `QUEUE-03` and `QUEUE-04` separately capture no-results and true-empty states.
 These follow-ups are not retroactively counted among the 88 pre-implementation planned
-cases or relabelled as part of `E2E-02` / `E2E-03`.
+cases or relabelled as part of `E2E-02` / `E2E-03`. Their current candidate evidence is
+in PR #86 and becomes main-release evidence only after the reviewer-led merge and a new
+verification on the resulting `main` commit.
 
 ## 3. Acceptance-Criterion Traceability
 
@@ -254,7 +259,7 @@ Every criterion in `specification.md` §9 maps to at least one planned test.
 | AC-07 | API-09 |
 | AC-08 | SEC-T02 |
 | AC-09 | SEC-T05 · SEC-T06 |
-| AC-10 | SEC-T07 · SEC-T09 |
+| AC-10 | SEC-T07 |
 | AC-11 | SEC-T08 |
 | AC-12 | SEC-T01 |
 | AC-13 | SEC-T03 · SEC-T04 |
@@ -288,7 +293,7 @@ is the result of running the complete Lab 2 suite against the migrated,
 authenticated implementation, so it is recorded in the final-suite table
 below rather than manufactured as a standalone Lab 3 test name.
 
-**Business rules covered without a dedicated AC:** BR-05 (UNIT-02) · BR-07 (API-10) · BR-08 (UNIT-06) · BR-12 (UNIT-04) · BR-13 (SEC-T11) · BR-24 (API-14) · BR-29 (API-23) · BR-30 (API-20) · BR-31 (UNIT-05, API-22) · BR-38 (API-33) · BR-39 (SEC-T12) · BR-40–42 (MIG-01…03).
+**Business rules covered without a dedicated AC:** BR-05 (UNIT-02) · BR-07 (API-10) · BR-08 (UNIT-06) · BR-12 (UNIT-04, SEC-T09) · BR-13 (SEC-T11) · BR-24 (API-14) · BR-29 (API-23) · BR-30 (API-20) · BR-31 (UNIT-05, API-22) · BR-38 (API-33) · BR-39 (SEC-T12) · BR-40–42 (MIG-01…03). `SEC-T09` is retained as additional role-boundary coverage; it is not attributed to AC-10, which specifically covers Administrator endpoints.
 
 ---
 
@@ -312,8 +317,8 @@ The labsheet §12 names the files it expects. Mapped:
 | `client/tests/lab-03/StaffTicketDetail.test.tsx` | UI-11, UI-12 |
 | `client/tests/lab-03/UserManagement.test.tsx` | UI-15 … UI-17 |
 | `e2e/lab-03/authentication.spec.ts` | RESP-01, E2E-01 |
-| `e2e/lab-03/staff-ticket-flow.spec.ts` | RESP-02, RESP-03, E2E-02; post-release `QUEUE-06` pagination audit and empty/no-results evidence |
-| `e2e/lab-03/user-administration.spec.ts` | RESP-04, E2E-03; post-release `ADMIN-07` search/filter and `ADMIN-08` forbidden-state evidence |
+| `e2e/lab-03/staff-ticket-flow.spec.ts` | RESP-02, RESP-03, E2E-02; PR #86 audit follow-up `QUEUE-06` pagination and empty/no-results evidence |
+| `e2e/lab-03/user-administration.spec.ts` | RESP-04, E2E-03; PR #86 audit follow-ups `ADMIN-07` search/filter and `ADMIN-08` forbidden-state evidence |
 
 Additional delivered files beyond the labsheet's minimum are also traced explicitly:
 
@@ -352,16 +357,49 @@ Connection strings live in `.env.test`, untracked; only `.env.example` is commit
 
 ## 6. Final Results
 
-> Filled in after the release merge, from a run on the final `main` branch (`lab-02 §11.25`).
+### 6.1 Released-main checkpoint — PR #82
+
+This is the verified product-release checkpoint from the exact `main` commit
+`da5bf4a842b79991acab0bd2b71b16bc6acea6ad`, following PR #82. It is historical
+baseline evidence, not verification of the unreleased PR #86 candidate. The full
+command/environment record is in the final-main evidence linked from `submission.md`.
 
 | Suite | Command | Tests | Result |
 |---|---|---|---|
-| Server (unit + API + security + migration) | `cd server && npm test` | — | ☐ |
-| Client (UI + style) | `cd client && npm test` | — | ☐ |
-| E2E + responsive | `npm run test:e2e` | — | ☐ |
+| Server (unit + API + security + migration) | `cd server && npm test` | 410 (28 files) | Pass |
+| Client (UI + style) | `cd client && npm test` | 203 (24 files) | Pass |
+| E2E + responsive | `npm run test:e2e` | 36 | Pass |
+| Server production build | `cd server && npm run build` | — | Pass |
+| Client production build | `cd client && npm run build` | — | Pass |
+| Client lint | `cd client && npm run lint` | — | Pass with 3 non-blocking warnings |
 
 **Environment**
-- Branch: `main` · Commit: — · Date executed: —
+- Branch: `main` · Commit: `da5bf4a842b79991acab0bd2b71b16bc6acea6ad` · Date executed: 2026-09-25
+- Total: **649 passed · 0 failed · 0 skipped** across the three suites.
+- This checkpoint remains valid for the released product at `da5bf4a`; candidate and
+  later release results must be recorded separately rather than silently rewriting it.
+
+### 6.2 PR #86 candidate verification — complete locally, not released
+
+The audit-remediation candidate at code commit `2710137` was tested locally. The
+reviewer has not yet merged PR #86 into `lab3-staging`, and no new release verification
+has been run on `main`; therefore these results do not replace §6.1.
+
+| Suite | Command | Result |
+|---|---|---|
+| Server (unit + API + security + migration) | `cd server && npm test` | **410 passed** (28 files) |
+| Client (UI + style) | `cd client && npm test` | **215 passed** (26 files) |
+| E2E + responsive | `npm run test:e2e` | **39 passed**: 6 Lab 2 regression + 33 Lab 3 |
+| **Executed total** | Three suites | **664 passed · 0 failed · 0 skipped** |
+
+Both production builds passed. Client lint exited 0 with three non-blocking warnings:
+two React Fast Refresh warnings in `SessionContext.tsx` and one unused `REQUESTER_B`
+fixture in the Lab 2 `MyTickets.test.tsx` suite. E2E ran against a newly created,
+disposable `_test` database; no development database was used, and the temporary audit
+databases were removed after verification. GitHub reported no hosted status checks for
+PR #86, so the results are local evidence rather than CI results. Full command-level
+details are in
+[`evidence/l3-15-pr86-candidate-verification.md`](evidence/l3-15-pr86-candidate-verification.md).
 
 ---
 
@@ -369,8 +407,8 @@ Connection strings live in `.env.test`, untracked; only `.env.example` is commit
 
 - **CSRF is argued, not tested.** `SameSite=Lax` plus same-origin is the position (`specification.md` §11.3); no automated test exercises a cross-site request, because the harness serves both from one origin. Recorded rather than silently omitted.
 - **Rate limiting is out of scope.** Lecture 5 (p17) recommends slowing repeated login attempts. The labsheet does not require it and it is not implemented; the safe-failure requirement it supports is covered by API-02 … API-04.
-- **Password hashing cost is not benchmarked.** UNIT-01 proves the hash is salted and verifiable, not that the work factor is high enough to be slow for an attacker.
+- **Password hashing cost and response-time equality are not benchmarked.** UNIT-01 proves the hash is salted and verifiable, not that the work factor is high enough to be slow for an attacker. The unknown-email path uses a memoized decoy hash as an equal-work mitigation, but the suite does not statistically prove identical response latency.
 - **Session fixation is not tested.** The session identifier is generated fresh at login rather than accepted from the request, so fixation is structurally prevented; no test asserts it.
 - **Release-audit disclosure — migration hash.** The applied Lab 3 migration contains one bcrypt backfill value because `specification.md` §7.4 / BR-41 requires existing Lab 2 users to receive the documented initial password before `passwordHash` becomes non-null. This is a literal conflict with the broader §10 wording that forbids a hash in any committed file; it is recorded here rather than silently claimed as clean. The source, response, log, fixture, and screenshot scans found no additional credential or session-value literal.
-- **Release-audit disclosure — traceability gaps.** FR-31 (editing a user) has no dedicated AC, and SEC-T09 is currently listed under AC-10 even though AC-10 names Administrator endpoints. The implementation and tests are retained; adding or rewording an AC requires the student's explicit specification decision.
+- **Release-audit disclosure — traceability gap.** FR-31 (editing a user) has no dedicated AC. `SEC-T09` is additional role-boundary coverage mapped to BR-12; it is not represented as satisfying AC-10, which specifically covers Administrator endpoints. The implementation and tests are retained; adding or rewording an AC requires the student's explicit specification decision.
 - **Release-audit disclosure — AI provenance.** `ai-use.md` contains ten selected prompt renderings, while the private running log preserves three prompt entries. The rows were cross-checked against repository history and evidence, but wording not preserved in the private log is not claimed to be verbatim.
