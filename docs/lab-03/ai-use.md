@@ -2,12 +2,24 @@
 
 ## Which agents and models I used
 
-I used Claude Code in a VS Code-based IDE, on Claude Sonnet 5 for the
-implementation Issues and Claude Opus 5 for the release audit. As in Lab 2 I
-treated the agent as a collaborator rather than an authority: I checked the
-contracts, the source, the GitHub state, the test output, the screenshots and
-the commit history before accepting a result, and I performed every
-peer-review action in the browser myself.
+I used Claude Code during the main implementation phase. Git commit trailers
+record Claude Opus 5 on early implementation work for Issues #45–#52, and
+Claude Sonnet 5 on User Management work (including `79286c8`) and selected
+review-follow-up commits. These trailers document the model associated with
+those commits; they do not account for every interaction.
+
+After 16 September 2026, I also used Codex for Lab 3 follow-up work, including
+the post-release audit and this report revision. The later commits do not carry
+AI co-author trailers, so this is a phase-level disclosure; the exact Codex
+model variant and commit-by-commit attribution are not recorded. The code
+corrections are tracked in PR #86 and remain pending peer review and the
+required release workflow; they are not represented here as merged or
+released.
+
+As in Lab 2, I treated each agent as a collaborator rather than an authority:
+I checked the contracts, source, GitHub state, test output, screenshots, and
+commit history before accepting a result, and I performed every peer-review
+action myself.
 
 The same phase-template system as Lab 2 carried over — contract review, red,
 green, audit, review-response — each naming which documents to read, what to
