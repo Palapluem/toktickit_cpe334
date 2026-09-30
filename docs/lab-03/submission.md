@@ -18,11 +18,10 @@
 |---|---|
 | Repository | [TokTickIT repository](https://github.com/Palapluem/toktickit_cpe334) |
 | GitHub Project | [TokTickIT Individual Sprints](https://github.com/users/Palapluem/projects/2) — private; attached Project UI captures are evidence for readers without access |
-| Product release | [main @ da5bf4a](https://github.com/Palapluem/toktickit_cpe334/commit/da5bf4a842b79991acab0bd2b71b16bc6acea6ad) |
-| Latest course-repository closeout | [main @ d198064](https://github.com/Palapluem/toktickit_cpe334/commit/d198064e1543d87f56b77776878a1c6b2d49b4d4) — documentation-only PR #84; product-release test baseline remains separate |
-| Latest staging audit remediation | [PR #86 merged to `lab3-staging` at `0e86f05`](https://github.com/Palapluem/toktickit_cpe334/pull/86) — not yet released to `main` |
+| Verified Lab 3 main | [main @ a429f29](https://github.com/Palapluem/toktickit_cpe334/commit/a429f29872e5f8e2535fb0e16acca7016a8bfb92) — reviewer-approved PR #87 release |
+| Audit-remediation PR | [PR #86 merged to `lab3-staging` at `0e86f05`](https://github.com/Palapluem/toktickit_cpe334/pull/86); promoted to `main` by PR #87 |
 | Submission source | [`docs/lab-03/submission.md`](https://github.com/Palapluem/toktickit_cpe334/blob/main/docs/lab-03/submission.md) |
-| Post-merge verification | [`l3-14-final-main-verification.md`](https://github.com/Palapluem/toktickit_cpe334/blob/main/docs/lab-03/evidence/l3-14-final-main-verification.md) |
+| Exact-main verification | [`l3-16-final-main-verification.md`](https://github.com/Palapluem/toktickit_cpe334/blob/main/docs/lab-03/evidence/l3-16-final-main-verification.md) |
 
 > The PDF filename is `report_lab03_67070501042.pdf`. Headings follow the labsheet §14 order exactly.
 
@@ -32,38 +31,30 @@
 
 **Branch flow.** Feature work followed `feature/<n>-<slug>` → `lab3-staging` → `main`.
 No implementation was committed directly to either release branch. PR #81 merged the
-User Management mobile email-wrap fix into `lab3-staging`; PR #82 then promoted it to
-`main` at `da5bf4a`. Every merge listed below was performed by `N0TAW00D`, and the
-author did not merge their own work. Formal approvals are distinguished from peer
-merges with no submitted review record.
+User Management mobile email-wrap fix into `lab3-staging`; PR #82 promoted that release
+to `main` at `da5bf4a`. The later audit-remediation PR #86 merged to `lab3-staging` at
+`0e86f05`, and reviewer-approved PR #87 promoted it to `main` at `a429f29`. Every merge
+listed below was performed by `N0TAW00D`; the author did not merge their own work.
+Formal approvals are distinguished from peer merges with no submitted review record.
 
-**Product release and course-delivery closeout are separate gates.** PR #82 released
-the product and the final-main tests are pinned to its exact commit. Documentation-only
-PR #83 was approved and merged at `f4265f4`; documentation-only PR #84 was merged at
-`d198064` without a submitted review object. Neither changed product code. This
-post-release sequence matches the prior lab
-reports: Lab 1 records docs-only PRs #13–#15 after release PR #12, and Lab 2 records
-docs-only PRs #41–#43 after release PR #39. The one-PDF course submission is finalized
-only after the evidence/ledger closeout is merged; no pending item is presented as
-complete.
+**Product release and evidence closeout are separate gates.** PR #82 was the earlier
+product release; documentation-only PRs #83 and #84 followed it. The later audit
+remediation was not treated as released merely because #86 had merged to staging:
+N0TAW00D approved PR #87 and merged the release into `main` at `a429f29`. Exact-main
+verification was then rerun on that merge commit. Documentation updates and the printed
+course report are kept distinct from product-code claims, following the post-release
+documentation pattern used in Labs 1 and 2.
 
-**Audit follow-up is merged to staging but not yet released.** N0TAW00D requested
-changes on PR #86 head `d620ff8`, approved the follow-up on `fd89126`, and merged PR #86
-into `lab3-staging` at `0e86f05`. Issue #85 is linked and closed; its Project card is in
-Done. This does not put the corrections on `main`: the 649-test result below remains the
-verified baseline for the earlier product release at `da5bf4a`. A separate, reviewer-led
-release promotion and fresh verification of the resulting exact `main` commit are still
-required. PR #86 reports 410 server, 216 client, and 40 Playwright tests (including two
-fixture-backed UI checks), plus both production builds; these are author-reported
-candidate results, not a new `main` result or hosted CI result. Details are recorded in
-[`l3-15-pr86-candidate-verification.md`](../../docs/lab-03/evidence/l3-15-pr86-candidate-verification.md).
-
-After the staging merge, an isolated integration candidate combining `main @ d198064`
-with `lab3-staging @ 0e86f05` was independently rerun: 410 server, 216 client, and 40
-Playwright tests passed, and both production builds passed. This is stronger candidate
-evidence, but it is still not post-merge verification of the exact future `main` commit.
-The detailed environment, disposable-database names, and screenshot-restoration note
-are in the linked evidence record.
+**Audit follow-up and release.** N0TAW00D requested changes on PR #86 head `d620ff8`,
+approved the follow-up on `fd89126`, and merged PR #86 into `lab3-staging` at `0e86f05`.
+Issue #85 is linked and closed, and its Project card is in Done. PR #87 then combined
+the reviewed remediation with current main, received N0TAW00D's approval on candidate
+`eed984c`, and was merged by the reviewer at `a429f29`. The post-merge test results in
+Part 3 are from that exact resulting `main` commit, not from the candidate description
+or hosted CI. The candidate run is retained separately in
+[`l3-15-pr86-candidate-verification.md`](../../docs/lab-03/evidence/l3-15-pr86-candidate-verification.md);
+the exact-main run is in
+[`l3-16-final-main-verification.md`](../../docs/lab-03/evidence/l3-16-final-main-verification.md).
 
 ### Pull Requests
 
@@ -99,6 +90,7 @@ are in the linked evidence record.
 | [#83](https://github.com/Palapluem/toktickit_cpe334/pull/83) | — | `main` ← `docs/lab-03-postmerge-final-evidence-20260925` | `f4265f4` | `N0TAW00D` |
 | [#84](https://github.com/Palapluem/toktickit_cpe334/pull/84) | — | `main` ← `docs/lab-03-reciprocal-review-closeout-20260926` | `d198064` | `N0TAW00D` |
 | [#86](https://github.com/Palapluem/toktickit_cpe334/pull/86) | [#85](https://github.com/Palapluem/toktickit_cpe334/issues/85) | `lab3-staging` ← `feature/85-lab3-audit-remediation` | `0e86f05` | `N0TAW00D` |
+| [#87](https://github.com/Palapluem/toktickit_cpe334/pull/87) | — | `main` ← `release/lab3-main-promotion-20260929` | `a429f29` | `N0TAW00D` |
 
 > The PR numbers in this table belong to `Palapluem/toktickit_cpe334`. The separate
 > reciprocal reviews of `N0TAW00D/TokTickIT` PRs #75–#84 and #87 are recorded only in
@@ -121,7 +113,7 @@ are in the linked evidence record.
 | [#53](https://github.com/Palapluem/toktickit_cpe334/issues/53) | Administrator User Management | CLOSED |
 | [#54](https://github.com/Palapluem/toktickit_cpe334/issues/54) | E2E, responsive evidence, and release | CLOSED |
 | [#80](https://github.com/Palapluem/toktickit_cpe334/issues/80) | Keep User Management email values visible on mobile | CLOSED after post-merge verification |
-| [#85](https://github.com/Palapluem/toktickit_cpe334/issues/85) | Close audit findings in Queue and Requester detail | CLOSED after PR #86 merged to `lab3-staging`; Project card in Done |
+| [#85](https://github.com/Palapluem/toktickit_cpe334/issues/85) | Close audit findings in Queue and Requester detail | CLOSED after PR #86 staging merge; remediation released by PR #87; Project card in Done |
 
 **A defect in this workflow, disclosed rather than hidden.** PRs #57–#64 were stacked,
 each targeting the previous feature branch. They were merged in ascending order, and
@@ -160,22 +152,22 @@ The board evidence below is based on the Project UI check, not on the Issue stat
 | Issue #85 Project card in Done | Verified in GitHub Project UI |
 | Existing board screenshots | Verified for the earlier #54 release state — [captures are in the Google Docs report](https://docs.google.com/document/d/1LvDrVanne23Pgj6LH7AoiacwpgOu-sGl7Hyr6pycZCo/edit?tab=t.8io2l44yp95s) |
 | Post-release #80 board screenshot | Captured as Board capture E in the Google Docs report; not copied into this public repository because the Project is private |
-| Main commit history after docs-only PR #84 | Three overlapping refresh captures document the recent PR #74–#84 segment; older captures cover the preceding Lab 3 chain. The report still needs one continuous, non-duplicated history sequence, refreshed after PR #86 is released. Product-test results remain pinned to `da5bf4a` until a new release run is verified. |
-| Visual Network Graph | The report draft still contains separate graph-table captures and overlapping graph sections. Consolidate these into one left-to-right graph sequence, beginning at the first Lab 3 branch and continuing with visible overlap to the released main head; refresh the ending after PR #86. GitHub's graph is a rolling view, not a complete commit history. |
+| Main commit history through the audit-remediation release | Verified through PR #87 merge `a429f29`; the report presents one ordered, overlapping sequence with a refreshed ending capture. |
+| Visual Network Graph | Verified as one left-to-right sequence from the first Lab 3 branch through the latest visible main activity (26–30 September), with an overlap at 26 September. The graph is a rolling view; the PR ledger and main-history sequence preserve the earlier chronology. |
+| Issue #85 Project card | Verified in Done; current filtered Project UI evidence is Board capture F in the Google Docs report. |
 
 > **Screenshot:** the [final Google Docs report](https://docs.google.com/document/d/1LvDrVanne23Pgj6LH7AoiacwpgOu-sGl7Hyr6pycZCo/edit?tab=t.8io2l44yp95s)
-> contains the earlier board captures for Issue #54 and Board capture E, a filtered view
-> showing Issue #80 in the `Done` column. The closed Issue and Project-card state are
+> contains the earlier board captures for Issue #54, Board capture E for Issue #80, and
+> Board capture F for Issue #85 in the `Done` column. The closed Issue and Project-card state are
 > recorded as separate checks. Because the Project is private, the board screenshot is
 > kept in the report rather than mirrored into this public repository. The Project is
 > intentionally private; an unauthenticated 404 is expected, so it is not being made
 > public to satisfy report access. Historical PR cards are not moved merely to make the
-> board look complete. The current report draft does **not** yet meet the one-sequence
-> presentation rule: graph data-table captures and duplicate history views remain and
-> must be removed or consolidated before the final print. The final Network Graph should
-> begin at the first Lab 3-specific branch and proceed left to right through the released
-> `main` head using overlapping viewports; it is a rolling view, so the PR ledger and the
-> single commit-history sequence establish the complete review/release chronology.
+> board look complete. The Network Graph appears as one chronological sequence with a
+> visible overlap between the earlier captures ending on 26 September and the refreshed
+> 26–30 September view. Its three adjacent data-table crops are the complementary
+> left-to-right detail view, not a second graph sequence. The main commit-history figures
+> form one separate, continuous sequence ending at the PR #87 merge on `main @ a429f29`.
 
 ### Peer review record
 
@@ -194,14 +186,14 @@ status checks, so the reported 591 server, 349 client, and 143 E2E tests are not
 described as CI results. The partner's Issue #74 and staging-to-main release remain
 their separate open workflow; this review does not claim that their Lab 3 is released.
 
-**Latest peer review — N0TAW00D/TokTickIT PR #87.** Review was submitted as
-`CHANGES_REQUESTED` on `62d5afad` for the missing Issue #74 link, overbroad accessibility
-crosswalk, and missing reproducible isolated-database test output. TypeScript checking
-and discovery of 11 Playwright tests passed; runtime E2E was intentionally not run
-without an isolated database, and GitHub showed no hosted checks. The PR remains open
-with the change request unresolved at this report snapshot; it is not described as
-approved or merged. Details are in [`reviewer.md`](../../docs/lab-03/reviewer.md) §4;
-the exact-command clarification is [linked on the peer PR](https://github.com/N0TAW00D/TokTickIT/pull/87#issuecomment-5865615436).
+**Reciprocal review — N0TAW00D/TokTickIT PR #87.** The review began with
+`CHANGES_REQUESTED` on head `62d5afad` for the missing Issue #74 link, overbroad
+accessibility crosswalk, and missing reproducible isolated-database output. Follow-up
+heads corrected the AC-56 crosswalk and supplied targeted/full E2E output on the peer's
+isolated `toktickit_e2e` database. The latest review still requests one item: link Issue
+#74 through GitHub's Development relationship. The peer PR remains OPEN with
+`CHANGES_REQUESTED`; it has not been approved or merged. The exact-command clarification
+and review sequence are recorded in [`reviewer.md`](../../docs/lab-03/reviewer.md) §4.
 
 ### README and .gitignore
 
@@ -213,12 +205,11 @@ commands, and the stacked-branch rule.
 result directories for both labs. No secret, credential, or real personal password is
 tracked.
 
-### Repository structure — verified paths contributed by PR #86
+### Repository structure — audit follow-up released by PR #87
 
-The tree below names actual paths changed by PR #86, rather than conceptual test groups.
-Those changes are merged into `lab3-staging` but are not yet released on `main`. A dagger
-marks the two style-test files added or expanded for audit follow-up; they are not extra
-cases in the original 88-case plan.
+The tree below names actual paths changed by PR #86 and promoted to `main` by PR #87,
+rather than conceptual test groups. A dagger marks the two style-test files added or
+expanded for audit follow-up; they are not extra cases in the original 88-case plan.
 The graph and commit-history captures shown in the Google Docs report are embedded
 report evidence; they are not files under a `docs/lab-03/evidence/screenshots/`
 directory in this repository.
@@ -295,11 +286,12 @@ artifacts/lab-03/screenshots/
 └── user-management/
 ```
 
-The released-main verification record
-[`l3-14-final-main-verification.md`](https://github.com/Palapluem/toktickit_cpe334/blob/main/docs/lab-03/evidence/l3-14-final-main-verification.md)
-is linked above and remains on `main`; it is not part of this staging-based candidate
-checkout. The private Project, network-graph, and commit-history captures are shown in
-the report and are not duplicated as public repository screenshot files.
+The previous release checkpoint remains preserved in
+[`l3-14-final-main-verification.md`](https://github.com/Palapluem/toktickit_cpe334/blob/main/docs/lab-03/evidence/l3-14-final-main-verification.md).
+The current exact-main verification is
+[`l3-16-final-main-verification.md`](https://github.com/Palapluem/toktickit_cpe334/blob/main/docs/lab-03/evidence/l3-16-final-main-verification.md).
+The private Project, Network Graph, and commit-history captures are shown in the report
+and are not duplicated as public repository screenshot files.
 
 ---
 
@@ -392,27 +384,29 @@ includes that migrated suite; it is not an untested criterion.
 
 ### Final test output
 
-The post-merge run was performed from the exact `main` commit
-`da5bf4a842b79991acab0bd2b71b16bc6acea6ad` on 25 September 2026. The server and E2E
-suites used separate fresh disposable PostgreSQL databases whose names ended in
-`_test`; no development database was used. All three suites ran sequentially.
+The current post-merge run was performed from the exact `main` commit
+`a429f29872e5f8e2535fb0e16acca7016a8bfb92`, the merge commit for PR #87. Server and E2E
+used separate newly created disposable PostgreSQL databases ending in `_test`; no
+development database was used. The suites ran sequentially in an isolated verification
+worktree.
 
 | Suite | Command | Result |
 |---|---|---|
 | Server - unit, API, security, migration | `cd server && npm test` | **410 passed** (28 files) |
-| Client - UI component and style | `cd client && npm test` | **203 passed** (24 files) |
-| E2E and responsive | `npm run test:e2e` | **36 passed** |
-| **Total** | three commands above | **649 passed · 0 failed · 0 skipped** |
+| Client - UI component and style | `cd client && npm test` | **216 passed** (26 files) |
+| Playwright | `npm run test:e2e` | **40 passed**: 6 Lab 2 regressions + 34 Lab 3 checks |
+| **Total** | three commands above | **666 passed · 0 failed · 0 skipped** |
 
-The post-merge commit also passed `cd server && npm run build` and `cd client && npm run
-build`. `cd client && npm run lint` completed successfully with three non-blocking
-warnings: two React Fast Refresh warnings in `SessionContext.tsx` and one unused
-`REQUESTER_B` fixture in `client/tests/lab-02/MyTickets.test.tsx`. The server tests
-emitted a non-failing `pg` deprecation warning about overlapping `client.query()`
-calls; it did not fail a test or build.
+Both production builds passed. Client lint exited 0 with three non-blocking warnings:
+two React Fast Refresh warnings in `SessionContext.tsx` and one unused `REQUESTER_B`
+fixture in `client/tests/lab-02/MyTickets.test.tsx`. `QUEUE-04` and `QUEUE-06` are
+fixture-backed UI checks, not live-server proof; `QUEUE-07` checks the combined filters
+against the real server. GitHub has no hosted status checks configured, so these are
+local results, not CI results. E2E-generated screenshot side effects stayed isolated in
+the disposable worktree and were not included as report evidence.
 
 > **Evidence:** detailed commands, results, warnings, and post-merge limitations are
-> recorded in [`l3-14-final-main-verification.md`](../../docs/lab-03/evidence/l3-14-final-main-verification.md).
+> recorded in [`l3-16-final-main-verification.md`](../../docs/lab-03/evidence/l3-16-final-main-verification.md).
 
 ---
 
@@ -425,11 +419,11 @@ implementation work for Issues #45–#52 and Claude Sonnet 5 on User Management 
 (including `79286c8`) and selected review follow-ups. The author confirms using Codex for
 Lab 3 follow-up work after 16 September 2026; the exact Codex model variant and
 commit-by-commit attribution are not recorded. PR #86 received a `CHANGES_REQUESTED`
-review from `N0TAW00D`; the follow-up was approved and merged into `lab3-staging` at
-`0e86f05`. The required release promotion and fresh verification of the resulting
-`main` commit are still pending, so the candidate is not described as released.
+review, was corrected and approved by `N0TAW00D`, and merged into `lab3-staging` at
+`0e86f05`; reviewer-approved PR #87 then promoted it to `main @ a429f29`. Exact-main
+verification passed 666 tests, both builds, and lint with the three disclosed warnings.
 
-Twelve selected prompts, each with what the agent produced and what I took from it: the red,
+Ten selected prompts, each with what the agent produced and what I took from it: the red,
 green, security-audit and review-response phase templates, and the judgment prompts used
 between phases and at release.
 
@@ -441,14 +435,14 @@ criterion. *"Do not assume a merged PR reached staging"* caught the branch defec
 in Part 1. *"Reproduce it before you fix it"* turned a reported vulnerability into a
 permanent regression test.
 
-### Existing AI-use capture set — stale draft
+### Historical AI-use captures — prior selection
 
-These captures are the 10-prompt version from 2026-09-25. They predate the Codex
-audit-remediation row and the updated provenance in `ai-use.md`, so they do not prove
-the current source is fully rendered. Keep them only as historical evidence; replace
-the entire Part 4 capture sequence with current overlapping slices after the final
-Google Docs tab has been refreshed. The editable source remains
-[`ai-use.md`](ai-use.md).
+The archived captures below show an earlier ten-prompt draft. The current selected set
+contains eight retained prompts from that draft plus the two Codex audit/review
+follow-up prompts, keeping the PDF within the Labsheet's 6–10 range. The captures are
+therefore historical context, not a rendering of the current `ai-use.md`; the Google
+Docs report labels them accordingly and records the two current follow-up prompts in
+text. The editable, authoritative source is [`ai-use.md`](ai-use.md).
 
 | Figure | Captured evidence |
 |---|---|
@@ -514,11 +508,10 @@ covers that behavior. The older main-branch screenshot showed the no-results mes
 both figure slots, so it must not be mistaken for the corrected evidence.
 
 > **Screenshots:** `artifacts/lab-03/screenshots/staff-queue/` — nine selected captures
-> in the PR #86 audit candidate: desktop, tablet, mobile, fixture-backed empty,
-> no-results, combined-filter, pagination pages 1 and 2, and forbidden. The fixture-backed
-> captures are labelled as UI evidence, not server E2E proof. They are staging evidence,
-> not main-release evidence until the reviewer-led release merge and fresh exact-`main`
-> verification are complete.
+> now present on `main @ a429f29`: desktop, tablet, mobile, fixture-backed empty,
+> no-results, combined-filter, pagination pages 1 and 2, and forbidden. `QUEUE-04` and
+> `QUEUE-06` are labelled as fixture-backed UI evidence, not server E2E proof; the
+> combined-filter evidence is the real-server `QUEUE-07` check.
 
 ---
 
@@ -608,8 +601,8 @@ between render and submit, so a client-side guard would be wrong at exactly the 
 mattered. The attempt reaches the server and the server's message is shown.
 
 > **Screenshots:** `artifacts/lab-03/screenshots/user-management/` — twelve captures
-> including search/filter, the Requester forbidden state, both safety refusals, and the
-> mobile email-wrap viewport evidence.
+> present on `main @ a429f29`, including search/filter, the Requester forbidden state,
+> both safety refusals, and the mobile email-wrap viewport evidence.
 
 ---
 
@@ -664,10 +657,10 @@ Lab 3 evidence.
 
 | Evidence group | Captures attached | What the captures prove |
 |---|---|---|
-| Authentication (10) | [`login-desktop`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/login-desktop.png), [`login-tablet`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/login-tablet.png), [`login-mobile`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/login-mobile.png), [`authenticated-shell`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/authenticated-shell.png), [`login-failure`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/login-failure.png), [`logout-direct-access-blocked`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/logout-direct-access-blocked.png), [`change-password-desktop`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/change-password-desktop.png), [`change-password-tablet`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/change-password-tablet.png), [`change-password-mobile`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/change-password-mobile.png), [`admin-created-change-password`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/authentication/admin-created-change-password.png) | Login and Change Password at three viewports, authenticated identity/role, safe login failure, post-logout route protection, and the administrator-created account gate. |
-| Staff queue (9) | [`desktop-list`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/desktop-list.png), [`tablet-list`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/tablet-list.png), [`mobile-cards`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/mobile-cards.png), [`empty`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/empty.png), [`no-results`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/no-results.png), [`combined filters`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/filtered-cancelled-assigned.png), [`pagination · page 1`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/pagination.png), [`pagination · page 2`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/pagination-page-2.png), [`forbidden`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-queue/forbidden.png) | Queue data, three responsive layouts, fixture-backed empty-state UI evidence, live search and combined-filter results, both fixture-backed pagination pages, and the Requester forbidden state. |
-| Staff ticket detail (8) | [`desktop-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/desktop-detail.png), [`tablet-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/tablet-detail.png), [`mobile-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/mobile-detail.png), [`comments-and-notes`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/comments-and-notes.png), [`requester-view-no-notes`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/requester-view-no-notes.png), [`forbidden`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/forbidden.png), [`attachments`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/attachments.png), [`failure`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/staff-ticket-detail/failure.png) | Claim/assignment, ticket detail, responsive layouts, comments versus notes, ownership refusal, attachments, and retryable load failure. |
-| Administrator user management (12) | [`desktop-list`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/desktop-list.png), [`tablet-list`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/tablet-list.png), [`mobile-list`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/mobile-list.png), [`mobile-email-wrap`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/mobile-email-wrap.png), [`search-filter`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/search-filter.png), [`forbidden`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/forbidden.png), [`create-dialog`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/create-dialog.png), [`duplicate-email`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/duplicate-email.png), [`edit-dialog`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/edit-dialog.png), [`reset-confirmation`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/reset-confirmation.png), [`self-deactivation-refused`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/self-deactivation-refused.png), [`last-administrator`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/user-management/last-administrator.png) | Three responsive layouts, search and role filtering, the Requester forbidden state, full email wrapping at 390 px, create/edit/reset flows, duplicate-email validation, and both Administrator safety refusals. |
-| Lab 2 regression: Create Ticket (3) | [`desktop-initial`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/create-ticket/desktop-initial.png), [`tablet-initial`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/create-ticket/tablet-initial.png), [`mobile-initial`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/create-ticket/mobile-initial.png) | The existing Lab 2 Requester screen remains visually available after authenticated identity replaces the selector. |
-| Lab 2 regression: My Tickets (3) | [`desktop-list`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/my-tickets/desktop-list.png), [`tablet-list`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/my-tickets/tablet-list.png), [`mobile-cards`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/my-tickets/mobile-cards.png) | Requester-owned listing and responsive regression evidence. |
-| Lab 2 regression: Ticket Detail (3) | [`desktop-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/ticket-detail/desktop-detail.png), [`tablet-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/ticket-detail/tablet-detail.png), [`mobile-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/feature/85-lab3-audit-remediation/artifacts/lab-03/screenshots/ticket-detail/mobile-detail.png) | Requester ticket detail and attachment continuity after the migration. |
+| Authentication (10) | [`login-desktop`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/login-desktop.png), [`login-tablet`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/login-tablet.png), [`login-mobile`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/login-mobile.png), [`authenticated-shell`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/authenticated-shell.png), [`login-failure`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/login-failure.png), [`logout-direct-access-blocked`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/logout-direct-access-blocked.png), [`change-password-desktop`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/change-password-desktop.png), [`change-password-tablet`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/change-password-tablet.png), [`change-password-mobile`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/change-password-mobile.png), [`admin-created-change-password`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/authentication/admin-created-change-password.png) | Login and Change Password at three viewports, authenticated identity/role, safe login failure, post-logout route protection, and the administrator-created account gate. |
+| Staff queue (9) | [`desktop-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-queue/desktop-list.png), [`tablet-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-queue/tablet-list.png), [`mobile-cards`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-queue/mobile-cards.png), [`empty`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-queue/empty.png), [`no-results`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-queue/no-results.png), [`combined filters`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-queue/filtered-cancelled-assigned.png), [`pagination · page 1`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-queue/pagination.png), [`pagination · page 2`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-queue/pagination-page-2.png), [`forbidden`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-queue/forbidden.png) | Queue data, three responsive layouts, fixture-backed empty-state UI evidence, live search and combined-filter results, both fixture-backed pagination pages, and the Requester forbidden state. |
+| Staff ticket detail (8) | [`desktop-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/desktop-detail.png), [`tablet-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/tablet-detail.png), [`mobile-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/mobile-detail.png), [`comments-and-notes`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/comments-and-notes.png), [`requester-view-no-notes`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/requester-view-no-notes.png), [`forbidden`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/forbidden.png), [`attachments`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/attachments.png), [`failure`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/staff-ticket-detail/failure.png) | Claim/assignment, ticket detail, responsive layouts, comments versus notes, ownership refusal, attachments, and retryable load failure. |
+| Administrator user management (12) | [`desktop-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/desktop-list.png), [`tablet-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/tablet-list.png), [`mobile-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/mobile-list.png), [`mobile-email-wrap`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/mobile-email-wrap.png), [`search-filter`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/search-filter.png), [`forbidden`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/forbidden.png), [`create-dialog`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/create-dialog.png), [`duplicate-email`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/duplicate-email.png), [`edit-dialog`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/edit-dialog.png), [`reset-confirmation`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/reset-confirmation.png), [`self-deactivation-refused`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/self-deactivation-refused.png), [`last-administrator`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/user-management/last-administrator.png) | Three responsive layouts, search and role filtering, the Requester forbidden state, full email wrapping at 390 px, create/edit/reset flows, duplicate-email validation, and both Administrator safety refusals. |
+| Lab 2 regression: Create Ticket (3) | [`desktop-initial`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/create-ticket/desktop-initial.png), [`tablet-initial`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/create-ticket/tablet-initial.png), [`mobile-initial`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/create-ticket/mobile-initial.png) | The existing Lab 2 Requester screen remains visually available after authenticated identity replaces the selector. |
+| Lab 2 regression: My Tickets (3) | [`desktop-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/my-tickets/desktop-list.png), [`tablet-list`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/my-tickets/tablet-list.png), [`mobile-cards`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/my-tickets/mobile-cards.png) | Requester-owned listing and responsive regression evidence. |
+| Lab 2 regression: Ticket Detail (3) | [`desktop-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/ticket-detail/desktop-detail.png), [`tablet-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/ticket-detail/tablet-detail.png), [`mobile-detail`](https://github.com/Palapluem/toktickit_cpe334/blob/main/artifacts/lab-03/screenshots/ticket-detail/mobile-detail.png) | Requester ticket detail and attachment continuity after the migration. |

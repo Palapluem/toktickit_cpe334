@@ -46,15 +46,15 @@ Lab 3 review ran in both directions. Section 2 records reviews received on this 
 | [#83](https://github.com/Palapluem/toktickit_cpe334/pull/83) | — | `main` ← `docs/lab-03-postmerge-final-evidence-20260925` | `MERGED` | `f4265f4` | `N0TAW00D` |
 | [#84](https://github.com/Palapluem/toktickit_cpe334/pull/84) | — | `main` ← `docs/lab-03-reciprocal-review-closeout-20260926` | `MERGED` | `d198064` | `N0TAW00D` |
 | [#86](https://github.com/Palapluem/toktickit_cpe334/pull/86) | [#85](https://github.com/Palapluem/toktickit_cpe334/issues/85) | `lab3-staging` ← `feature/85-lab3-audit-remediation` | `MERGED` | `0e86f05` | `N0TAW00D` |
+| [#87](https://github.com/Palapluem/toktickit_cpe334/pull/87) | — | `main` ← `release/lab3-main-promotion-20260929` | `MERGED` | `a429f29` | `N0TAW00D` |
 
 **PR #86 status.** N0TAW00D requested changes on head `d620ff8`; the follow-up was
 approved on `fd89126` and merged by the reviewer into `lab3-staging` at `0e86f05`.
-Issue #85 is linked to the PR, manually closed after the merge, and its Project card
-was moved to Done. GitHub reports no hosted status checks. The 666 local test results
-are recorded as PR-candidate evidence, not as a new `main` result. The merge ledger
-records the staging merge; release promotion and exact-`main` verification remain
-pending. Details are in
-[`evidence/l3-15-pr86-candidate-verification.md`](evidence/l3-15-pr86-candidate-verification.md).
+Issue #85 is linked to the PR, manually closed after the merge, and its Project card is
+in Done. Approved PR #87 then promoted the remediation to `main @ a429f29`. GitHub
+reports no hosted status checks. Candidate and exact-main results are kept in separate
+records: [`evidence/l3-15-pr86-candidate-verification.md`](evidence/l3-15-pr86-candidate-verification.md)
+and [`evidence/l3-16-final-main-verification.md`](evidence/l3-16-final-main-verification.md).
 
 PRs #55–#64 contain the substantive review findings recorded below. The later release
 follow-ups are listed with their actual GitHub review state; approval-only reviews and
@@ -76,16 +76,19 @@ promoted the resulting staging tree to `main` again. PRs #77–#79 then updated 
 submission, board evidence, and tracked screenshots. PR #81 merged the User Management
 mobile email-wrap fix into `lab3-staging`; approved release PR #82 promoted it to
 `main` at `da5bf4a`. PR #83 added approved post-merge verification evidence at
-`f4265f4`, and PR #84 added a further documentation-only reciprocal-review closeout at
-`d198064`. Neither documentation PR changed product behavior. PR #86 then merged the
-audit-remediation code and evidence into `lab3-staging` at `0e86f05`; the reviewer
-approved the follow-up on `fd89126`. Promotion and verification on `main` remain pending.
-Every merge was performed by `N0TAW00D`.
+`f4265f4`, and PR #84 added a documentation-only reciprocal-review closeout at
+`d198064`; neither documentation PR changed product behavior. PR #86 then merged the
+audit-remediation code and evidence into `lab3-staging` at `0e86f05`, with reviewer
+approval on `fd89126`. Approved PR #87 promoted that remediation to `main @ a429f29`.
+The exact-main run passed 410 server, 216 client, and 40 Playwright tests, both
+production builds, and lint with three disclosed warnings. Every merge was performed by
+`N0TAW00D`.
 
 GitHub exposes no submitted review for #68, #78, #81, or #84; no approval is inferred
-from their merges. PR #82 also has no hosted status checks, so the post-merge test results
-are recorded separately in `evidence/l3-14-final-main-verification.md`. Submitted
-approval records for #77, #79, #82, and #83 are described below.
+from their merges. PRs #82 and #87 have no hosted status checks; their separate local
+post-merge records are `evidence/l3-14-final-main-verification.md` and
+`evidence/l3-16-final-main-verification.md`. Submitted approval records for #77, #79,
+#82, #83, and #87 are described below.
 
 ---
 
@@ -269,9 +272,8 @@ evidence; the product test results remain attributed to the exact release commit
 This documentation-only PR updated the reciprocal-review ledger and closeout evidence.
 GitHub reports that `N0TAW00D` merged it into `main` at `d198064`. No submitted review
 object or completed hosted status check is recorded for this PR, so it is listed as a
-peer merge rather than an approved review. The later source-code audit corrections are
-not part of this merge and must pass the course's staging and review workflow before
-they can be described as released.
+peer merge rather than an approved review. The later source-code audit corrections were
+handled separately by PR #86 and reviewer-approved release PR #87.
 
 ### PR #86 — Audit remediation and staging merge
 
@@ -289,13 +291,21 @@ authenticated-shell screenshot comment. The author reported 410 server tests, 21
 tests, and 40 Playwright tests (including two fixture-backed UI checks), plus both
 production builds. GitHub reported no hosted checks, and the reviewer did not rerun the
 suites. N0TAW00D approved the follow-up on `fd89126` and merged it into `lab3-staging`
-at `0e86f05`. Issue #85 was then closed and its Project card moved to Done. This is a
-staging merge only: no release to `main` or post-release test result is inferred. After
-the staging merge, an isolated integration candidate combining `main @ d198064` and
-`lab3-staging @ 0e86f05` independently passed 410 server tests, 216 client tests, 40
-Playwright tests, and both builds. The record is in
-[`evidence/l3-15-pr86-candidate-verification.md`](evidence/l3-15-pr86-candidate-verification.md);
-fresh verification of the exact resulting `main` commit remains pending.
+at `0e86f05`. Issue #85 was then closed and its Project card moved to Done. The integrated
+candidate combining `main @ d198064` and `lab3-staging @ 0e86f05` independently passed
+410 server tests, 216 client tests, 40 Playwright tests, and both builds. This candidate
+record remains separate from the release evidence in
+[`evidence/l3-15-pr86-candidate-verification.md`](evidence/l3-15-pr86-candidate-verification.md).
+
+### PR #87 — Audit-remediation release to main
+
+PR #87 promoted the reviewer-merged PR #86 remediation from `lab3-staging` to `main`.
+N0TAW00D approved candidate `eed984c` and merged PR #87 at `a429f29`. GitHub has no
+hosted status checks configured; the post-merge results are local verification from the
+exact merge commit, not CI. The run passed 410 server tests, 216 client tests, and 40
+Playwright tests (666 total), both production builds, and client lint with three
+disclosed non-blocking warnings. The exact-main record is
+[`evidence/l3-16-final-main-verification.md`](evidence/l3-16-final-main-verification.md).
 
 ---
 
@@ -377,17 +387,15 @@ review history. No claim is made that the partner's Lab 3 is released on `main`.
 
 ### N0TAW00D/TokTickIT PR #87 — accessibility E2E tests
 
-The review of [PR #87](https://github.com/N0TAW00D/TokTickIT/pull/87) was submitted
-as `CHANGES_REQUESTED` on head `62d5afad`. The review identified three items: link
-Issue #74 through GitHub's Development/issue-link mechanism; narrow the A-02, A-04,
-A-06, and A-09 crosswalk claims to what the assertions actually prove; and provide
-reproducible targeted and full-suite output from an isolated test database. Static
-TypeScript checking and Playwright discovery of 11 tests passed locally, but the E2E
-tests were not run because the setup can reset a database and no isolated database was
-configured. GitHub reported no hosted checks. A [follow-up comment](https://github.com/N0TAW00D/TokTickIT/pull/87#issuecomment-5865615436)
-restored the exact test command and file references after the initial review text
-omitted them. As of this record, the PR remains open with the change request unresolved;
-no approval or merge is inferred.
+The review of [PR #87](https://github.com/N0TAW00D/TokTickIT/pull/87) began with
+`CHANGES_REQUESTED` on head `62d5afad`. It asked for an Issue #74 Development link, a
+tighter accessibility crosswalk, and reproducible targeted/full-suite results from an
+isolated database. Follow-up review verified the AC-56-only crosswalk and the author
+supplied `tsc`, Playwright discovery, 11 targeted tests, and 154-test full-suite output
+using the peer's dedicated `toktickit_e2e` database; those runtime results were not
+independently rerun by this reviewer. The latest review still requests the GitHub
+Development relationship for Issue #74. The PR remains OPEN with `CHANGES_REQUESTED`,
+and no approval or merge is inferred. GitHub reported no hosted checks.
 
 ---
 

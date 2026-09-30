@@ -1,4 +1,8 @@
-# PR #86 — Candidate Verification Record
+# PR #86 — Historical Candidate Verification Record
+
+> Historical scope: this file records the integrated staging candidate as verified on
+> 2026-09-29, before reviewer-approved PR #87 promoted it to `main`. The later exact-main
+> results are in [`l3-16-final-main-verification.md`](l3-16-final-main-verification.md).
 
 ## Scope and status
 
@@ -11,9 +15,9 @@ card was moved to Done. These results remain candidate verification: they do not
 the released-main result recorded for `da5bf4a`, and they do not establish release to
 `main`.
 
-The reviewer-led staging merge is complete. The report, merge ledger, Network Graph,
-and commit-history captures still must be refreshed only after a separate reviewer-led
-release promotion and verification of the resulting exact `main` commit.
+At the time of this candidate verification, a separate release promotion had not yet
+occurred. PR #87 later promoted the candidate to `main`; this file remains the record of
+the earlier candidate run and is not a substitute for the exact-main verification.
 
 ## Test results
 
@@ -68,8 +72,9 @@ After PR #86 merged, the release candidate was assembled in an isolated temporar
 from current `main` at `d198064` plus reviewer-merged `lab3-staging` at `0e86f05`.
 Git reported six screenshot conflicts and three documentation conflicts; the candidate
 uses the PR #86 screenshot versions and reconciles the text with the verified PR #84,
-PR #86, Issue #85, and peer-review states. No conflict markers remain. This integrated
-candidate is not yet merged into `main`.
+PR #86, Issue #85, and peer-review states. No conflict markers remain. At the time this
+candidate verification was recorded on 2026-09-29, it had not yet been merged into
+`main`; reviewer-approved PR #87 later completed that promotion.
 
 The following suites were independently rerun against that integrated candidate:
 
@@ -88,5 +93,5 @@ databases ending in `_test`; both were confirmed absent before creation, used on
 this run, and dropped after verification. The E2E run refreshed screenshot files as a
 side effect; tracked captures were restored to the reviewed staging versions afterward.
 No development database, official checkout, GitHub status check, or `main`-branch test
-result is implied by this candidate run. A reviewer-led release merge and a fresh
-verification of the exact resulting `main` commit are still required.
+result is implied by this candidate run. The later reviewer-led release and exact-main
+verification are recorded separately in `l3-16-final-main-verification.md`.

@@ -360,7 +360,7 @@ Additional delivered files beyond the labsheet's minimum are also traced explici
 
 ```bash
 cd server && npm test        # migrates and seeds the *_test database, then runs
-cd client && npx vitest run
+cd client && npm test
 npm run test:e2e             # manages its own dev server
 ```
 
@@ -377,8 +377,8 @@ Connection strings live in `.env.test`, untracked; only `.env.example` is commit
 This is the verified product-release checkpoint from the exact `main` commit
 `da5bf4a842b79991acab0bd2b71b16bc6acea6ad`, following PR #82. It is historical
 baseline evidence, not verification of the PR #86 changes now merged to staging or of
-any later `main` commit. The full
-command/environment record is in the final-main evidence linked from `submission.md`.
+any later `main` commit. The full command/environment record is in
+[`evidence/l3-14-final-main-verification.md`](evidence/l3-14-final-main-verification.md).
 
 | Suite | Command | Tests | Result |
 |---|---|---|---|
@@ -395,40 +395,54 @@ command/environment record is in the final-main evidence linked from `submission
 - This checkpoint remains valid for the released product at `da5bf4a`; candidate and
   later release results must be recorded separately rather than silently rewriting it.
 
-### 6.2 PR #86 candidate verification — merged to staging; main release pending
+### 6.2 Historical PR #86 candidate verification — staging candidate
 
-PR #86's author-reported candidate results are recorded below. N0TAW00D requested
+PR #86's author-reported candidate results are recorded in the linked evidence file.
+N0TAW00D requested
 changes on head `d620ff8`; the follow-up was approved on `fd89126` and merged by the
 reviewer into `lab3-staging` at `0e86f05`. The reviewer's approval did not include a
 rerun of these suites, and GitHub reported no hosted status checks. These results are
-therefore local candidate evidence, not independent CI verification or a new `main`
-result. A separate release merge and fresh verification of the exact resulting `main`
-commit are still required; these results do not replace §6.1.
+therefore local candidate evidence, not independent CI verification or a `main`
+result. The later reviewer-led release and exact-main verification are recorded in
+§6.3; this candidate record remains separate and does not replace either released-main
+checkpoint.
 
 After the staging merge, the integrated release candidate combining `main @ d198064`
 with `lab3-staging @ 0e86f05` was independently rerun in an isolated temporary clone.
-The 410 server, 216 client, and 40 Playwright results below were reproduced; both
-production builds passed. This remains candidate verification, not a result from a
-reviewer-merged `main` commit. The full record is in
+The run reproduced 410 server tests, 216 client tests, and 40 Playwright checks; both
+production builds passed. This remained candidate verification, not a result from a
+reviewer-merged `main` commit. The full candidate record is in
 [`evidence/l3-15-pr86-candidate-verification.md`](evidence/l3-15-pr86-candidate-verification.md).
+
+### 6.3 Released-main verification — PR #87
+
+N0TAW00D approved PR #87 and merged it into `main` at
+[`a429f29`](https://github.com/Palapluem/toktickit_cpe334/commit/a429f29872e5f8e2535fb0e16acca7016a8bfb92).
+The exact merge commit was checked in an isolated temporary worktree after the merge;
+the official checkout and the peer repository were not used for test execution. This
+is the current released-main result and supersedes §6.1 as the latest product checkpoint.
 
 | Suite | Command | Result |
 |---|---|---|
 | Server (unit + API + security + migration) | `cd server && npm test` | **410 passed** (28 files) |
 | Client (UI + style) | `cd client && npm test` | **216 passed** (26 files) |
-| Playwright | `npm run test:e2e` | **40 passed**: 6 Lab 2 regression + 34 Lab 3 checks, including 2 fixture-backed UI checks |
+| Playwright | `npm run test:e2e` | **40 passed**: 6 Lab 2 regression + 34 Lab 3 checks |
 | **Executed total** | Three suites | **666 passed · 0 failed · 0 skipped** |
+| Server production build | `cd server && npm run build` | **Passed** |
+| Client production build | `cd client && npm run build` | **Passed** |
+| Client lint | `cd client && npm run lint` | **Exited 0; 3 warnings** |
 
-Both production builds passed. Client lint exited 0 with three non-blocking warnings:
-two React Fast Refresh warnings in `SessionContext.tsx` and one unused `REQUESTER_B`
-fixture in the Lab 2 `MyTickets.test.tsx` suite. E2E ran against a newly created,
-disposable `_test` database; no development database was used, and the temporary audit
-databases were removed after verification. The Playwright fixture-backed checks are
-UI evidence only; they do not prove the API's empty-state or pagination responses.
-GitHub reported no hosted status checks for PR #86, so the results are author-reported
-local evidence rather than CI results. Full command-level
-details are in
-[`evidence/l3-15-pr86-candidate-verification.md`](evidence/l3-15-pr86-candidate-verification.md).
+The lint warnings are two React Fast Refresh warnings in `SessionContext.tsx` and one
+unused `REQUESTER_B` fixture in the Lab 2 `MyTickets.test.tsx` suite. They are reported,
+not described as zero-warning lint. `QUEUE-04` and `QUEUE-06` are fixture-backed UI
+checks; `QUEUE-07` is the real-server combined-filter check. The fixture-backed cases
+prove the rendered UI state only, not the API response. GitHub reported no hosted status
+checks, so these are local results from the exact reviewer-merged main commit, not CI
+results. E2E-generated screenshot changes remained isolated to the temporary test
+worktree and are not included as report evidence.
+
+The full command, commit, environment, database-isolation, and log record is in
+[`evidence/l3-16-final-main-verification.md`](evidence/l3-16-final-main-verification.md).
 
 ---
 
