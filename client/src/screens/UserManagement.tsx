@@ -360,35 +360,39 @@ export function UserManagement() {
           <h1>User Management</h1>
           <p>Create and edit accounts, and set initial passwords.</p>
         </div>
-        <Button variant="primary" onClick={() => setDialog({ kind: 'create' })}>
-          New User
-        </Button>
+        {phase === 'ready' ? (
+          <Button variant="primary" onClick={() => setDialog({ kind: 'create' })}>
+            New User
+          </Button>
+        ) : null}
       </header>
 
-      <div className="my-tickets__filters">
-        <FormField id="user-search" label="Search">
-          <input
-            type="search"
-            value={searchInput}
-            onChange={(event) => setSearchInput(event.target.value)}
-          />
-        </FormField>
-        <FormField id="user-role-filter" label="Role">
-          <select
-            value={filters.role}
-            onChange={(event) =>
-              setFilters((current) => ({ ...current, role: event.target.value }))
-            }
-          >
-            <option value="">Any role</option>
-            {ROLES.map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </select>
-        </FormField>
-      </div>
+      {phase === 'ready' ? (
+        <div className="my-tickets__filters">
+          <FormField id="user-search" label="Search">
+            <input
+              type="search"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+            />
+          </FormField>
+          <FormField id="user-role-filter" label="Role">
+            <select
+              value={filters.role}
+              onChange={(event) =>
+                setFilters((current) => ({ ...current, role: event.target.value }))
+              }
+            >
+              <option value="">Any role</option>
+              {ROLES.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </FormField>
+        </div>
+      ) : null}
 
       {phase === 'loading' ? <LoadingState label="Loading users…" /> : null}
 

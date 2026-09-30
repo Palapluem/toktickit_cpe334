@@ -305,6 +305,9 @@ describe('UI-15 · every state renders', () => {
     renderScreen()
 
     expect(await screen.findByRole('alert')).toHaveClass('zen-state--forbidden')
+    expect(screen.queryByRole('button', { name: 'New User' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('searchbox', { name: 'Search' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('combobox', { name: 'Role' })).not.toBeInTheDocument()
   })
 
   it('shows a safe failure state with Try again', async () => {

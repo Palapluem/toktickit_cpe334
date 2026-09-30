@@ -2,12 +2,25 @@
 
 ## Which agents and models I used
 
-I used Claude Code in a VS Code-based IDE, on Claude Sonnet 5 for the
-implementation Issues and Claude Opus 5 for the release audit. As in Lab 2 I
-treated the agent as a collaborator rather than an authority: I checked the
-contracts, the source, the GitHub state, the test output, the screenshots and
-the commit history before accepting a result, and I performed every
-peer-review action in the browser myself.
+I used Claude Code during the main implementation phase. Git commit trailers
+record Claude Opus 5 on early implementation work for Issues #45–#52, and
+Claude Sonnet 5 on User Management work (including `79286c8`) and selected
+review-follow-up commits. These trailers document the model associated with
+those commits; they do not account for every interaction.
+
+After 16 September 2026, I also used Codex for Lab 3 follow-up work, including
+the post-release audit and this report revision. The later commits do not carry
+AI co-author trailers, so this is a phase-level disclosure; the exact Codex
+model variant and commit-by-commit attribution are not recorded. The code
+corrections were tracked in PR #86. N0TAW00D requested changes on head `d620ff8`,
+approved the follow-up on `fd89126`, and merged it into `lab3-staging` at `0e86f05`.
+The candidate results remain separate from released-main evidence; the release promotion
+and exact-main verification are still pending.
+
+As in Lab 2, I treated each agent as a collaborator rather than an authority:
+I checked the contracts, source, GitHub state, test output, screenshots, and
+commit history before accepting a result, and I performed every peer-review
+action myself.
 
 The same phase-template system as Lab 2 carried over — contract review, red,
 green, audit, review-response — each naming which documents to read, what to
@@ -22,7 +35,7 @@ and at release. Where my actual request was informal or typed in
 Thai, it is given here as a clean professional English rendering of the same
 request — the same convention Lab 2 used.
 
-## Selected Key Prompts (10 of many)
+## Selected Key Prompts (12 of many)
 
 | Prompt used | What the agent did | My reflection |
 |---|---|---|
@@ -36,16 +49,20 @@ request — the same convention Lab 2 used.
 | <pre>The E2E suite needs the seeded password to be the same on every run,<br>but the seed deliberately never resets a password a user has changed,<br>so a real password change survives re-seeding.<br><br>These two requirements conflict. Do not weaken the seed. Propose a<br>way to give E2E a known starting state that cannot be pointed at a<br>development or production database by accident, and tell me what<br>enforces that.</pre> | Produced `server/scripts/reset-seed-credentials.mjs`, which refuses to run unless the database name ends in `_test` — the guard is in the script, not in the caller's discipline. The seed's own immutability rule was left intact. | Naming the conflict instead of asking for the outcome I wanted is what produced the guard. "Make E2E deterministic" would very likely have got me a seed that overwrites passwords, which is the same script without the thing that makes it safe. |
 | <pre>The Lab 3 E2E specs are overwriting artifacts/lab-02/screenshots/,<br>which is submitted Lab 2 evidence.<br><br>Find every spec that writes there, and fix the cause rather than the<br>symptom — I have restored those files more than once already this sprint and<br>do not want to restore them again.</pre> | Traced it to Lab 2's shared `captureScreenshot` helper being reused by specs that now render the Lab 3 application, and introduced a separate `captureLab3Screenshot` writing under `artifacts/lab-03/`. Also repointed `playwright.config.ts`'s `outputDir`, which was still writing run output into the Lab 2 directory. | "Fix the cause rather than the symptom" is a better prompt than a bug report because it rules out the fix I had already been doing by hand — restoring the files again. |
 | <pre>All nine feature PRs are merged. Before I start the release Issue,<br>audit lab3-staging against specification.md §10 Definition of Done —<br>every box, checked against the repository rather than against the<br>PR history.<br><br>Do not assume a merged PR means its content reached staging.<br>Report what is NOT satisfied.</pre> | Found that `lab3-staging` held almost none of the increment. The nine stacked PRs had merged into each other rather than up to staging, because they were merged in ascending order without branch deletion, so GitHub never retargeted the children. Also found `reviewer.md`, `ai-use.md` and a current README missing, and 91 unfilled Status boxes in `tests.md`. | The clause that mattered was "do not assume a merged PR means its content reached staging" — every dashboard said ten of ten merged, and the merge ledger would have gone into this submission describing an increment the branch did not contain. It was my own earlier merge-order advice that caused it, which is exactly why the audit had to check the repository and not the plan. |
+| <pre>Compare the attached Claude Lab 3 audit and self-audit prompt with the<br>actual repository, current GitHub state, and Google Docs report.<br><br>Make the in-scope fixes in detail. Keep released-main evidence separate<br>from candidate evidence, and tell me when a recommendation would change<br>the approved specification or cannot safely be completed yet.</pre> | Checked the audit claims against the repository, PR #86, and the live Project board. Corrected test traceability and path claims, recorded Codex use, added candidate verification evidence, and updated source links and status in the Lab 3 Google Docs tab. Pushed the changes to the existing PR #86. The reviewer subsequently approved and merged the candidate to `lab3-staging`; it is still not represented as released on `main`. | The audit itself also needed checking: the live board showed PR cards #33, #37, and #38 already in Done, so moving them again would have changed correct state. More importantly, passing tests on a candidate branch cannot replace verification of the exact released `main` commit. |
+| <pre>My peer reviewed our existing PR. Check the actual review, fix the requested items<br>in that same PR, preserve the approved plan, and keep candidate test results separate<br>from released-main evidence. Do not merge or act as the reviewer.</pre> | Verified PR #86 was open with changes requested. Marked `QUEUE-04` and `QUEUE-06` as fixture-backed UI evidence, restored the live combined-filter check as `QUEUE-07`, removed redundant `aria-pressed`, hardened the theme-contract test, and updated the screenshot comment. The PR records 410 server, 216 client, and 40 Playwright results on disposable `_test` databases. | The review caught an important evidence distinction: browser tests with the whole queue API stubbed must not be presented as server-backed E2E proof. Restoring the displaced live filter case preserves coverage. The reviewer later approved and merged PR #86 to staging; a separate release and exact-`main` verification are still required before it counts as main evidence. |
 
 ### Provenance note
 
-The private running log currently preserves three prompt entries: the Phase 0
+The private running log currently preserves three historical prompt entries: the Phase 0
 planning entry, the L3-1 contract entry, and the Issue #54 credential/release
-follow-up. The ten rows above are selected prompt renderings cross-checked
+follow-up. The ten earlier rows are selected prompt renderings cross-checked
 against the repository history, review evidence, and test artifacts; they are
 not a claim that every original prompt is archived verbatim. Where the private
-log does not preserve the original wording, this document does not present a
-reconstructed sentence as verbatim evidence.
+log does not preserve original wording, this document does not present a
+reconstructed sentence as verbatim evidence. The two latest rows record the audit
+remediation and peer-review follow-up requests as professional English renderings
+of the user's Thai instructions, not as word-for-word quotations.
 
 ## My Reflection
 
