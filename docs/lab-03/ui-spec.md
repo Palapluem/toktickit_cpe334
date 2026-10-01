@@ -262,9 +262,10 @@ user-management/    desktop-list · mobile-list · create-dialog ·
 
 The `authenticated-shell`, `logout-direct-access-blocked`, Queue pagination, corrected
 empty-state, refreshed Queue responsive, Requester note-isolation, User Management
-search/filter, and User Management forbidden captures are audit-follow-up candidates in
-PR #86. Until that PR completes review and release, these files are branch evidence, not
-evidence present on `main`.
+search/filter, and User Management forbidden captures were introduced or refreshed by
+PR #86, then reviewer-approved and promoted to `main` by PR #87 at `a429f29`. They are
+now repository evidence. The report should use the versions at that exact main commit;
+do not copy test-runner screenshots from a later local E2E run over the committed files.
 
 The three refusal captures — `login-failure`, `duplicate-email`, `last-administrator` — are named explicitly because Parts 5 and 8 ask for them and a happy-path-only capture session will not produce them.
 
