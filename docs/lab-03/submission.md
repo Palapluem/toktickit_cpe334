@@ -183,17 +183,22 @@ wrapping and field-value regression checks at the requested widths; the approval
 the author's reported test totals are recorded in `reviewer.md` §4. The PR merged by
 `Palapluem` into the partner's `lab3-staging` at `d0e3d0f`. GitHub exposed no hosted
 status checks, so the reported 591 server, 349 client, and 143 E2E tests are not
-described as CI results. The partner's Issue #74 and staging-to-main release remain
-their separate open workflow; this review does not claim that their Lab 3 is released.
+described as CI results. The partner's Issue #74 remains open. Their
+`main @ 8d699e4` does not contain PR #87's merge commit `cb52918`, so their
+staging-to-main release remains pending.
 
 **Reciprocal review — N0TAW00D/TokTickIT PR #87.** The review began with
 `CHANGES_REQUESTED` on head `62d5afad` for the missing Issue #74 link, overbroad
 accessibility crosswalk, and missing reproducible isolated-database output. Follow-up
 heads corrected the AC-56 crosswalk and supplied targeted/full E2E output on the peer's
-isolated `toktickit_e2e` database. The latest review still requests one item: link Issue
-#74 through GitHub's Development relationship. The peer PR remains OPEN with
-`CHANGES_REQUESTED`; it has not been approved or merged. The exact-command clarification
-and review sequence are recorded in [`reviewer.md`](../../docs/lab-03/reviewer.md) §4.
+isolated `toktickit_e2e` database. After four `CHANGES_REQUESTED` reviews,
+`Palapluem` submitted an
+[APPROVED review](https://github.com/N0TAW00D/TokTickIT/pull/87#pullrequestreview-5370026585)
+on head `87e7775` at 2026-09-30 17:56:18 UTC and merged PR #87 into the partner's
+`lab3-staging` at
+[cb52918](https://github.com/N0TAW00D/TokTickIT/commit/cb52918f131847d78928b22f94db9d3bad68b189)
+at 2026-09-30 17:56:32 UTC. The exact-command clarification and review sequence are
+recorded in [`reviewer.md`](../../docs/lab-03/reviewer.md) §4.
 
 ### README and .gitignore
 

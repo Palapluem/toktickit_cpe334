@@ -380,10 +380,10 @@ passing; GitHub reported no hosted status checks, so these are author-reported r
 not independently verified CI results. The follow-up review approved head `5f03af1`,
 and PR #84 was merged by `Palapluem` into `lab3-staging` at merge commit `d0e3d0f`.
 
-This closes the requested review of PR #84, not the partner's Lab 3 release workflow.
-At this check, Issue #74 remains open and the partner still needs a release PR from
-`lab3-staging` to `main`, including an updated reviewer ledger for PR #84 and its
-review history. No claim is made that the partner's Lab 3 is released on `main`.
+The approvals and merges of PRs #84 and #87 record integration into the partner's
+`lab3-staging`. Issue #74 remains open. The partner's `main @ 8d699e4` does not
+contain PR #87's merge commit `cb52918`, so their staging-to-main release remains
+pending.
 
 ### N0TAW00D/TokTickIT PR #87 — accessibility E2E tests
 
@@ -393,9 +393,12 @@ tighter accessibility crosswalk, and reproducible targeted/full-suite results fr
 isolated database. Follow-up review verified the AC-56-only crosswalk and the author
 supplied `tsc`, Playwright discovery, 11 targeted tests, and 154-test full-suite output
 using the peer's dedicated `toktickit_e2e` database; those runtime results were not
-independently rerun by this reviewer. The latest review still requests the GitHub
-Development relationship for Issue #74. The PR remains OPEN with `CHANGES_REQUESTED`,
-and no approval or merge is inferred. GitHub reported no hosted checks.
+independently rerun by this reviewer. After four `CHANGES_REQUESTED` reviews,
+`Palapluem` submitted an
+[APPROVED review](https://github.com/N0TAW00D/TokTickIT/pull/87#pullrequestreview-5370026585)
+on head `87e7775` at 2026-09-30 17:56:18 UTC, then merged PR #87 into `lab3-staging`
+at [cb52918](https://github.com/N0TAW00D/TokTickIT/commit/cb52918f131847d78928b22f94db9d3bad68b189)
+at 2026-09-30 17:56:32 UTC. GitHub reported no hosted checks.
 
 ---
 
