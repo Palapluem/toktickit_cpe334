@@ -5,6 +5,7 @@ import { expect, test } from '../lab-02/fixtures'
 import {
   DEVELOPMENT_PASSWORD,
   captureLab3Screenshot,
+  evidenceCaptureEnabled,
   signOut,
 } from '../lab-02/helpers'
 
@@ -87,7 +88,7 @@ test('ADMIN-01 · AC-34 captures the user list at three viewports', async ({ pag
     await expect(page.getByText('Jennifer Anderson')).toBeVisible()
     await expectEmailValuesNotToBeClipped(page)
     await captureLab3Screenshot(page, 'user-management', `${viewport.name}-list.png`)
-    if (viewport.name === 'mobile') {
+    if (viewport.name === 'mobile' && evidenceCaptureEnabled('lab-03')) {
       await page.screenshot({
         path: 'artifacts/lab-03/screenshots/user-management/mobile-email-wrap.png',
       })
