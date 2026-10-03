@@ -45,6 +45,8 @@ const SEED_YEAR = 2026
 const ticketNo = (offset: number): string =>
   `TKT-${SEED_YEAR}-${String(SEED_TICKET_BAND + offset).padStart(6, '0')}`
 
+export { ticketNo as seedTicketNo }
+
 // Fixed identifiers, so re-running the seed updates rather than duplicates.
 const commentId = (n: number): string =>
   `11111111-1111-4111-8111-${String(n).padStart(12, '0')}`
