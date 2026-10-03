@@ -16,6 +16,7 @@ import { AttachmentSection } from '../components/AttachmentSection.js'
 import { PublicCommentsSection } from '../components/ThreadSection.js'
 import { Button } from '../components/Button.js'
 import { PriorityBadge, StatusBadge } from '../components/Badge.js'
+import { HistorySection } from '../components/HistorySection.js'
 import { ErrorState, LoadingState } from '../components/States.js'
 
 /** Nothing is owed on a Ticket in these, so there is nothing to report about. */
@@ -281,6 +282,8 @@ export function RequesterTicketDetail({
       </div>
 
       <PublicCommentsSection ticketId={ticket.id} />
+      {/* The server returns status changes only for a Requester (BR-28). */}
+      <HistorySection ticketId={ticket.id} refreshKey={ticket.updatedAt} />
     </div>
   )
 }

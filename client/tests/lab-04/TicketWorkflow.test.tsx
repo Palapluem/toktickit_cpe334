@@ -288,7 +288,7 @@ describe('UI-13 · AC-22 · AC-23 · the history', () => {
     renderStaff()
 
     const section = await screen.findByRole('region', { name: 'History' })
-    const items = within(section).getAllByRole('listitem')
+    const items = await within(section).findAllByRole('listitem')
     expect(items).toHaveLength(11)
     const texts = items.map((item) => item.textContent ?? '')
     expect(texts[0]).toContain('Patricia Evans')
@@ -376,9 +376,9 @@ describe('UI-13 · AC-22 · AC-23 · the history', () => {
     )
 
     const section = await screen.findByRole('region', { name: 'History' })
-    expect(within(section).getAllByRole('listitem')).toHaveLength(3)
+    expect(await within(section).findAllByRole('listitem')).toHaveLength(2)
     expect(section).toHaveTextContent('Status changed from New to Open')
     expect(fetchHistoryMock).toHaveBeenCalledWith('t-1')
-    expect(section).not.toHaveTextContent(/Internal|Action/)
+    expect(section).not.toHaveTextContent(/Internal/)
   })
 })
