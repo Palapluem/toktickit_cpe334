@@ -281,11 +281,17 @@ cd client && npm run lint    # oxlint
 node scripts/row-counts.mjs .env.test   # from server/; prints table counts, never the connection string
 ```
 
-Planned in the contract and setup increment, and recorded here once they exist:
+Added by the contract increment (#89) and verified on 3 October 2026:
 
-- `CAPTURE_EVIDENCE=1` capture mode, with default E2E runs writing nothing tracked;
-- a guarded `_test` database override for fresh final-verification runs;
-- `verify-migration.mjs` and `perf-smoke.mjs`.
+```bash
+CAPTURE_EVIDENCE=1 npm run test:e2e   # writes Lab 4 captures under artifacts/lab-04/screenshots/ only
+TEST_DATABASE_URL=… npm test          # from server/; a fresh database whose name ends in _test, or the run is refused
+```
+
+- A default `npm run test:e2e` writes nothing tracked: 40 passed with and without `CAPTURE_EVIDENCE=1`, and `git status -- artifacts` stayed clean both times. Lab 2 and Lab 3 captures are frozen.
+- Runner output moved to the ignored `artifacts/lab-04/playwright-results/`.
+
+Still planned: `server/scripts/verify-migration.mjs` (#90) and `server/scripts/perf-smoke.mjs` (#93).
 
 Suites always run sequentially. `toktickit_dev` is never a target.
 
@@ -303,3 +309,8 @@ Each will record the commit, environment, commands, full runner output location,
 - The performance smoke result is a local measurement on one Mac, not production capacity (specification §11.14).
 - Dashboard and Action failure, loading and empty captures that need a broken server are produced by API interception and labelled *fixture*. The API tests prove the backend behaviour.
 - History begins with Lab 4. Seeded and legacy Tickets have no events for earlier changes (specification §7).
+- **Inherited server-suite instability, observed 3 October 2026.** Four full runs of the unchanged Lab 1–3 server suite were made on fresh `_test` databases. Three failed exactly one test each, a different one every time:
+  - a `socket hang up` in `lab-03/staff-ticket-detail`, twice;
+  - an unexpected 401 in `lab-03/users-admin`;
+  - a failure in `lab-03/authorization`.
+  The fourth run passed 410/410. Each failing test passes on its own. The pattern points to order-dependent shared state between files, not to Lab 4 changes. A Lab 4 gate is not called green until the suite passes reliably.
