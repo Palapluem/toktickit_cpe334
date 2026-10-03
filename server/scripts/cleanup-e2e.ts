@@ -55,6 +55,10 @@ async function main(): Promise<void> {
   }
 
   await prisma.attachment.deleteMany({ where: { ticketId: { in: ticketIds } } })
+  // Lab 4: Actions and history also reference these Tickets. The history refuses DELETE by design, and this
+  // runs only against a disposable _test database (guarded above), so it is emptied with TRUNCATE.
+  await prisma.$executeRawUnsafe('TRUNCATE "TicketEvent"')
+  await prisma.actionTaken.deleteMany({ where: { ticketId: { in: ticketIds } } })
   await prisma.ticket.deleteMany({ where: { id: { in: ticketIds } } })
   console.log(`Cleaned ${ticketIds.length} E2E ticket(s).`)
 }
