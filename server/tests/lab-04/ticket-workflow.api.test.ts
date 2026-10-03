@@ -218,8 +218,9 @@ describe('WF-05 · AC-17 · BR-22 · cancelling a Ticket cancels its open Action
 
   async function ticketWithThreeActions(status: TicketStatus = 'IN_PROGRESS', requesterEmail = REQUESTER_EMAIL) {
     const ticketId = await makeTicket({ status, ownerEmail: DANIEL_EMAIL, requesterEmail })
-    const planned = await insertAction(ticketId, { status: 'PLANNED', createdAt: at(1_000) })
+    // Written newest first, so the order the rows were stored in is the wrong answer for the cascade.
     const started = await insertAction(ticketId, { status: 'IN_PROGRESS', createdAt: at(2_000) })
+    const planned = await insertAction(ticketId, { status: 'PLANNED', createdAt: at(1_000) })
     const done = await insertAction(ticketId, {
       status: 'COMPLETED',
       result: 'Done',
