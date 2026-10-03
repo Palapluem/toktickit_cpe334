@@ -1,5 +1,5 @@
-// TokTickIT data model. Authority: docs/lab-03/specification.md §7,
-// extending docs/lab-02/specification.md §7.
+// TokTickIT data model. Authority: docs/lab-04/specification.md §7,
+// extending docs/lab-03/specification.md §7 and docs/lab-02/specification.md §7.
 // UUID identifiers (lab-02 §11.1). Timestamps UTC.
 
 generator client {
@@ -31,6 +31,27 @@ enum TicketStatus {
   CANCELLED
 }
 
+/// Lifecycle of one Action Taken (lab-04 BR-09). COMPLETED and CANCELLED are terminal (BR-10).
+enum ActionStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+/// What a TicketEvent records (lab-04 BR-26).
+enum TicketEventType {
+  STATUS_CHANGED
+  OWNER_CHANGED
+  IT_PRIORITY_CHANGED
+  ACTION_CREATED
+  ACTION_UPDATED
+  ACTION_ASSIGNED
+  ACTION_STARTED
+  ACTION_COMPLETED
+  ACTION_CANCELLED
+}
+
 /// Exactly one per user (BR-11). Only these three are assignable (BR-34).
 enum Role {
   REQUESTER
@@ -60,6 +81,11 @@ model User {
   sessions            Session[]
   publicComments      PublicComment[]
   internalNotes       InternalNote[]
+  assignedActions     ActionTaken[]   @relation("ActionAssignee")
+  performedActions    ActionTaken[]   @relation("ActionPerformer")
+  completedActions    ActionTaken[]   @relation("ActionCompleter")
+  cancelledActions    ActionTaken[]   @relation("ActionCanceller")
+  ticketEvents        TicketEvent[]
 
   @@index([role, isActive]) // admin list filter and the BR-36 count
 }
@@ -116,6 +142,9 @@ model Ticket {
   /// The Requester's "appears resolved" signal. A timestamp, not a status (§11.7).
   requesterResolvedAt DateTime? @db.Timestamptz(3)
 
+  /// Optimistic-concurrency counter for status changes (lab-04 BR-31).
+  version Int @default(1)
+
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
@@ -127,12 +156,15 @@ model Ticket {
   attachments    Attachment[]
   publicComments PublicComment[]
   internalNotes  InternalNote[]
+  actions        ActionTaken[]
+  events         TicketEvent[]
 
   @@index([requesterId, createdAt(sort: Desc)]) // default list query (lab-02 BR-37)
   @@index([requesterId, status]) // lab-02 FR-18 filters
   @@index([requesterId, categoryId])
   @@index([status, itPriority, createdAt(sort: Desc)]) // staff queue default order
   @@index([ownerId]) // assigned to me
+  @@index([updatedAt(sort: Desc), id]) // "Recently updated" lists (lab-04 MET-S07, MET-R05)
 }
 
 model Attachment {
@@ -187,6 +219,68 @@ model InternalNote {
   author User   @relation(fields: [authorId], references: [id], onDelete: Restrict)
 
   @@index([ticketId, createdAt]) // thread retrieval
+}
+
+/// One line of service work on a Ticket (lab-04 §7). Assignee, performer and the Ticket Owner are
+/// independent people (BR-02). Server-owned fields are never taken from the client (BR-05).
+model ActionTaken {
+  id       String @id @default(uuid()) @db.Uuid
+  ticketId String @db.Uuid
+
+  description      String
+  result           String?
+  followUpRequired Boolean @default(false)
+  followUpNote     String?
+  attachmentNotes  String?
+
+  status ActionStatus @default(PLANNED)
+
+  assigneeId    String  @db.Uuid
+  performedById String  @db.Uuid
+  completedById String? @db.Uuid
+  cancelledById String? @db.Uuid
+
+  completedAt        DateTime? @db.Timestamptz(3)
+  cancelledAt        DateTime? @db.Timestamptz(3)
+  cancellationReason String?
+
+  /// Client-generated per form submission, so a retried create returns the original (BR-34).
+  requestId String @db.Uuid
+  version   Int    @default(1)
+
+  /// The Action Date/Time: the server's time of creation (lab-04 §11.3).
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  ticket      Ticket @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+  assignee    User   @relation("ActionAssignee", fields: [assigneeId], references: [id], onDelete: Restrict)
+  performedBy User   @relation("ActionPerformer", fields: [performedById], references: [id], onDelete: Restrict)
+  completedBy User?  @relation("ActionCompleter", fields: [completedById], references: [id], onDelete: Restrict)
+  cancelledBy User?  @relation("ActionCanceller", fields: [cancelledById], references: [id], onDelete: Restrict)
+
+  events TicketEvent[]
+
+  @@unique([ticketId, requestId]) // idempotent creation (BR-34)
+  @@index([ticketId, createdAt, id]) // the ordered Action list (BR-29)
+  @@index([assigneeId, status]) // "My open Actions" (MET-S06)
+}
+
+/// Append-only history of material changes (lab-04 BR-26, BR-27). A database trigger rejects UPDATE
+/// and DELETE; the payload holds identifiers, statuses and field names only (BR-30).
+model TicketEvent {
+  id        String          @id @default(uuid()) @db.Uuid
+  ticketId  String          @db.Uuid
+  actorId   String          @db.Uuid
+  type      TicketEventType
+  actionId  String?         @db.Uuid
+  payload   Json
+  createdAt DateTime        @default(now()) @db.Timestamptz(3)
+
+  ticket Ticket       @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+  actor  User         @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  action ActionTaken? @relation(fields: [actionId], references: [id], onDelete: Restrict)
+
+  @@index([ticketId, createdAt, id]) // ordered history (BR-29)
 }
 
 /// One row per Bangkok calendar year (lab-02 §11.13), locked inside the

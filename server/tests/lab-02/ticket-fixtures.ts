@@ -57,6 +57,10 @@ export async function resetTicketData(): Promise<void> {
   // Comments and notes hold RESTRICT keys to Ticket, so they clear first.
   await prisma.publicComment.deleteMany()
   await prisma.internalNote.deleteMany()
+  // Lab 4: Actions and the append-only history also hold RESTRICT keys to Ticket. The trigger refuses
+  // DELETE on the history, so TRUNCATE is the way to empty it (lab-04 BR-27).
+  await prisma.$executeRawUnsafe('TRUNCATE "TicketEvent"')
+  await prisma.actionTaken.deleteMany()
   await prisma.ticket.deleteMany()
   await prisma.ticketNumberSequence.deleteMany()
 }
