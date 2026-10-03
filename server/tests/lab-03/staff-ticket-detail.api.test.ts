@@ -273,7 +273,7 @@ describe('API-17 · API-18 · AC-23 · every transition cell, over the wire', ()
           const response = await patch(
             `/api/staff/tickets/${ticketId}/status`,
             cookies[role],
-            { status: to },
+            { status: to, expectedVersion: 1 },
           )
 
           expect(response.status, `${role}: ${from} -> ${to}`).toBe(200)
@@ -294,7 +294,7 @@ describe('API-17 · API-18 · AC-23 · every transition cell, over the wire', ()
           const response = await patch(
             `/api/staff/tickets/${ticketId}/status`,
             cookies[role],
-            { status: to },
+            { status: to, expectedVersion: 1 },
           )
 
           expect([400, 403], `${role}: ${from} -> ${to}`).toContain(response.status)
@@ -314,7 +314,7 @@ describe('API-17 · API-18 · AC-23 · every transition cell, over the wire', ()
     const impossible = await patch(
       `/api/staff/tickets/${ticketId}/status`,
       cookies.IT_STAFF,
-      { status: 'CLOSED' },
+      { status: 'CLOSED', expectedVersion: 1 },
     )
     expect(impossible.status).toBe(400)
     expect(impossible.body.error.code).toBe('INVALID_STATUS_TRANSITION')
@@ -324,7 +324,7 @@ describe('API-17 · API-18 · AC-23 · every transition cell, over the wire', ()
     const forbidden = await patch(
       `/api/staff/tickets/${ticketId}/status`,
       cookies.REQUESTER,
-      { status: 'RESOLVED' },
+      { status: 'RESOLVED', expectedVersion: 1 },
     )
     expect(forbidden.status).toBe(403)
     expect(forbidden.body.error.code).toBe('FORBIDDEN')
@@ -340,7 +340,7 @@ describe('API-17 · API-18 · AC-23 · every transition cell, over the wire', ()
     const response = await patch(
       `/api/staff/tickets/${ticketId}/status`,
       otherRequesterCookie,
-      { status: 'CANCELLED' },
+      { status: 'CANCELLED', expectedVersion: 1 },
     )
     expect(response.status).toBe(404)
     expect(response.body.error.code).toBe('TICKET_NOT_FOUND')
@@ -357,7 +357,7 @@ describe('API-17 · API-18 · AC-23 · every transition cell, over the wire', ()
     const response = await patch(
       `/api/staff/tickets/${ticketId}/status`,
       cookies.IT_STAFF,
-      { status: 'CLOSED' },
+      { status: 'CLOSED', expectedVersion: 1 },
     )
 
     expect(response.body.error.fieldErrors[0].message).toContain('OPEN')
@@ -373,11 +373,16 @@ describe('API-17 · API-18 · AC-23 · every transition cell, over the wire', ()
     const response = await patch(
       `/api/staff/tickets/${ticketId}/status`,
       cookies.IT_STAFF,
-      { status: 'REOPENED' },
+      { status: 'REOPENED', expectedVersion: 1 },
     )
 
     expect(response.status).toBe(200)
-    expect(response.body.data.requesterResolvedAt).toBeNull()
+    // The status response is the lab-04 summary; the signal itself is read from the row.
+    const stored = await prisma.ticket.findUniqueOrThrow({
+      where: { id: ticketId },
+      select: { requesterResolvedAt: true },
+    })
+    expect(stored.requesterResolvedAt).toBeNull()
   })
 })
 
@@ -389,7 +394,7 @@ describe('SEC-T10 · AC-24 · a Requester can never declare a problem solved', (
         const response = await patch(
           `/api/staff/tickets/${ticketId}/status`,
           cookies.REQUESTER,
-          { status: to },
+          { status: to, expectedVersion: 1 },
         )
 
         expect([400, 403], `${from} -> ${to}`).toContain(response.status)

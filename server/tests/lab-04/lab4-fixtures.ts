@@ -71,6 +71,7 @@ export async function removeTickets(band: string): Promise<void> {
   await clearHistory()
   await prisma.actionTaken.deleteMany({ where: { ticketId: { in: ids } } })
   await prisma.publicComment.deleteMany({ where: { ticketId: { in: ids } } })
+  await prisma.internalNote.deleteMany({ where: { ticketId: { in: ids } } })
   await prisma.ticket.deleteMany({ where: { id: { in: ids } } })
 }
 
