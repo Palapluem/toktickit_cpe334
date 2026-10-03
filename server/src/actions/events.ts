@@ -32,3 +32,12 @@ export async function appendActionEvent(
     },
   })
 }
+
+// STUB: the payload builders return nothing until they are written (lab-04 BR-30).
+export const statusChangedPayload = (_input: { from: string; to: string; cascadedActionCount?: number }): Prisma.InputJsonObject => ({})
+export const ownerChangedPayload = (_input: { fromOwnerId: string | null; toOwnerId: string | null }): Prisma.InputJsonObject => ({})
+export const priorityChangedPayload = (_input: { from: string; to: string }): Prisma.InputJsonObject => ({})
+export const actionCreatedPayload = (_input: { assigneeId: string }): Prisma.InputJsonObject => ({})
+export const actionUpdatedPayload = (_changedFields: readonly string[]): Prisma.InputJsonObject => ({})
+export const actionAssignedPayload = (_input: { fromAssigneeId: string; toAssigneeId: string }): Prisma.InputJsonObject => ({})
+export const actionMovedPayload = (_input: { from: string; to: string; cascade?: boolean }): Prisma.InputJsonObject => ({})
