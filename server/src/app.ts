@@ -45,6 +45,12 @@ import {
   setTicketOwner,
   setTicketStatus,
 } from './staff/ticketOperations.js'
+import {
+  createAction,
+  listActions,
+  transitionAction,
+  updateAction,
+} from './actions/actionsTaken.js'
 import { UUID } from './tickets/validation.js'
 import {
   addTicketAttachment,
@@ -208,6 +214,12 @@ function routeParameter(value: string | string[] | undefined): string {
 function ticketParameter(value: string | string[] | undefined): string {
   const id = routeParameter(value)
   if (!UUID.test(id)) throw new ApiError(404, 'TICKET_NOT_FOUND', 'Ticket not found.')
+  return id
+}
+
+function actionParameter(value: string | string[] | undefined): string {
+  const id = routeParameter(value)
+  if (!UUID.test(id)) throw new ApiError(404, 'ACTION_NOT_FOUND', 'Action not found.')
   return id
 }
 
@@ -461,6 +473,77 @@ export function createApp(options: CreateTicketOptions = {}) {
         options.db ?? prisma,
       )
       res.status(201).json({ data })
+    },
+  )
+
+  // Actions Taken (lab-04 api-spec.md §3). A Requester reads their own Ticket's Actions and never writes
+  // them; the role gate refuses the write before any query runs (BR-03, BR-18).
+  app.get(
+    '/api/tickets/:id/actions',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('action:read'),
+    async (req, res) => {
+      const data = await listActions(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.grant!,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.post(
+    '/api/tickets/:id/actions',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('action:write'),
+    async (req, res) => {
+      const { created, action } = await createAction(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.body,
+        options.now?.() ?? new Date(),
+        options.db ?? prisma,
+      )
+      res.status(created ? 201 : 200).json({ data: action })
+    },
+  )
+
+  app.patch(
+    '/api/tickets/:id/actions/:actionId',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('action:write'),
+    async (req, res) => {
+      const data = await updateAction(
+        ticketParameter(req.params.id),
+        actionParameter(req.params.actionId),
+        req.user!.id,
+        req.body,
+        options.now?.() ?? new Date(),
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.patch(
+    '/api/tickets/:id/actions/:actionId/status',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('action:write'),
+    async (req, res) => {
+      const data = await transitionAction(
+        ticketParameter(req.params.id),
+        actionParameter(req.params.actionId),
+        req.user!.id,
+        req.body,
+        options.now?.() ?? new Date(),
+        options.db ?? prisma,
+      )
+      res.json({ data })
     },
   )
 
