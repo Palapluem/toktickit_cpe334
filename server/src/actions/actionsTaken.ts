@@ -8,6 +8,7 @@ import { ApiError, type FieldError } from '../http/errors.js'
 import type { Scope } from '../auth/matrix.js'
 import type { Role } from '../auth/types.js'
 import { UUID } from '../tickets/validation.js'
+import { CREATION_ORDER } from '../tickets/workflowRules.js'
 import {
   actionAssignedPayload,
   actionCreatedPayload,
@@ -157,7 +158,7 @@ export async function listActions(ticketId: string, callerId: string, grant: Sco
   const rows = await db.actionTaken.findMany({
     where: { ticketId },
     include: INCLUDE,
-    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+    orderBy: [...CREATION_ORDER],
   })
   return rows.map((row) => view(row, grant !== 'own'))
 }

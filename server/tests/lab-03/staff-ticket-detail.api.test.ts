@@ -51,7 +51,8 @@ async function makeTicket(status: TicketStatus = 'NEW', ownerId: string | null =
   ])
   const ticket = await prisma.ticket.upsert({
     where: { ticketNo: TICKET_NO },
-    update: { status, ownerId, itPriority: 'MEDIUM', requesterResolvedAt: null },
+    // The version restarts too: every test begins from a Ticket nobody has changed (lab-04 BR-31).
+    update: { status, ownerId, itPriority: 'MEDIUM', requesterResolvedAt: null, version: 1 },
     create: {
       ticketNo: TICKET_NO,
       requesterId,
@@ -89,6 +90,8 @@ beforeEach(async () => {
 })
 
 afterAll(async () => {
+  // History rows reference the Ticket and cannot be deleted one by one (lab-04 BR-27).
+  await prisma.$executeRawUnsafe('TRUNCATE "TicketEvent"')
   await prisma.ticket.deleteMany({ where: { ticketNo: TICKET_NO } })
   await restoreSeededCredentials()
 })

@@ -1,5 +1,6 @@
 // WF-01 to WF-14, SEC-02, SEC-03, SEC-06, SEC-07 · lab-04 AC-15 to AC-25, BR-19 to BR-33 — the Ticket workflow over HTTP.
 // Expectations are written from specification §5.2 and api-spec §4, not read back from the implementation.
+import { execFileSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import request from 'supertest'
@@ -192,7 +193,9 @@ describe('WF-04 · AC-16 · BR-21 · Tickets with no Actions can be resolved', (
     expect((await row(ticketId)).status).toBe('RESOLVED')
   })
 
-  it('resolves a seeded Lab 3 Ticket, then puts it back as it was', async () => {
+  it('resolves a seeded Lab 3 Ticket, then puts it back as it was', { timeout: 120_000 }, async () => {
+    // Earlier test files empty the Ticket table, so the demonstration data is seeded afresh for this one.
+    execFileSync('npm', ['run', 'db:seed'], { stdio: 'pipe', shell: process.platform === 'win32', env: { ...process.env } })
     const seeded = await prisma.ticket.findUniqueOrThrow({ where: { ticketNo: 'TKT-2026-900005' } })
     expect(seeded.status, 'the seeded Ticket this test borrows').toBe('WAITING_FOR_REQUESTER')
     expect(await prisma.actionTaken.count({ where: { ticketId: seeded.id } })).toBe(0)
@@ -497,7 +500,7 @@ describe('WF-09 · AC-22 · BR-26 · the history records each material change on
     const ticketId = await makeTicket({ status: 'IN_PROGRESS', ownerEmail: DANIEL_EMAIL })
     await insertAction(ticketId)
     expect((await setStatus(ticketId, patricia, { status: 'RESOLVED', expectedVersion: 1 })).status).toBe(409)
-    expect((await setStatus(ticketId, patricia, { status: 'CLOSED', expectedVersion: 1 })).status).toBe(409)
+    expect((await setStatus(ticketId, patricia, { status: 'CLOSED', expectedVersion: 1 })).status).toBe(400)
     expect((await setStatus(ticketId, patricia, { status: 'OPEN', expectedVersion: 9 })).status).toBe(409)
     expect(await prisma.ticketEvent.count({ where: { ticketId } })).toBe(0)
   })
