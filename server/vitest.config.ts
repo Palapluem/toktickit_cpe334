@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts'],
-    setupFiles: ['./tests/setup.ts'],
+    setupFiles: ['./tests/setup.ts', './tests/loopback.ts'],
     // Seeded reference data is shared, so all files run in one worker.
     fileParallelism: false,
     maxWorkers: 1,
