@@ -309,8 +309,4 @@ Each will record the commit, environment, commands, full runner output location,
 - The performance smoke result is a local measurement on one Mac, not production capacity (specification §11.14).
 - Dashboard and Action failure, loading and empty captures that need a broken server are produced by API interception and labelled *fixture*. The API tests prove the backend behaviour.
 - History begins with Lab 4. Seeded and legacy Tickets have no events for earlier changes (specification §7).
-- **Inherited server-suite instability, observed 3 October 2026.** Four full runs of the unchanged Lab 1–3 server suite were made on fresh `_test` databases. Three failed exactly one test each, a different one every time:
-  - a `socket hang up` in `lab-03/staff-ticket-detail`, twice;
-  - an unexpected 401 in `lab-03/users-admin`;
-  - a failure in `lab-03/authorization`.
-  The fourth run passed 410/410. Each failing test passes on its own. The pattern points to order-dependent shared state between files, not to Lab 4 changes. A Lab 4 gate is not called green until the suite passes reliably.
+- **Server-suite instability, found and fixed in #96 (PR #97).** Before that fix, full runs of the unchanged Lab 1–3 server suite on fresh `_test` databases failed intermittently: in default order 4 of 5 runs failed, with 1 to 22 tests each time and a different test every time. The cause was test transport, not shared state. supertest's throwaway servers listened on every interface but were called on `127.0.0.1`, so a local program holding the same loopback port could answer. Statuses 401, 403 and 404 from other programs, and socket errors, were observed. Until PR #97 is merged, a red run of an unmodified suite may be this clash; rerun it and inspect the failing response before suspecting the product.
