@@ -181,8 +181,10 @@ async function seedActions(userIds: Map<string, string>): Promise<void> {
     const completed = action.status === 'COMPLETED'
     const cancelled = action.status === 'CANCELLED'
 
-    // Restated on every run, like Tickets, so a row edited by hand returns to spec.
+    // Restated on every run, like Tickets, so a row edited by hand returns to spec. `updatedAt` is stated too:
+    // left to Prisma it would move on every run, and a re-run would not leave the Action as it was (BR-42).
     const fields = {
+      updatedAt: completed || cancelled ? closedAt : createdAt,
       description: action.description,
       result: action.result,
       followUpRequired: action.followUpRequired,
