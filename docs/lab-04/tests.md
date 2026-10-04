@@ -44,9 +44,9 @@
 
 | Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
 |---|---|---|---|---|---|---|
-| UNIT-01 | Unit | BR-09, BR-10 | Every Action (from, to) pair | Only §5.1 moves are allowed; terminal states allow none | `server/tests/lab-04/action-rules.unit.test.ts` | NOT RUN |
-| UNIT-02 | Unit | BR-12–BR-16, AC-10 | Boundaries: Description 0/1/2000/2001 · Result 2000/2001 · Follow-up Note conditional, 1/2000/2001 · Reason 0/1/500/501 · Attachment Notes 500/501 · whitespace-only | Correct field error per case; stored values trimmed | `server/tests/lab-04/action-rules.unit.test.ts` | NOT RUN |
-| UNIT-03 | Unit | BR-11, AC-07 | Effective Result at completion (stored, supplied, blank) | Completion allowed only with a non-blank effective Result | `server/tests/lab-04/action-rules.unit.test.ts` | NOT RUN |
+| UNIT-01 | Unit | BR-09, BR-10 | Every Action (from, to) pair | Only §5.1 moves are allowed; terminal states allow none | `server/tests/lab-04/action-rules.unit.test.ts` | PASS (#98) |
+| UNIT-02 | Unit | BR-12–BR-16, AC-10 | Boundaries: Description 0/1/2000/2001 · Result 2000/2001 · Follow-up Note conditional, 1/2000/2001 · Reason 0/1/500/501 · Attachment Notes 500/501 · whitespace-only | Correct field error per case; stored values trimmed | `server/tests/lab-04/action-rules.unit.test.ts` | PASS (#98) |
+| UNIT-03 | Unit | BR-11, AC-07 | Effective Result at completion (stored, supplied, blank) | Completion allowed only with a non-blank effective Result | `server/tests/lab-04/action-rules.unit.test.ts` | PASS (#98) |
 | UNIT-04 | Unit | BR-20, BR-23, AC-18 | Decision table: role × Ticket status × open-Action count | `RESOLVED`/`CLOSED` omitted exactly when the count > 0; blocked list reports the count | `server/tests/lab-04/workflow-rules.unit.test.ts` | NOT RUN |
 | UNIT-05 | Unit | BR-29, AC-24 | Ordering comparator with equal timestamps | Deterministic `(createdAt, id)` order | `server/tests/lab-04/workflow-rules.unit.test.ts` | NOT RUN |
 | UNIT-06 | Unit | BR-30 | Event payload builder for each event type | Only identifiers, statuses, priorities and field names; no free text | `server/tests/lab-04/workflow-rules.unit.test.ts` | NOT RUN |
@@ -56,34 +56,36 @@
 
 | Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
 |---|---|---|---|---|---|---|
-| API-01 | API | AC-01, BR-05 | IT Staff creates a valid Action | 201; `PLANNED`; Performed by = caller; assignee as sent; server `actionAt`; verified by reading the row back | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| API-02 | API | AC-03, BR-02 | Staff A owns the Ticket, Staff B creates an Action assigned to Staff C; list | All fields returned; owner, performer and assignee all differ; creation order | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| API-03 | API | AC-04, BR-07 | Assignee inactive, a Requester, unknown, or deactivated after the list was fetched | 400 `ASSIGNEE_NOT_ELIGIBLE`; nothing stored | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| API-04 | API | AC-05, BR-08 | Reassign a non-terminal Action | Assignee changed; Performed by unchanged; version +1; `ACTION_ASSIGNED` written | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| API-05 | API | AC-06 | `PLANNED → IN_PROGRESS → COMPLETED` with a Result | `COMPLETED`; `completedBy`/`completedAt` set by the server | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| API-06 | API | AC-07, BR-11 | Complete with a blank Result | 400 with a field error on `result`; status unchanged | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| API-07 | API | AC-08, BR-12 | Cancel with and without a reason | `CANCELLED` with reason, `cancelledBy`, `cancelledAt` / 400 | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| API-08 | API | AC-09, BR-10 | Edit, reassign and transition `COMPLETED` and `CANCELLED` Actions | 409 `ACTION_TERMINAL`; row unchanged | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| API-09 | API | AC-10, BR-14 | Follow-up required without a note; follow-up later cleared | 400 field error / stored note becomes null | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| API-10 | API | AC-11, BR-05 | Body supplies Performed by, `createdAt`, completion fields, `status` or `version` | 400 `VALIDATION_FAILED`; nothing stored | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| API-11 | API | AC-13, BR-23 | Every Action write on `RESOLVED`, `CLOSED` and `CANCELLED` Tickets | 409 `TICKET_NOT_WORKABLE` | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| API-12 | API | AC-14, BR-34 | Same `requestId` sent twice, sequentially and in parallel | Exactly one Action; both responses carry its id; the repeat returns 200 | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| API-13 | API | AC-19, BR-31 | Action edit and transition with an outdated `expectedVersion` | 409 `STALE_VERSION` with `currentVersion`; nothing changes | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| API-14 | API | BR-01 | An `actionId` of another Ticket used under this Ticket's path | 404; nothing changes | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| API-15 | API | BR-35 | Ticket `updatedAt` after Action writes and after a comment | Changed by Action writes; unchanged by the comment | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| API-16 | API | AC-03, BR-17 | Requester reads their own Ticket's Actions | Requester view: display names only, no ids, emails or `isActive` | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
+| API-01 | API | AC-01, BR-05 | IT Staff creates a valid Action | 201; `PLANNED`; Performed by = caller; assignee as sent; server `actionAt`; verified by reading the row back | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-02 | API | AC-03, BR-02 | Staff A owns the Ticket, Staff B creates an Action assigned to Staff C; list | All fields returned; owner, performer and assignee all differ; creation order | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-03 | API | AC-04, BR-07 | Assignee inactive, a Requester, unknown, or deactivated after the list was fetched | 400 `ASSIGNEE_NOT_ELIGIBLE`; nothing stored. Also the labsheet Part 6 inactive-assignee rejection: cases "an inactive IT Staff user" and "deactivated after the list was fetched"; reassigning to an ineligible user is API-04 | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-04 | API | AC-05, BR-08 | Reassign a non-terminal Action | Assignee changed; Performed by unchanged; version +1; `ACTION_ASSIGNED` written | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-05 | API | AC-06 | `PLANNED → IN_PROGRESS → COMPLETED` with a Result | `COMPLETED`; `completedBy`/`completedAt` set by the server | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-06 | API | AC-07, BR-11 | Complete with a blank Result | 400 with a field error on `result`; status unchanged | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-07 | API | AC-08, BR-12 | Cancel with and without a reason | `CANCELLED` with reason, `cancelledBy`, `cancelledAt` / 400 | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-08 | API | AC-09, BR-10 | Edit, reassign and transition `COMPLETED` and `CANCELLED` Actions | 409 `ACTION_TERMINAL`; row unchanged | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-09 | API | AC-10, BR-14 | Follow-up required without a note; follow-up later cleared | 400 field error / stored note becomes null | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-10 | API | AC-11, BR-05 | Body supplies Performed by, `createdAt`, completion fields, `status` or `version` | 400 `VALIDATION_FAILED`; nothing stored | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-11 | API | AC-13, BR-23 | Every Action write on `RESOLVED`, `CLOSED` and `CANCELLED` Tickets | 409 `TICKET_NOT_WORKABLE` | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-12 | API | AC-14, BR-34 | Same `requestId` sent twice, sequentially and in parallel | Exactly one Action; both responses carry its id; the repeat returns 200 | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-13 | API | AC-19, BR-31 | Action edit and transition with an outdated `expectedVersion` | 409 `STALE_VERSION` with `currentVersion`; nothing changes | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-14 | API | BR-01 | An `actionId` of another Ticket used under this Ticket's path | 404; nothing changes | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-15 | API | BR-35 | Ticket `updatedAt` after Action writes and after a comment | Changed by Action writes; unchanged by the comment | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-16 | API | AC-03, BR-17 | Requester reads their own Ticket's Actions | Requester view: display names only, no ids, emails or `isActive`, including the names of who completed or cancelled | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-17 | API | BR-33 | Create an Action while another transaction holds the Ticket row | The create waits and finishes after the lock is released | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-18 | API | BR-26, BR-30 | One event per Action write; an event that cannot be written | Identifiers and field names only, no free text; the Action write is rolled back | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
 
 ### Security / authorization — called directly, never through the UI
 
 | Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
 |---|---|---|---|---|---|---|
-| SEC-01 | Security | AC-12, BR-18 | Requester calls create, edit and status on their own Ticket's Actions | 403 `FORBIDDEN`; database unchanged | `server/tests/lab-04/actions-taken.api.test.ts` | NOT RUN |
-| SEC-02 | Security | AC-12, AC-23 | Requester reads Actions and history of another Requester's Ticket | 404, identical to a missing Ticket | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| SEC-03 | Security | lab-03 BR-12 | Every new endpoint without a session | 401 for each | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
+| SEC-01 | Security | AC-12, BR-18 | Requester calls create, edit and status on their own Ticket's Actions | 403 `FORBIDDEN`; database unchanged | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| SEC-02 | Security | AC-12, AC-23 | Requester reads Actions and history of another Requester's Ticket | 404, identical to a missing Ticket | `server/tests/lab-04/actions-taken.api.test.ts` (Actions) · `server/tests/lab-04/ticket-workflow.api.test.ts` (history) | PARTIAL: Actions endpoints PASS (#98); history and dashboards follow in #92 and #93 |
+| SEC-03 | Security | lab-03 BR-12 | Every new endpoint without a session | 401 for each | `server/tests/lab-04/actions-taken.api.test.ts` (Actions) · `server/tests/lab-04/ticket-workflow.api.test.ts` (history) | PARTIAL: Actions endpoints PASS (#98); history and dashboards follow in #92 and #93 |
 | SEC-04 | Security | AC-30 | Requester → IT Staff dashboard; IT Staff and Administrator → Requester dashboard | 403 for each | `server/tests/lab-04/staff-dashboard.api.test.ts` | NOT RUN |
 | SEC-05 | Security | AC-02, BR-39 | Requester dashboard with two Requesters' Tickets present | Counts and rows from the caller's Tickets only; no foreign ids | `server/tests/lab-04/requester-dashboard.api.test.ts` | NOT RUN |
 | SEC-06 | Security | AC-22, BR-27 | Direct SQL `UPDATE` and `DELETE` on an event row | Both rejected by the trigger; row unchanged | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| SEC-07 | Security | BR-30; testing contract §7 | Action, history and dashboard responses scanned for hashes, session ids, other users' emails | None present | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
+| SEC-07 | Security | BR-30; testing contract §7 | Action, history and dashboard responses scanned for hashes, session ids, other users' emails | None present | `server/tests/lab-04/actions-taken.api.test.ts` (Actions) · `server/tests/lab-04/ticket-workflow.api.test.ts` (history) | PARTIAL: Actions endpoints PASS (#98); history and dashboards follow in #92 and #93 |
 
 ### Workflow
 
@@ -123,10 +125,11 @@
 
 | Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
 |---|---|---|---|---|---|---|
-| MIG-01 | Migration | AC-38, BR-41 | Disposable database at the Lab 3 state, migrated to Lab 4; counts per table and FK checks | Identical counts for every pre-existing table; no orphaned reference | `server/scripts/verify-migration.mjs` (planned script; output retained) | NOT RUN |
-| MIG-02 | Recovery | AC-38 | `pg_dump -Fc` before migrating, then `pg_restore` into a new disposable database | Restored counts equal the pre-migration counts | `server/scripts/verify-migration.mjs` | NOT RUN |
-| MIG-03 | Migration | AC-38, BR-21 | Legacy Tickets after migration | Status unchanged; zero Actions; `version = 1` | `server/tests/lab-04/migration-seed.api.test.ts` | NOT RUN |
-| MIG-04 | Seed | AC-39, BR-42 | Seed run twice | No duplicates; Tickets with 0, 1 and several Actions exist | `server/tests/lab-04/migration-seed.api.test.ts` | NOT RUN |
+| MIG-01 | Migration | AC-38, BR-41 | Disposable database at the Lab 3 state, migrated to Lab 4; counts per table and FK checks | Identical counts for every pre-existing table; no orphaned reference | `server/scripts/verify-migration.mjs` (output retained) | PASS (#98) |
+| MIG-02 | Recovery | AC-38 | `pg_dump -Fc` before migrating, then `pg_restore` into a new disposable database | Restored counts equal the pre-migration counts | `server/scripts/verify-migration.mjs` | PASS (#98) |
+| MIG-03 | Migration | AC-38, BR-21 | Legacy Tickets after migration | Status unchanged; zero Actions; `version = 1` | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
+| MIG-04 | Seed | AC-39, BR-42 | Seed run twice | No duplicates, every Action column unchanged by the second run; Tickets with 0, 1 and several Actions exist | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
+| MIG-05 | Migration | BR-27 | Direct SQL `UPDATE` and `DELETE` on an event row; then `TRUNCATE` | Both rejected by the trigger and the row is unchanged; the reset by `TRUNCATE` still works | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
 | PERF-01 | Performance | AC-40 | 2,000 Tickets / 6,000 Actions; each dashboard endpoint called 20 times | p95 ≤ 300 ms; machine, dataset and command recorded | `server/scripts/perf-smoke.mjs` (planned) | NOT RUN |
 | PERF-02 | Performance | AC-40, BR-40 | Query count at 200 vs 2,000 Tickets | Equal | `server/scripts/perf-smoke.mjs` | NOT RUN |
 
@@ -220,7 +223,7 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 | AC-19 | API-13, WF-07, WF-14, E2E-03 | `ticket-workflow/stale-status`, `actions-taken/conflict` |
 | AC-20 | WF-08 | API test output (concurrent runs) |
 | AC-21 | UI-12, E2E-02 | `ticket-workflow/resolved-after-work-complete` |
-| AC-22 | WF-09, SEC-06, E2E-02 | `ticket-workflow/history-staff`; trigger test output |
+| AC-22 | WF-09, SEC-06, MIG-05, E2E-02 | `ticket-workflow/history-staff`; trigger test output |
 | AC-23 | WF-10, SEC-02, UI-13, E2E-02 | `ticket-workflow/history-requester` |
 | AC-24 | UNIT-05, WF-11 | API test output |
 | AC-25 | WF-12 | API test output |
@@ -245,7 +248,7 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 
 | Labsheet path (§12) | Planned tests |
 |---|---|
-| `server/tests/lab-04/actions-taken.api.test.ts` | API-01–API-16, SEC-01 |
+| `server/tests/lab-04/actions-taken.api.test.ts` | API-01–API-18, SEC-01, and the Actions part of SEC-02, SEC-03 and SEC-07 |
 | `server/tests/lab-04/ticket-workflow.api.test.ts` | WF-01–WF-14, SEC-02, SEC-03, SEC-06, SEC-07 |
 | `server/tests/lab-04/requester-dashboard.api.test.ts` | DASH-07–DASH-10, SEC-05 |
 | `server/tests/lab-04/staff-dashboard.api.test.ts` | DASH-01–DASH-06, SEC-04 |
@@ -259,7 +262,8 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 
 Supporting files beyond the minimum:
 
-- `server/tests/lab-04/action-rules.unit.test.ts`, `workflow-rules.unit.test.ts`, `dashboard-metrics.unit.test.ts` and `migration-seed.api.test.ts`;
+- `server/tests/lab-04/action-rules.unit.test.ts`, `workflow-rules.unit.test.ts`, `dashboard-metrics.unit.test.ts` and `migration-seed.api.test.ts` (MIG-03–MIG-05);
+- `server/tests/lab-04/test-transport.unit.test.ts` (#96, the loopback guard behind the suite-stability fix);
 - `client/tests/lab-04/AppNavigation.test.tsx`;
 - `e2e/lab-04/regression.spec.ts`;
 - the planned scripts `server/scripts/verify-migration.mjs` and `server/scripts/perf-smoke.mjs`.
