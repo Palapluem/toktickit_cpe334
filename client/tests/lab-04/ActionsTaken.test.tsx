@@ -181,7 +181,7 @@ describe('UI-02 · AC-10 · BR-13 to BR-15 · create mode checks before it sends
     expect(screen.getByText('Recorded automatically when you save')).toBeInTheDocument()
     // STYLE-05 · STY-009 · STY-010
     expect(screen.queryByRole('textbox', { name: /Performed by|Action Date/ })).not.toBeInTheDocument()
-    expect(screen.getByText('Performed by')).toBeInTheDocument()
+    expect(within(document.querySelector('.actions__form') as HTMLElement).getByText('Performed by')).toBeInTheDocument()
   })
 
   it('refuses an empty or over-long Description, without calling the API', async () => {

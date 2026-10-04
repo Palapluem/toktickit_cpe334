@@ -690,3 +690,76 @@ export async function downloadAttachment(attachmentId: string): Promise<Blob> {
   }
   return response.blob()
 }
+
+// ---- Actions Taken (lab-04 api-spec §2, §3) ----
+
+export type ActionStatus = 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+
+/** Staff get identifiers and activity; a Requester gets the display name only (BR-17). */
+export interface ActionPerson {
+  id?: string
+  displayName: string
+  isActive?: boolean
+}
+
+export interface ActionTaken {
+  id: string
+  ticketId: string
+  status: ActionStatus
+  description: string
+  result: string | null
+  followUpRequired: boolean
+  followUpNote: string | null
+  attachmentNotes: string | null
+  assignee: ActionPerson
+  performedBy: ActionPerson | null
+  actionAt: string
+  completedBy: ActionPerson | null
+  completedAt: string | null
+  cancelledBy: ActionPerson | null
+  cancelledAt: string | null
+  cancellationReason: string | null
+  version: number
+  updatedAt: string
+}
+
+export interface NewAction {
+  requestId: string
+  description: string
+  assigneeId: string
+  followUpRequired: boolean
+  followUpNote: string | null
+  attachmentNotes: string | null
+}
+
+export interface ActionEdit {
+  expectedVersion: number
+  description?: string
+  result?: string | null
+  followUpRequired?: boolean
+  followUpNote?: string | null
+  attachmentNotes?: string | null
+  assigneeId?: string
+}
+
+export type ActionMove =
+  | { expectedVersion: number; status: 'IN_PROGRESS' }
+  | { expectedVersion: number; status: 'COMPLETED'; result?: string }
+  | { expectedVersion: number; status: 'CANCELLED'; cancellationReason: string }
+
+export function fetchActions(ticketId: string): Promise<ActionTaken[]> {
+  return get<ActionTaken[]>(`/api/tickets/${ticketId}/actions`, 'Actions')
+}
+
+/** A repeated `requestId` returns the Action already created (BR-34). */
+export function createAction(ticketId: string, body: NewAction): Promise<ActionTaken> {
+  return postJson<ActionTaken>(`/api/tickets/${ticketId}/actions`, body, 'Could not save the Action.')
+}
+
+export function updateAction(ticketId: string, actionId: string, body: ActionEdit): Promise<ActionTaken> {
+  return patchJson<ActionTaken>(`/api/tickets/${ticketId}/actions/${actionId}`, body, 'Could not save the Action.')
+}
+
+export function moveAction(ticketId: string, actionId: string, body: ActionMove): Promise<ActionTaken> {
+  return patchJson<ActionTaken>(`/api/tickets/${ticketId}/actions/${actionId}/status`, body, 'Could not change the Action.')
+}

@@ -23,6 +23,7 @@ import { PriorityBadge, StatusBadge } from '../components/Badge.js'
 import { Button } from '../components/Button.js'
 import { AttachmentSection } from '../components/AttachmentSection.js'
 import { FormField } from '../components/FormField.js'
+import { ActionsTakenSection } from '../components/ActionsTakenSection.js'
 import { HistorySection } from '../components/HistorySection.js'
 import {
   EmptyState,
@@ -34,6 +35,7 @@ import {
   InternalNotesSection,
   PublicCommentsSection,
 } from '../components/ThreadSection.js'
+import { useOptionalSession } from '../context/SessionContext.js'
 import { joinLabels, pluralActions, statusLabel } from '../ticketLabels.js'
 import { formatBangkokTime } from '../dateTime.js'
 
@@ -60,6 +62,7 @@ export function StaffTicketDetail() {
   const [busy, setBusy] = useState(false)
   const [reloadToken, setReloadToken] = useState(0)
   const [notice, setNotice] = useState('')
+  const session = useOptionalSession()
   const [confirmingCancel, setConfirmingCancel] = useState(false)
   const statusControl = useRef<HTMLSelectElement>(null)
   const cancelQuestion = useRef<HTMLParagraphElement>(null)
@@ -187,6 +190,16 @@ export function StaffTicketDetail() {
     setConfirmingCancel(false)
     await changeStatus('CANCELLED')
   }
+
+  /** An Action changed: reload the Ticket quietly (version, updatedAt, assignable owners) without a loading state. */
+  const refreshTicket = useCallback(() => {
+    if (!routeTicketId) return
+    fetchStaffTicket(routeTicketId)
+      .then(setTicket)
+      .catch(() => {
+        // The Actions section shows its own result; the next full load shows the truth.
+      })
+  }, [routeTicketId])
 
   async function addAttachment(file: File): Promise<TicketAttachment> {
     if (!ticket) throw new Error('Ticket is not loaded.')
@@ -439,6 +452,15 @@ export function StaffTicketDetail() {
           <textarea value={ticket.description} readOnly rows={4} />
         </FormField>
       </section>
+
+      <ActionsTakenSection
+        ticketId={ticket.id}
+        ticketStatus={ticket.status}
+        audience="staff"
+        assignableOwners={ticket.assignableOwners}
+        currentUserId={session?.user?.id}
+        onChanged={refreshTicket}
+      />
 
       <div className="zen-card ticket-detail-card">
         <AttachmentSection

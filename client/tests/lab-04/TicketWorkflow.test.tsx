@@ -14,6 +14,7 @@ vi.mock('../../src/api.js', async () => {
     fetchStaffTicket: vi.fn(),
     setTicketStatus: vi.fn(),
     fetchTicketHistory: vi.fn(),
+    fetchActions: vi.fn(),
     fetchComments: vi.fn(),
     fetchInternalNotes: vi.fn(),
   }
@@ -92,6 +93,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   fetchStaffTicketMock.mockResolvedValue(BASE)
   fetchHistoryMock.mockResolvedValue([])
+  vi.mocked(api.fetchActions).mockResolvedValue([])
   vi.mocked(api.fetchComments).mockResolvedValue([])
   vi.mocked(api.fetchInternalNotes).mockResolvedValue([])
 })
