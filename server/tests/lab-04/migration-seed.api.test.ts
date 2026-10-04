@@ -17,17 +17,20 @@ const numberOf = (n: number) => `TKT-2026-${String(900_000 + n).padStart(6, '0')
 const actions = () =>
   prisma.actionTaken.findMany({ where: { ticket: { ticketNo: { in: SEED_TICKETS.map((t) => t.ticketNo) } } }, include: { ticket: { include: { owner: true } } } })
 
-let firstRun: string[]
-let secondRun: string[]
+// Every column of every seeded Action, in a fixed order, so two runs can be compared whole.
+const snapshot = async () => (await actions()).sort((a, b) => a.id.localeCompare(b.id)).map(({ ticket: _ticket, ...row }) => row)
+
+let firstRun: Awaited<ReturnType<typeof snapshot>>
+let secondRun: Awaited<ReturnType<typeof snapshot>>
 let eventsBefore: number
 
 beforeAll(async () => {
   await restoreSeededCredentials()
   eventsBefore = await prisma.ticketEvent.count()
   runSeed()
-  firstRun = (await actions()).map((a) => a.id).sort()
+  firstRun = await snapshot()
   runSeed()
-  secondRun = (await actions()).map((a) => a.id).sort()
+  secondRun = await snapshot()
 }, 240_000)
 
 afterAll(async () => {
@@ -48,10 +51,10 @@ describe('MIG-04 · AC-39 · BR-42 · the seeded Actions', () => {
     expect(perTicket.filter((c) => c > 1).length).toBe(2)
   })
 
-  it('changes nothing on a second run: same identifiers, no duplicates', () => {
+  it('changes nothing on a second run: same identifiers, no duplicates, every column as it was (BR-42)', () => {
     expect(firstRun).toHaveLength(8)
+    expect(new Set(secondRun.map((a) => a.id)).size).toBe(secondRun.length)
     expect(secondRun).toEqual(firstRun)
-    expect(new Set(secondRun).size).toBe(secondRun.length)
   })
 
   it('shows every Action status and keeps owner, performer and assignee distinct (BR-02)', async () => {

@@ -634,6 +634,44 @@ describe('API-16 · AC-03 · BR-17 · what the Requester sees', () => {
     const asStaff = await list(ticketId, patricia)
     expect(asStaff.body.data[0].assignee).toMatchObject({ id: id.olivia, isActive: true })
   })
+
+  it('names the person who completed or cancelled an Action, and still no identifier (BR-17)', async () => {
+    const ticketId = await makeTicket({ status: 'IN_PROGRESS', ownerEmail: DANIEL_EMAIL })
+    const completedId = (await create(ticketId, patricia, valid(id.olivia))).body.data.id as string
+    const cancelledId = (await create(ticketId, patricia, valid(id.daniel))).body.data.id as string
+    expect((await move(ticketId, completedId, olivia, { expectedVersion: 1, status: 'IN_PROGRESS' })).status).toBe(200)
+    const completed = await move(ticketId, completedId, olivia, { expectedVersion: 2, status: 'COMPLETED', result: 'Allow-list restored.' })
+    const cancelled = await move(ticketId, cancelledId, daniel, { expectedVersion: 1, status: 'CANCELLED', cancellationReason: 'Fixed upstream.' })
+    expect([completed.status, cancelled.status]).toEqual([200, 200])
+
+    const asRequester = await list(ticketId, jennifer)
+    expect(asRequester.status).toBe(200)
+    const byId = new Map<string, Record<string, unknown>>(asRequester.body.data.map((a: { id: string }) => [a.id, a]))
+    const done = byId.get(completedId) as Record<string, { displayName: string } | null>
+    const dropped = byId.get(cancelledId) as Record<string, { displayName: string } | null>
+
+    expect(done.status).toBe('COMPLETED')
+    expect(done.completedBy).toEqual({ displayName: 'Olivia Reed' })
+    expect(done.performedBy).toEqual({ displayName: 'Patricia Evans' })
+    expect(done.assignee).toEqual({ displayName: 'Olivia Reed' })
+    expect(done.cancelledBy).toBeNull()
+
+    expect(dropped.status).toBe('CANCELLED')
+    expect(dropped.cancelledBy).toEqual({ displayName: 'Daniel Carter' })
+    expect(dropped.performedBy).toEqual({ displayName: 'Patricia Evans' })
+    expect(dropped.assignee).toEqual({ displayName: 'Daniel Carter' })
+    expect(dropped.completedBy).toBeNull()
+
+    const text = JSON.stringify(asRequester.body)
+    for (const person of [id.olivia, id.daniel, id.patricia]) expect(text).not.toContain(person)
+    expect(text).not.toContain('@example.ac.th')
+
+    // The same two Actions give staff the identifiers, so the Requester's view is a deliberate subset.
+    const asStaff = await list(ticketId, patricia)
+    const staffById = new Map<string, Record<string, { id: string } | null>>(asStaff.body.data.map((a: { id: string }) => [a.id, a]))
+    expect(staffById.get(completedId)?.completedBy).toMatchObject({ id: id.olivia })
+    expect(staffById.get(cancelledId)?.cancelledBy).toMatchObject({ id: id.daniel })
+  })
 })
 
 describe('API-17 · BR-33 · creating an Action waits for the Ticket row lock', () => {
