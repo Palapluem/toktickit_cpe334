@@ -59,3 +59,10 @@ export function RoleBadge({ value }: { value: Role }) {
     <span className={`zen-badge ${ROLE_CLASS[value]}`}>{value.replace('_', ' ')}</span>
   )
 }
+
+// STUB: shows the raw value until the Action badge mapping is written (lab-04 STY-018, STY-019).
+export type ActionStatus = 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+
+export function ActionStatusBadge({ value }: { value: ActionStatus }) {
+  return <span className="zen-badge">{value}</span>
+}
