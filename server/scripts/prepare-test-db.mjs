@@ -5,6 +5,9 @@ import { config } from 'dotenv'
 
 config({ path: '.env.test', override: true })
 
+// A fresh verification database may replace .env.test's; the _test name guard below still applies.
+if (process.env.TEST_DATABASE_URL?.trim()) process.env.DATABASE_URL = process.env.TEST_DATABASE_URL.trim()
+
 const url = process.env.DATABASE_URL
 if (!url) {
   console.error(
@@ -17,7 +20,7 @@ if (!url) {
 const databaseName = new URL(url).pathname.replace(/^\//, '')
 if (!databaseName.endsWith('_test')) {
   console.error(
-    `Refusing to run: DATABASE_URL in .env.test points at "${databaseName}", ` +
+    `Refusing to run: the test database URL points at "${databaseName}", ` +
       'which is not a test database. Its name must end in _test.',
   )
   process.exit(1)
