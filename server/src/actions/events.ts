@@ -26,20 +26,26 @@ export type NewEvent = {
   payload: Prisma.InputJsonObject
 }
 
-/**
- * Writes the events of one change in order. They are spaced 1 ms apart from `at`, so the order they were written
- * in survives the (createdAt, id) rule of BR-29 even though a uuid carries no order of its own.
- */
+/** Writes one change's events 1 ms apart from `at`, or from 1 ms after the Ticket's latest event if that is later (BR-29, AC-22). */
 export async function appendEvents(tx: Tx, at: Date, events: readonly NewEvent[]): Promise<void> {
+  if (events.length === 0) return
+  const { ticketId } = events[0]
+  if (events.some((event) => event.ticketId !== ticketId)) throw new Error('Events of one change belong to one Ticket.')
+
+  // The caller holds the Ticket row lock, so createdAt stays strictly increasing in commit order, even past a long cascade.
+  const [latest] = await tx.$queryRaw<{ at: Date | null }[]>`
+    SELECT MAX("createdAt") AS "at" FROM "TicketEvent" WHERE "ticketId" = ${ticketId}::uuid`
+  const start = latest?.at ? Math.max(at.getTime(), latest.at.getTime() + 1) : at.getTime()
+
   for (const [index, event] of events.entries()) {
     await tx.ticketEvent.create({
       data: {
-        ticketId: event.ticketId,
+        ticketId,
         actionId: event.actionId ?? null,
         actorId: event.actorId,
         type: event.type,
         payload: event.payload,
-        createdAt: new Date(at.getTime() + index),
+        createdAt: new Date(start + index),
       },
     })
   }
