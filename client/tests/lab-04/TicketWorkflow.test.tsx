@@ -1,5 +1,5 @@
-// UI-11 to UI-13 · lab-04 AC-18, AC-21, AC-23, BR-28, BR-30; ui-spec §6, §7 — the status control, its feedback and the history.
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+// UI-11 to UI-13, UI-19 · lab-04 AC-18, AC-21, AC-23, BR-28, BR-30; ui-spec §6, §7 — the status control, its feedback and the history.
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
@@ -281,6 +281,27 @@ const EVENTS: api.TicketEvent[] = [
   { id: 'e9', type: 'ACTION_CANCELLED', actor: { displayName: 'Patricia Evans' }, createdAt: '2026-10-04T06:00:00.001Z', details: { actionId: 'a-2', cascade: true } },
   { id: 'e10', type: 'ACTION_CANCELLED', actor: { displayName: 'Patricia Evans' }, createdAt: '2026-10-04T06:30:00.000Z', details: { actionId: 'a-3', cascade: false } },
 ]
+
+describe('UI-19 · api-spec §1 · the history shows Bangkok time on a device in any other zone', () => {
+  const deviceZone = process.env.TZ
+  afterEach(() => {
+    if (deviceZone === undefined) delete process.env.TZ
+    else process.env.TZ = deviceZone
+  })
+
+  it.each(['UTC', 'America/Los_Angeles'])('prints 03:12 UTC as 10:12 and 18:30 UTC on the next date, on a device set to %s', async (zone) => {
+    process.env.TZ = zone
+    fetchHistoryMock.mockResolvedValue([
+      { ...EVENTS[0], id: 'z1', createdAt: '2026-10-04T03:12:09.000Z' },
+      { ...EVENTS[2], id: 'z2', createdAt: '2026-10-04T18:30:00.000Z' },
+    ])
+    renderStaff()
+
+    const section = await screen.findByRole('region', { name: 'History' })
+    const items = await within(section).findAllByRole('listitem')
+    expect(items.map((item) => item.querySelector('time')?.textContent)).toEqual(['4 Oct 2026, 10:12', '5 Oct 2026, 01:30'])
+  })
+})
 
 describe('UI-13 · AC-22 · AC-23 · the history', () => {
   it('shows every event to IT Staff as one line: time, actor and a readable description, oldest first', async () => {
