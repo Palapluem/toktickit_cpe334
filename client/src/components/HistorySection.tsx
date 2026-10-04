@@ -2,6 +2,7 @@
 // the event type and its identifiers' display names. No free text from a user ever appears here.
 import { useEffect, useState } from 'react'
 import { fetchTicketHistory, type TicketEvent } from '../api.js'
+import { formatBangkokTime } from '../dateTime.js'
 import { priorityLabel, statusLabel } from '../ticketLabels.js'
 import { Button } from './Button.js'
 
@@ -11,10 +12,6 @@ const FIELD_LABEL: Record<string, string> = {
   followUpRequired: 'Follow-up Required',
   followUpNote: 'Follow-up Note',
   attachmentNotes: 'Attachment Notes',
-}
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
 }
 
 const text = (value: unknown): string => (typeof value === 'string' ? value : '')
@@ -95,7 +92,7 @@ export function HistorySection({ ticketId, refreshKey }: { ticketId: string; ref
             const sentence = describeEvent(event)
             return (
               <li key={event.id} className="history__event">
-                <time dateTime={event.createdAt}>{formatDate(event.createdAt)}</time>
+                <time dateTime={event.createdAt}>{formatBangkokTime(event.createdAt)}</time>
                 <span className="history__actor">{event.actor.displayName}</span>
                 {anchor ? <a href={anchor}>{sentence}</a> : <span>{sentence}</span>}
               </li>
