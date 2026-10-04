@@ -103,8 +103,9 @@
 | WF-10 | Workflow | AC-23, BR-28 | The same history read by its Requester and by IT Staff | Requester gets `STATUS_CHANGED` only; IT Staff get every event | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
 | WF-11 | Workflow | AC-24, BR-29 | Actions, comments, notes and events inserted with identical `createdAt` | Identical order across five repeated reads | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
 | WF-12 | Workflow | AC-25, BR-25 | Requester resolution indication on a Ticket with open Actions | Indication recorded; status unchanged; version +1 | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| WF-13 | Workflow | BR-32 | Owner and IT Priority changes in the Lab 3 request shape | Succeed without a version; version +1; event written | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
+| WF-13 | Workflow | BR-32 | Owner and IT Priority changes in the Lab 3 request shape | Succeed without a version; version +1; event written. A change to what is already stored, an Action edit that changes nothing and a same-status request leave `version`, events and `updatedAt` as they were | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
 | WF-14 | Workflow | AC-19, BR-31 | Status change without `expectedVersion` | 400 `VALIDATION_FAILED` | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
+| WF-15 | Workflow | AC-22, BR-29 | A claim then a priority change in one millisecond; a change 5 ms into a 40-Action cancellation burst; a change after the clock went back | Events keep commit order and `createdAt` is strictly increasing, in the database and in the History response | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
 
 ### Dashboards and lists
 
@@ -155,6 +156,7 @@
 | UI-16 | UI | AC-02, AC-29 | Requester dashboard content | Cards and links; attention cue as text; first-use empty state | `client/tests/lab-04/RequesterDashboard.test.tsx` | NOT RUN |
 | UI-17 | UI | AC-31 | Requester dashboard states | Loading; failure → Try again; forbidden | `client/tests/lab-04/RequesterDashboard.test.tsx` | NOT RUN |
 | UI-18 | UI | AC-32, FR-21 | Navigation per role | Dashboard first and active; post-login redirect lands on it | `client/tests/lab-04/AppNavigation.test.tsx` | NOT RUN |
+| UI-19 | UI | api-spec §1, BR-38 | History times and the formatter on devices set to UTC, America/Los_Angeles, Asia/Bangkok and Pacific/Kiritimati | 03:12 UTC reads 10:12 and the date moves exactly at 17:00 UTC | `client/tests/lab-04/dateTime.test.ts`, `client/tests/lab-04/TicketWorkflow.test.tsx` | NOT RUN |
 
 ### UI style
 
@@ -249,13 +251,14 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 | Labsheet path (§12) | Planned tests |
 |---|---|
 | `server/tests/lab-04/actions-taken.api.test.ts` | API-01–API-18, SEC-01, and the Actions part of SEC-02, SEC-03 and SEC-07 |
-| `server/tests/lab-04/ticket-workflow.api.test.ts` | WF-01–WF-14, SEC-02, SEC-03, SEC-06, SEC-07 |
+| `server/tests/lab-04/ticket-workflow.api.test.ts` | WF-01–WF-15, SEC-02, SEC-03, SEC-06, SEC-07 |
 | `server/tests/lab-04/requester-dashboard.api.test.ts` | DASH-07–DASH-10, SEC-05 |
 | `server/tests/lab-04/staff-dashboard.api.test.ts` | DASH-01–DASH-06, SEC-04 |
 | `client/tests/lab-04/StaffDashboard.test.tsx` | UI-14, UI-15 |
 | `client/tests/lab-04/RequesterDashboard.test.tsx` | UI-16, UI-17 |
 | `client/tests/lab-04/ActionsTaken.test.tsx` | UI-01–UI-10, STYLE-02–STYLE-05 |
-| `client/tests/lab-04/TicketWorkflow.test.tsx` | UI-11–UI-13 |
+| `client/tests/lab-04/TicketWorkflow.test.tsx` | UI-11–UI-13, UI-19 |
+| `client/tests/lab-04/dateTime.test.ts` | UI-19 |
 | `e2e/lab-04/actions-taken-flow.spec.ts` | E2E-01, RESP-01, A11Y-01 |
 | `e2e/lab-04/ticket-resolution.spec.ts` | E2E-02, E2E-03 |
 | `e2e/lab-04/dashboards.spec.ts` | E2E-04, E2E-05, RESP-01 |
