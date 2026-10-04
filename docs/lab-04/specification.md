@@ -296,7 +296,7 @@ Every foreign key is `ON DELETE RESTRICT`.
 **Seed (idempotent, stable identifiers).**
 
 - The ten Lab 3 demo Tickets stay as they are.
-- Nine Actions are added (BR-42):
+- Eight Actions are added (BR-42):
   - `…900003` (OPEN, owner Patricia Evans): one PLANNED Action assigned to her.
   - `…900004` (IN_PROGRESS, owner Daniel Carter), three Actions:
     - COMPLETED, by and for Daniel;
