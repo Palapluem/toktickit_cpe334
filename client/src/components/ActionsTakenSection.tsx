@@ -12,6 +12,7 @@ import {
   type AssignableOwner,
   type TicketStatus,
 } from '../api.js'
+import { formatBangkokTime } from '../dateTime.js'
 import { statusLabel } from '../ticketLabels.js'
 import { ActionStatusBadge } from './Badge.js'
 import { Button } from './Button.js'
@@ -35,9 +36,6 @@ const REASON_MAX = 500
 const FAILED = 'The Action could not be saved. Your entries are kept.'
 const CONFLICT = 'Someone else changed this Action. The latest version is shown; your unsaved entries are kept in the form.'
 const TERMINAL = 'This Action is already completed or cancelled.'
-
-const formatDate = (value: string): string =>
-  new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
 
 const nameOf = (person: ActionPerson | null): string => person?.displayName ?? '—'
 const isFinished = (action: ActionTaken): boolean => action.status === 'COMPLETED' || action.status === 'CANCELLED'
@@ -70,12 +68,24 @@ function check(values: Values, editing: boolean): Errors {
 
 const orNull = (value: string): string | null => (value.trim() === '' ? null : value.trim())
 
+/** The entries a create sends, normalised, so two attempts can be compared (BR-34). */
+const sameEntries = (a: Values, b: Values): boolean =>
+  a.description.trim() === b.description.trim() &&
+  a.assigneeId === b.assigneeId &&
+  a.followUpRequired === b.followUpRequired &&
+  (a.followUpRequired ? a.followUpNote.trim() === b.followUpNote.trim() : true) &&
+  a.attachmentNotes.trim() === b.attachmentNotes.trim()
+
+const FIELD_ORDER: (keyof Values)[] = ['description', 'assigneeId', 'result', 'followUpNote', 'attachmentNotes']
+
 /** One form for both modes: a new Action, or an edit of a non-terminal one. */
 function ActionForm({
   action,
   owners,
   currentUserId,
+  locked = false,
   onSave,
+  onUpdate,
   onSaved,
   onClose,
   onReload,
@@ -85,7 +95,11 @@ function ActionForm({
   action?: ActionTaken
   owners: AssignableOwner[]
   currentUserId: string
+  /** The Ticket no longer takes Actions (BR-23): the entries stay visible and cannot be saved. */
+  locked?: boolean
   onSave: (values: Values, requestId: string, version: number) => Promise<ActionTaken>
+  /** Create mode only: saves the entries onto an Action an earlier, unanswered attempt turned out to have made. */
+  onUpdate?: (id: string, version: number, values: Values) => Promise<ActionTaken>
   onSaved: (saved: ActionTaken) => void
   onClose: () => void
   onReload: () => void
@@ -107,38 +121,80 @@ function ActionForm({
   const [retryable, setRetryable] = useState(false)
   const [busy, setBusy] = useState(false)
   const [version, setVersion] = useState(action?.version ?? 0)
+  // The Action an earlier attempt turned out to have made: later saves update it instead of creating again.
+  const [made, setMade] = useState<ActionTaken | null>(null)
   // One submission, one request id: a retry resends it, so a lost response cannot create a second Action (BR-34).
   const requestId = useRef(crypto.randomUUID())
+  // A create whose outcome was never learned. A retry resends exactly this, so the key and the body always agree.
+  const unanswered = useRef<{ requestId: string; values: Values } | null>(null)
   const inFlight = useRef(false)
-  const first = useRef<HTMLTextAreaElement>(null)
+  const fields = useRef<Partial<Record<keyof Values, HTMLElement | null>>>({})
+  const focusFirstError = useRef(false)
 
   useEffect(() => {
-    first.current?.focus()
+    fields.current.description?.focus()
   }, [])
 
+  // The first invalid field gets the focus (ui-spec §9), once the controls are enabled again after a save.
+  useEffect(() => {
+    if (!focusFirstError.current || busy) return
+    const key = FIELD_ORDER.find((name) => errors[name] && fields.current[name])
+    if (key) fields.current[key]?.focus()
+    focusFirstError.current = false
+  }, [errors, busy])
+
   const set = <K extends keyof Values>(key: K, value: Values[K]) => setValues((current) => ({ ...current, [key]: value }))
+  const track = (key: keyof Values) => (element: HTMLElement | null) => {
+    fields.current[key] = element
+  }
+
+  /** Creates the Action, or finds out that an earlier attempt did; changes made since go onto it as an update. */
+  async function saveNew(): Promise<ActionTaken> {
+    let target = made
+    let targetVersion = version
+    if (!target) {
+      const attempt = unanswered.current ?? { requestId: requestId.current, values }
+      unanswered.current = attempt
+      const created = await onSave(attempt.values, attempt.requestId, 0)
+      unanswered.current = null
+      if (sameEntries(attempt.values, values)) return created
+      setMade(created)
+      setVersion(created.version)
+      onReload()
+      target = created
+      targetVersion = created.version
+    }
+    return onUpdate ? onUpdate(target.id, targetVersion, values) : target
+  }
 
   async function submit() {
-    if (inFlight.current) return
+    if (inFlight.current || locked) return
     const found = check(values, editing)
     setErrors(found)
     setBanner('')
     setRetryable(false)
-    if (Object.keys(found).length > 0) return
+    if (Object.keys(found).length > 0) {
+      focusFirstError.current = true
+      return
+    }
 
     inFlight.current = true
     setBusy(true)
     try {
-      onSaved(await onSave(values, requestId.current, version))
+      onSaved(await (editing ? onSave(values, requestId.current, version) : saveNew()))
     } catch (error) {
       const code = error instanceof ApiRequestError ? error.code : undefined
+      const definitive = error instanceof ApiRequestError && error.status !== undefined && error.status < 500
+      if (definitive) unanswered.current = null
       if (code === 'VALIDATION_FAILED' && error instanceof ApiRequestError) {
         const mapped: Errors = {}
         for (const { field, message } of error.fieldErrors) if (field in values) mapped[field as keyof Values] = message
         setErrors(mapped)
+        focusFirstError.current = true
         if (Object.keys(mapped).length === 0) setBanner(error.message)
       } else if (code === 'ASSIGNEE_NOT_ELIGIBLE') {
         setErrors({ assigneeId: 'Choose an active IT Staff member or Administrator.' })
+        focusFirstError.current = true
         onOwnersStale()
       } else if (code === 'STALE_VERSION' && error instanceof ApiRequestError) {
         const latest = error.details?.currentVersion
@@ -149,7 +205,7 @@ function ActionForm({
         setBanner(TERMINAL)
         onFinal?.()
         onReload()
-      } else if (error instanceof ApiRequestError && error.status !== undefined && error.status < 500) {
+      } else if (definitive && error instanceof ApiRequestError) {
         setBanner(error.message)
         if (code === 'TICKET_NOT_WORKABLE') onOwnersStale()
       } else {
@@ -161,6 +217,9 @@ function ActionForm({
       setBusy(false)
     }
   }
+
+  const frozen = busy || locked
+  const saveLabel = editing || made ? 'Save changes' : 'Save Action'
 
   return (
     <form
@@ -176,6 +235,11 @@ function ActionForm({
           {banner}
         </p>
       ) : null}
+      {locked ? (
+        <p className="actions__banner" role="status">
+          This Ticket no longer takes Actions, so these entries cannot be saved.
+        </p>
+      ) : null}
 
       <FormField
         id={editing ? 'edit-description' : 'new-description'}
@@ -184,11 +248,11 @@ function ActionForm({
         error={errors.description}
         hint={`${values.description.length} / ${TEXT_MAX}`}
       >
-        <textarea ref={first} rows={3} value={values.description} disabled={busy} onChange={(event) => set('description', event.target.value)} />
+        <textarea ref={track('description')} rows={3} value={values.description} disabled={frozen} onChange={(event) => set('description', event.target.value)} />
       </FormField>
 
       <FormField id={editing ? 'edit-assignee' : 'new-assignee'} label="Assignee" required error={errors.assigneeId}>
-        <select value={values.assigneeId} disabled={busy} onChange={(event) => set('assigneeId', event.target.value)}>
+        <select ref={track('assigneeId')} value={values.assigneeId} disabled={frozen} onChange={(event) => set('assigneeId', event.target.value)}>
           {owners.map((owner) => (
             <option key={owner.id} value={owner.id}>
               {owner.displayName}
@@ -199,7 +263,7 @@ function ActionForm({
 
       {editing ? (
         <FormField id="edit-result" label="Result" error={errors.result} hint={`${values.result.length} / ${TEXT_MAX}`}>
-          <textarea rows={3} value={values.result} disabled={busy} onChange={(event) => set('result', event.target.value)} />
+          <textarea ref={track('result')} rows={3} value={values.result} disabled={frozen} onChange={(event) => set('result', event.target.value)} />
         </FormField>
       ) : null}
 
@@ -207,7 +271,7 @@ function ActionForm({
         <input
           type="checkbox"
           checked={values.followUpRequired}
-          disabled={busy}
+          disabled={frozen}
           // Unticking hides the note and clears it (BR-14).
           onChange={(event) => setValues((current) => ({ ...current, followUpRequired: event.target.checked, followUpNote: '' }))}
         />
@@ -221,7 +285,7 @@ function ActionForm({
           error={errors.followUpNote}
           hint={`${values.followUpNote.length} / ${TEXT_MAX}`}
         >
-          <textarea rows={2} value={values.followUpNote} disabled={busy} onChange={(event) => set('followUpNote', event.target.value)} />
+          <textarea ref={track('followUpNote')} rows={2} value={values.followUpNote} disabled={frozen} onChange={(event) => set('followUpNote', event.target.value)} />
         </FormField>
       ) : null}
 
@@ -231,7 +295,7 @@ function ActionForm({
         error={errors.attachmentNotes}
         hint="Name the attached file to look at, for example relay-error.png."
       >
-        <input value={values.attachmentNotes} disabled={busy} onChange={(event) => set('attachmentNotes', event.target.value)} />
+        <input ref={track('attachmentNotes')} value={values.attachmentNotes} disabled={frozen} onChange={(event) => set('attachmentNotes', event.target.value)} />
       </FormField>
 
       {editing ? null : (
@@ -248,10 +312,12 @@ function ActionForm({
       )}
 
       <div className="actions__buttons">
-        <Button type="submit" variant="primary" busy={busy} busyLabel="Saving…">
-          {editing ? 'Save changes' : 'Save Action'}
-        </Button>
-        {retryable ? (
+        {locked ? null : (
+          <Button type="submit" variant="primary" busy={busy} busyLabel="Saving…">
+            {saveLabel}
+          </Button>
+        )}
+        {retryable && !locked ? (
           <Button variant="secondary" disabled={busy} onClick={() => void submit()}>
             Try again
           </Button>
@@ -297,6 +363,8 @@ function ActionPanel({
 }) {
   const heading = useRef<HTMLHeadingElement>(null)
   const resultField = useRef<HTMLTextAreaElement>(null)
+  const reasonField = useRef<HTMLTextAreaElement>(null)
+  const wasEditing = useRef(false)
   const [editing, setEditing] = useState(false)
   const [result, setResult] = useState(action.result ?? '')
   const [resultError, setResultError] = useState('')
@@ -312,6 +380,22 @@ function ActionPanel({
   useEffect(() => {
     heading.current?.focus()
   }, [action.id])
+
+  // Closing the edit form gives the focus back to Edit; if that is gone, to the details heading (ui-spec §9).
+  useEffect(() => {
+    if (wasEditing.current && !editing) (document.getElementById(`edit-action-${action.id}`) ?? heading.current)?.focus()
+    wasEditing.current = editing
+  }, [editing, action.id])
+
+  // A change can remove the control that had the focus (a cancelled Action offers none): keep the focus on the panel.
+  useEffect(() => {
+    if (!document.activeElement || document.activeElement === document.body) heading.current?.focus()
+  }, [action.status, staffControls])
+
+  // The Ticket stopped taking Actions while the question was open (BR-23).
+  useEffect(() => {
+    if (!controls) setCancelling(false)
+  }, [controls])
 
   async function move(body: Parameters<typeof moveAction>[2]) {
     if (busy) return false
@@ -354,8 +438,12 @@ function ActionPanel({
 
   async function confirmCancel() {
     const text = reason.trim()
-    if (!text) return setReasonError('Enter the reason for cancelling.')
-    if (text.length > REASON_MAX) return setReasonError(`Keep the reason to ${REASON_MAX} characters or fewer.`)
+    const refuse = (message: string) => {
+      setReasonError(message)
+      reasonField.current?.focus()
+    }
+    if (!text) return refuse('Enter the reason for cancelling.')
+    if (text.length > REASON_MAX) return refuse(`Keep the reason to ${REASON_MAX} characters or fewer.`)
     setReasonError('')
     if (await move({ expectedVersion: action.version, status: 'CANCELLED', cancellationReason: text })) setCancelling(false)
   }
@@ -376,6 +464,7 @@ function ActionPanel({
           action={action}
           owners={owners}
           currentUserId={currentUserId}
+          locked={!controls}
           onSave={(values, _requestId, version) =>
             updateAction(ticketId, action.id, {
               expectedVersion: version,
@@ -398,7 +487,7 @@ function ActionPanel({
         />
       ) : (
         <dl className="actions__facts">
-          <Fact label="Action Date/Time">{formatDate(action.actionAt)}</Fact>
+          <Fact label="Action Date/Time">{formatBangkokTime(action.actionAt)}</Fact>
           <Fact label="Performed by">{nameOf(action.performedBy)}</Fact>
           <Fact label="Status">
             <ActionStatusBadge value={action.status} />
@@ -414,13 +503,13 @@ function ActionPanel({
           {action.status === 'COMPLETED' ? (
             <>
               <Fact label="Completed by">{nameOf(action.completedBy)}</Fact>
-              <Fact label="Completed at">{action.completedAt ? formatDate(action.completedAt) : '—'}</Fact>
+              <Fact label="Completed at">{action.completedAt ? formatBangkokTime(action.completedAt) : '—'}</Fact>
             </>
           ) : null}
           {action.status === 'CANCELLED' ? (
             <>
               <Fact label="Cancelled by">{nameOf(action.cancelledBy)}</Fact>
-              <Fact label="Cancelled at">{action.cancelledAt ? formatDate(action.cancelledAt) : '—'}</Fact>
+              <Fact label="Cancelled at">{action.cancelledAt ? formatBangkokTime(action.cancelledAt) : '—'}</Fact>
               <Fact label="Cancellation reason">{action.cancellationReason}</Fact>
             </>
           ) : null}
@@ -436,7 +525,7 @@ function ActionPanel({
       <div className="actions__buttons">
         {staffControls && !showForm ? (
           <>
-            <Button variant="secondary" disabled={busy} onClick={() => setEditing(true)}>
+            <Button id={`edit-action-${action.id}`} variant="secondary" disabled={busy} onClick={() => setEditing(true)}>
               Edit
             </Button>
             {action.status === 'PLANNED' ? (
@@ -467,7 +556,7 @@ function ActionPanel({
             </p>
           ) : null}
           <FormField id="cancel-reason" label="Reason" required error={reasonError} hint={`${reason.length} / ${REASON_MAX}`}>
-            <textarea rows={3} value={reason} disabled={busy} onChange={(event) => setReason(event.target.value)} />
+            <textarea ref={reasonField} rows={3} value={reason} disabled={busy} onChange={(event) => setReason(event.target.value)} />
           </FormField>
           <div className="zen-modal__actions">
             <Button variant="tertiary" disabled={busy} onClick={() => setCancelling(false)}>
@@ -497,6 +586,11 @@ export function ActionsTakenSection({
   const [panel, setPanel] = useState<{ kind: 'none' } | { kind: 'create' } | { kind: 'view'; id: string }>({ kind: 'none' })
   const staff = audience === 'staff'
   const workable = WORKING.includes(ticketStatus)
+  const heading = useRef<HTMLHeadingElement>(null)
+  // The control that opened the panel, so closing it can give the focus back (ui-spec §9).
+  const trigger = useRef<string | null>(null)
+  const restoreFocus = useRef(false)
+  const seenStatus = useRef(ticketStatus)
 
   useEffect(() => {
     let cancelled = false
@@ -515,6 +609,28 @@ export function ActionsTakenSection({
   }, [ticketId, attempt])
 
   const reload = useCallback(() => setAttempt((value) => value + 1), [])
+
+  // A status change can cancel Actions (BR-22): the rows are loaded again.
+  useEffect(() => {
+    if (seenStatus.current === ticketStatus) return
+    seenStatus.current = ticketStatus
+    reload()
+  }, [ticketStatus, reload])
+
+  const open = (next: { kind: 'create' } | { kind: 'view'; id: string }, triggerId: string) => {
+    trigger.current = triggerId
+    setPanel(next)
+  }
+  const close = () => {
+    restoreFocus.current = true
+    setPanel({ kind: 'none' })
+  }
+  useEffect(() => {
+    if (panel.kind !== 'none' || !restoreFocus.current) return
+    restoreFocus.current = false
+    const target = trigger.current ? document.getElementById(trigger.current) : null
+    ;(target ?? heading.current)?.focus()
+  }, [panel, actions])
   const changed = useCallback(() => {
     reload()
     onChanged?.()
@@ -525,9 +641,11 @@ export function ActionsTakenSection({
   return (
     <section className="zen-card actions" id="actions-taken" aria-labelledby="actions-heading">
       <div className="actions__header">
-        <h2 id="actions-heading">{actions ? `Actions Taken (${actions.length})` : 'Actions Taken'}</h2>
+        <h2 id="actions-heading" ref={heading} tabIndex={-1}>
+          {actions ? `Actions Taken (${actions.length})` : 'Actions Taken'}
+        </h2>
         {staff && workable && panel.kind !== 'create' ? (
-          <Button variant="primary" onClick={() => setPanel({ kind: 'create' })}>
+          <Button id="add-action" variant="primary" onClick={() => open({ kind: 'create' }, 'add-action')}>
             Add Action
           </Button>
         ) : null}
@@ -543,6 +661,7 @@ export function ActionsTakenSection({
         <ActionForm
           owners={assignableOwners}
           currentUserId={currentUserId}
+          locked={!workable}
           onSave={(values, requestId) =>
             createAction(ticketId, {
               requestId,
@@ -553,11 +672,21 @@ export function ActionsTakenSection({
               attachmentNotes: orNull(values.attachmentNotes),
             })
           }
+          onUpdate={(id, version, values) =>
+            updateAction(ticketId, id, {
+              expectedVersion: version,
+              description: values.description.trim(),
+              followUpRequired: values.followUpRequired,
+              followUpNote: values.followUpRequired ? values.followUpNote.trim() : null,
+              attachmentNotes: orNull(values.attachmentNotes),
+              assigneeId: values.assigneeId,
+            })
+          }
           onSaved={() => {
-            setPanel({ kind: 'none' })
+            close()
             changed()
           }}
-          onClose={() => setPanel({ kind: 'none' })}
+          onClose={close}
           onReload={reload}
           onOwnersStale={() => onChanged?.()}
         />
@@ -591,7 +720,7 @@ export function ActionsTakenSection({
             <tbody>
               {actions.map((action) => (
                 <tr key={action.id} id={`action-${action.id}`}>
-                  <td data-label="Date/Time">{formatDate(action.actionAt)}</td>
+                  <td data-label="Date/Time">{formatBangkokTime(action.actionAt)}</td>
                   <td data-label="Description">
                     <span className="actions__clamp">{action.description}</span>
                   </td>
@@ -606,9 +735,10 @@ export function ActionsTakenSection({
                   <td data-label="Follow-up">{action.followUpRequired ? 'Required' : '—'}</td>
                   <td>
                     <Button
+                      id={`view-action-${action.id}`}
                       variant="secondary"
-                      aria-label={`View Action from ${formatDate(action.actionAt)}`}
-                      onClick={() => setPanel({ kind: 'view', id: action.id })}
+                      aria-label={`View Action from ${formatBangkokTime(action.actionAt)}`}
+                      onClick={() => open({ kind: 'view', id: action.id }, `view-action-${action.id}`)}
                     >
                       View
                     </Button>
@@ -628,7 +758,7 @@ export function ActionsTakenSection({
           controls={staff && workable}
           owners={assignableOwners}
           currentUserId={currentUserId}
-          onClose={() => setPanel({ kind: 'none' })}
+          onClose={close}
           onChanged={changed}
           onReload={reload}
           onOwnersStale={() => onChanged?.()}

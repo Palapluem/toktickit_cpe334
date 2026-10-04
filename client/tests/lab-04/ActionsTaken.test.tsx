@@ -723,6 +723,8 @@ describe('UI-22 · AC-35 · the dialog keeps the focus while its save is in flig
     await userEvent.type(within(dialog).getByLabelText(/^Reason/), 'No longer needed')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel Action' }))
     await waitFor(() => expect(within(dialog).getByLabelText(/^Reason/)).toBeDisabled())
+    // The pressed button is disabled by the save it started, so the dialog takes the focus over at once.
+    expect(dialog).toHaveFocus()
 
     for (let i = 0; i < 3; i += 1) {
       await userEvent.tab()

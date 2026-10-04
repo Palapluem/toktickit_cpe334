@@ -5,6 +5,8 @@ import { useEffect, useId, useRef, type ReactNode } from 'react'
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
+const focusablesIn = (root: HTMLElement | null): HTMLElement[] => Array.from(root?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])
+
 export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
   const titleId = useId()
   const dialog = useRef<HTMLDivElement>(null)
@@ -13,8 +15,7 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
 
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null
-    const focusables = () => Array.from(dialog.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])
-    focusables()[0]?.focus()
+    focusablesIn(dialog.current)[0]?.focus()
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -23,15 +24,21 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
         return
       }
       if (event.key !== 'Tab') return
-      const items = focusables()
-      if (items.length === 0) return
+      const items = focusablesIn(dialog.current)
+      // Every control is disabled while a save is in flight (AC-35): the dialog itself keeps the focus.
+      if (items.length === 0) {
+        event.preventDefault()
+        dialog.current?.focus()
+        return
+      }
       const first = items[0]
       const last = items[items.length - 1]
-      const inside = dialog.current?.contains(document.activeElement) ?? false
-      if (event.shiftKey && (document.activeElement === first || !inside)) {
+      const active = document.activeElement
+      const inside = dialog.current?.contains(active) ?? false
+      if (event.shiftKey && (active === first || active === dialog.current || !inside)) {
         event.preventDefault()
         last.focus()
-      } else if (!event.shiftKey && (document.activeElement === last || !inside)) {
+      } else if (!event.shiftKey && (active === last || !inside)) {
         event.preventDefault()
         first.focus()
       }
@@ -43,9 +50,15 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
     }
   }, [])
 
+  // The control that was just pressed can be disabled by the save it started, so the dialog takes the focus over.
+  useEffect(() => {
+    const node = dialog.current
+    if (node && focusablesIn(node).length === 0 && document.activeElement !== node) node.focus()
+  })
+
   return (
     <div className="zen-modal" role="presentation">
-      <div ref={dialog} className="zen-modal__dialog zen-card" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+      <div ref={dialog} className="zen-modal__dialog zen-card" role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
         <h2 id={titleId}>{title}</h2>
         {children}
       </div>
