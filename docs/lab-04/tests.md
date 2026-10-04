@@ -161,6 +161,13 @@
 | UI-18 | UI | AC-32, FR-21 | Navigation per role | Dashboard first and active; post-login redirect lands on it | `client/tests/lab-04/AppNavigation.test.tsx` | NOT RUN |
 | UI-19 | UI | api-spec §1, BR-38 | History times and the formatter on devices set to UTC, America/Los_Angeles, Asia/Bangkok and Pacific/Kiritimati | 03:12 UTC reads 10:12 and the date moves exactly at 17:00 UTC | `client/tests/lab-04/dateTime.test.ts`, `client/tests/lab-04/TicketWorkflow.test.tsx` | PARTIAL: History PASS (#92); Actions follow in #91 |
 | UI-26 | UI | api-spec §1, BR-38 | Staff and Requester Ticket Detail, the staff queue, comments, attachments, My Tickets (a date alone) and the Create Ticket confirmation on devices set to UTC and America/Los_Angeles | Each shows the Bangkok time or date, including a date that falls on the next day | `client/tests/lab-04/BangkokTime.test.tsx` | PASS (#92) |
+| UI-19 | UI | api-spec §1, BR-38 | History and Actions times and the formatter on devices set to UTC, America/Los_Angeles, Asia/Bangkok and Pacific/Kiritimati | 03:12 UTC reads 10:12 and the date moves exactly at 17:00 UTC | `client/tests/lab-04/dateTime.test.ts`, `client/tests/lab-04/TicketWorkflow.test.tsx`, `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
+| UI-20 | UI | AC-10, ui-spec §9 | An invalid create, edit, server-refused and cancel-dialog submission | The first invalid field in display order has the focus, once the controls are enabled again | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
+| UI-21 | UI | ui-spec §9 | Close the details, cancel and save the create form, discard and save the edit form, cancel an Action | The focus returns to View, Add Action or Edit; after a cancellation it lands on the details heading, not on the page | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
+| UI-22 | UI | AC-35 | Tab and Shift+Tab in the cancel dialog while its save is in flight and after it fails | The dialog takes the focus when its last control is disabled, and the focus never leaves it | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
+| UI-23 | UI | AC-14, AC-36, BR-34 | A create whose answer is lost, entries changed, then Try again; the update failing; no change; a refused first attempt | The first entries are resent under their key, then the changes are saved as an update; one Action; the update alone is retried | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
+| UI-24 | UI | AC-13, BR-22, BR-23 | The Ticket becomes Resolved or Cancelled while the create form, the edit form or the cancel dialog is open; a status change | The forms are read-only with their text kept and no Save; the dialog closes; the Actions are loaded again | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
+| UI-25 | UI | AC-12, BR-17 | A Requester opens a Planned and an In progress Action | Only Close; no Edit, Start, Complete, Cancel Action or textbox | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
 
 ### UI style
 
@@ -184,6 +191,10 @@
 | RESP-01 | Responsive | AC-34 | Dashboards and Ticket Detail with Actions at 1280, 834 and 390 px; widths 767/768/991/992; 2000-character content | No clipping or overlap; no horizontal page scroll | `e2e/lab-04/dashboards.spec.ts`, `e2e/lab-04/actions-taken-flow.spec.ts` | NOT RUN |
 | A11Y-01 | Accessibility | AC-35 | Keyboard-only: Action form, cancel dialog, status control, dashboard drill-downs | Every control reachable; focus visible; dialog focus trap and return | `e2e/lab-04/actions-taken-flow.spec.ts` | NOT RUN |
 | E2E-06 | E2E | AC-41, FR-26 | Console errors, failed requests and broken links collected across every Lab 4 journey | None | All `e2e/lab-04` specs (shared helper) | NOT RUN |
+| E2E-07 | E2E | AC-14, AC-36 | The server commits a create and its answer is lost (real response aborted); the Description is changed; Try again | One Action, with the changed text, created once and updated once | `e2e/lab-04/actions-taken-recovery.spec.ts` | NOT RUN |
+| E2E-08 | E2E | AC-13, BR-23 | The Ticket is resolved from the same page while Add Action is open | The form keeps its text, is disabled, has no Save, and nothing is stored | `e2e/lab-04/actions-taken-recovery.spec.ts` | NOT RUN |
+| E2E-09 | E2E | api-spec §1 | A device set to America/Los_Angeles opens a Ticket with an Action | Every time in the list and the History equals the Asia/Bangkok rendering of the API's value | `e2e/lab-04/actions-taken-recovery.spec.ts` | NOT RUN |
+| A11Y-02 | Accessibility | AC-35, ui-spec §9 | Real Chromium: invalid follow-up note; close the details; Tab inside a busy cancel dialog | The note has the focus; View has it back; Tab and Shift+Tab never leave the dialog; the heading has the focus after the cancellation | `e2e/lab-04/actions-taken-recovery.spec.ts` | NOT RUN |
 
 ### Regression
 
@@ -260,11 +271,12 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 | `server/tests/lab-04/staff-dashboard.api.test.ts` | DASH-01–DASH-06, SEC-04 |
 | `client/tests/lab-04/StaffDashboard.test.tsx` | UI-14, UI-15 |
 | `client/tests/lab-04/RequesterDashboard.test.tsx` | UI-16, UI-17 |
-| `client/tests/lab-04/ActionsTaken.test.tsx` | UI-01–UI-10, STYLE-02–STYLE-05 |
+| `client/tests/lab-04/ActionsTaken.test.tsx` | UI-01–UI-10, UI-19–UI-25, STYLE-02–STYLE-05 |
 | `client/tests/lab-04/TicketWorkflow.test.tsx` | UI-11–UI-13, UI-19 |
 | `client/tests/lab-04/dateTime.test.ts` | UI-19 |
 | `client/tests/lab-04/BangkokTime.test.tsx` | UI-26 |
 | `e2e/lab-04/actions-taken-flow.spec.ts` | E2E-01, RESP-01, A11Y-01 |
+| `e2e/lab-04/actions-taken-flow.spec.ts` | E2E-01, RESP-01 (Ticket Detail with Actions), A11Y-01 |
 | `e2e/lab-04/ticket-resolution.spec.ts` | E2E-02, E2E-03 |
 | `e2e/lab-04/dashboards.spec.ts` | E2E-04, E2E-05, RESP-01 |
 
@@ -272,6 +284,7 @@ Supporting files beyond the minimum:
 
 - `server/tests/lab-04/transition-oracle.ts` (the status table of §5.2, shared by UNIT-04 and WF-06);
 - `server/tests/lab-04/lock-helpers.api.test.ts` (LOCK-01, the lock-wait helper behind API-17, WF-08 and WF-17);
+- `e2e/lab-04/actions-taken-recovery.spec.ts` (E2E-07–E2E-09, A11Y-02);
 - `server/tests/lab-04/action-rules.unit.test.ts`, `workflow-rules.unit.test.ts`, `dashboard-metrics.unit.test.ts` and `migration-seed.api.test.ts` (MIG-03–MIG-05);
 - `server/tests/lab-04/test-transport.unit.test.ts` (#96, the loopback guard behind the suite-stability fix);
 - `client/tests/lab-04/AppNavigation.test.tsx`;

@@ -130,6 +130,9 @@ Only the authenticated Requester's Tickets (BR-39). Values come from `GET /api/r
 
 - **Save Action** (primary) and **Cancel** (tertiary).
 - While saving, the button is disabled and shows progress (STY-022). One submission carries one `requestId`, and a retry reuses it (BR-34).
+- **A lost answer never costs what was typed (AC-36).** When a save fails without an answer (network failure or a 5xx), **Try again** resends exactly what was sent, under the same `requestId`. If the entries were changed meanwhile, the first entries are resent first, to find out whether they were saved, and the changes are then saved onto that Action as an update. Nothing is dropped and no second Action is created. If that update fails, **Try again** repeats only the update.
+- **A form open when the Ticket stops taking Actions becomes read-only (BR-23).** The entries stay visible but cannot be changed, **Save Action** and **Try again** are withdrawn, and the form says "This Ticket no longer takes Actions, so these entries cannot be saved." **Cancel** stays. The edit form does the same.
+- Times in the list and the panel are Asia/Bangkok whatever the device's zone (api-spec §1).
 
 ### View and edit mode
 
@@ -157,7 +160,9 @@ Only the authenticated Requester's Tickets (BR-39). Values come from `GET /api/r
 | Ticket not workable | Banner replacing Add Action: "This Ticket is Resolved. Actions are read-only — reopen the Ticket to record more work." |
 | Conflict (`STALE_VERSION`) | "Someone else changed this Action. The latest version is shown; your unsaved entries are kept in the form." The user can review and save again (AC-36) |
 | Terminal (`ACTION_TERMINAL`) | "This Action is already completed or cancelled." The panel refreshes to read-only |
-| Save failure (network or 500) | "The Action could not be saved. Your entries are kept." with **Try again**, which resends the same `requestId` |
+| Save failure (network or 500) | "The Action could not be saved. Your entries are kept." with **Try again**, which resends the same `requestId` and the same entries; changes made since are then saved as an update (see Create mode) |
+| Ticket stops taking Actions while a form is open | The form turns read-only with its entries kept, and says why; Save is withdrawn (BR-23) |
+| Ticket status changes | The Actions are loaded again, so a cancellation's cascade shows at once (BR-22) |
 | Load failure | Section-level error state with Try again; the rest of the Ticket stays usable |
 
 ## 6. Ticket status control and resolution feedback
@@ -177,7 +182,8 @@ Only the authenticated Requester's Tickets (BR-39). Values come from `GET /api/r
   - Examples: "Status changed from In progress to Resolved", "Action assigned from Daniel Carter to Olivia Reed".
   - Action events link to their Action.
 - **Requester:** status changes only (BR-28).
-- **Order:** oldest first (BR-29).
+- **Order:** oldest first, which is also the order the changes were committed in (BR-29, specification §11.17).
+- **Time:** Asia/Bangkok whatever the device's zone (api-spec §1).
 - **Empty:** "No changes have been recorded since Actions Taken were introduced." This is true for every seeded or legacy Ticket until its first change.
 - Event text is generated from the event type and identifiers only. No free text from users appears in history (BR-30).
 
@@ -196,10 +202,11 @@ Lab 2's three viewports are unchanged: desktop ≥ 992, tablet 768–991, mobile
 ## 9. Accessibility
 
 - Every input has a programmatic label (STY-026).
-- Errors are linked through `aria-describedby`; the first invalid field receives focus on submit.
+- Errors are linked through `aria-describedby`; the first invalid field, in the order shown, receives focus on submit. When the error comes from the server, the focus moves once the controls are enabled again. The cancel dialog's Reason is such a field.
 - Metric values and badges are text, so colour never carries meaning alone (STY-019).
 - Card links have descriptive accessible names, not "View all" alone.
-- Panels open and close with focus moved to their heading and back to the trigger.
+- Panels open with focus moved to their heading, and closing a panel, form or dialog gives the focus back to the control that opened it. If that control is gone (an Action that was just cancelled offers none), the focus goes to the details heading or the section heading, never to the page.
+- A dialog keeps the focus while its save is in flight: with every control disabled, the dialog itself holds the focus and Tab and Shift+Tab stay inside (AC-35).
 - Status changes and dashboard refreshes are announced through polite live regions.
 - Lists use list semantics. Tables use `<th scope>`.
 - Keyboard order follows the visual order, and focus is visibly indicated with `--zen-focus-ring` (STY-027) (AC-35).
