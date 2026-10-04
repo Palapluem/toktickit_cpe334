@@ -1,4 +1,4 @@
-// WF-01 to WF-14, SEC-02, SEC-03, SEC-06, SEC-07 · lab-04 AC-15 to AC-25, BR-19 to BR-33 — the Ticket workflow over HTTP.
+// WF-01 to WF-15, SEC-02, SEC-03, SEC-06, SEC-07 · lab-04 AC-15 to AC-25, BR-19 to BR-33 — the Ticket workflow over HTTP.
 // Expectations are written from specification §5.2 and api-spec §4, not read back from the implementation.
 import { execFileSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
@@ -627,11 +627,114 @@ describe('WF-13 · BR-32 · owner and IT Priority keep their Lab 3 shape', () =>
     expect(await prisma.ticketEvent.count({ where: { ticketId } })).toBe(0)
   })
 
+  it('leaves the Ticket updatedAt exactly as it was when an owner or IT Priority change changes nothing (BR-31, BR-35)', async () => {
+    const ticketId = await makeTicket({ status: 'OPEN', ownerEmail: DANIEL_EMAIL })
+    const before = await row(ticketId)
+    // A clock a minute ahead, so any write of "now" shows as a different instant.
+    const later = new Date(Date.now() + 60_000)
+    const atLater = () => request(createApp({ now: () => later }))
+
+    const owner = await atLater().patch(`/api/staff/tickets/${ticketId}/owner`).set('Cookie', patricia).send({ ownerId: id.daniel })
+    const priority = await atLater().patch(`/api/staff/tickets/${ticketId}/it-priority`).set('Cookie', patricia).send({ itPriority: 'MEDIUM' })
+    expect([owner.status, priority.status]).toEqual([200, 200])
+
+    const after = await row(ticketId)
+    expect(after.updatedAt.getTime()).toBe(before.updatedAt.getTime())
+    expect(after.version).toBe(before.version)
+    expect(await prisma.ticketEvent.count({ where: { ticketId } })).toBe(0)
+  })
+
+  it('leaves the Ticket updatedAt exactly as it was when an Action edit changes nothing (BR-31, BR-35)', async () => {
+    const ticketId = await makeTicket({ status: 'IN_PROGRESS', ownerEmail: DANIEL_EMAIL })
+    const created = await createAction(ticketId, patricia, id.olivia)
+    expect(created.status, 'fixture Action').toBe(201)
+    const before = await row(ticketId)
+    const later = new Date(Date.now() + 60_000)
+
+    const response = await request(createApp({ now: () => later }))
+      .patch(`/api/tickets/${ticketId}/actions/${created.body.data.id}`)
+      .set('Cookie', patricia)
+      .send({ expectedVersion: 1, assigneeId: id.olivia, description: created.body.data.description })
+
+    expect(response.status).toBe(200)
+    expect(response.body.data.version).toBe(1)
+    expect((await row(ticketId)).updatedAt.getTime()).toBe(before.updatedAt.getTime())
+    expect((await eventsOf(ticketId)).map((e) => e.type)).toEqual(['ACTION_CREATED'])
+  })
+
+  it('answers a status change to the status it already has with 400, and moves nothing (BR-19, BR-31)', async () => {
+    const ticketId = await makeTicket({ status: 'OPEN', ownerEmail: DANIEL_EMAIL })
+    const before = await row(ticketId)
+    const later = new Date(Date.now() + 60_000)
+
+    const response = await request(createApp({ now: () => later }))
+      .patch(`/api/staff/tickets/${ticketId}/status`)
+      .set('Cookie', patricia)
+      .send({ status: 'OPEN', expectedVersion: 1 })
+
+    expect(response.status).toBe(400)
+    expect(response.body.error.code).toBe('INVALID_STATUS_TRANSITION')
+    const after = await row(ticketId)
+    expect([after.version, after.updatedAt.getTime()]).toEqual([before.version, before.updatedAt.getTime()])
+    expect(await prisma.ticketEvent.count({ where: { ticketId } })).toBe(0)
+  })
+
   it('still refuses what Lab 3 refused', async () => {
     const ticketId = await makeTicket({ status: 'OPEN', ownerEmail: DANIEL_EMAIL })
     expect((await setOwner(ticketId, jennifer, { ownerId: id.olivia })).status).toBe(403)
     expect((await setPriority(ticketId, patricia, { itPriority: 'URGENT', requestedPriority: 'LOW' })).status).toBe(400)
     expect(await row(ticketId)).toMatchObject({ version: 1, ownerId: id.daniel })
+  })
+})
+
+describe('WF-15 · AC-22 · BR-29 · one Ticket\'s events keep the order the changes were committed in', () => {
+  const instant = new Date('2026-10-05T03:00:00.000Z')
+  const at = (when: Date) => request(createApp({ now: () => when }))
+  const strictlyAscending = (events: { createdAt: Date }[]) => events.every((e, i) => i === 0 || e.createdAt > events[i - 1].createdAt)
+
+  it('puts a change made in the same millisecond after the two events of the claim before it', async () => {
+    const ticketId = await makeTicket({ status: 'NEW', ownerEmail: null })
+
+    expect((await at(instant).patch(`/api/staff/tickets/${ticketId}/owner`).set('Cookie', patricia).send({ ownerId: 'me' })).status).toBe(200)
+    expect((await at(instant).patch(`/api/staff/tickets/${ticketId}/it-priority`).set('Cookie', patricia).send({ itPriority: 'URGENT' })).status).toBe(200)
+
+    const events = await eventsOf(ticketId)
+    expect(events.map((e) => e.type)).toEqual(['OWNER_CHANGED', 'STATUS_CHANGED', 'IT_PRIORITY_CHANGED'])
+    expect(strictlyAscending(events)).toBe(true)
+    expect((await dataOf(history(ticketId, patricia))).map((e) => e.type)).toEqual(['OWNER_CHANGED', 'STATUS_CHANGED', 'IT_PRIORITY_CHANGED'])
+  })
+
+  it('puts a change that starts inside a cancellation burst after every event of the burst', async () => {
+    const ticketId = await makeTicket({ status: 'IN_PROGRESS', ownerEmail: DANIEL_EMAIL })
+    for (let n = 0; n < 40; n += 1) await insertAction(ticketId, { status: n % 2 === 0 ? 'PLANNED' : 'IN_PROGRESS' })
+
+    const cancelled = await at(instant).patch(`/api/staff/tickets/${ticketId}/status`).set('Cookie', patricia).send({ status: 'CANCELLED', expectedVersion: 1 })
+    expect(cancelled.status).toBe(200)
+    expect(cancelled.body.data.cancelledActionCount).toBe(40)
+    // 5 ms later: well inside the 40 ms the burst's events are spread over.
+    const later = new Date(instant.getTime() + 5)
+    expect((await at(later).patch(`/api/staff/tickets/${ticketId}/it-priority`).set('Cookie', patricia).send({ itPriority: 'LOW' })).status).toBe(200)
+
+    const events = await eventsOf(ticketId)
+    expect(events).toHaveLength(42)
+    expect(events[0].type).toBe('STATUS_CHANGED')
+    expect(events.slice(1, 41).every((e) => e.type === 'ACTION_CANCELLED')).toBe(true)
+    expect(events[41].type).toBe('IT_PRIORITY_CHANGED')
+    expect(strictlyAscending(events)).toBe(true)
+  })
+
+  it('keeps a change after the one before it even when the server clock has gone backwards', async () => {
+    const ticketId = await makeTicket({ status: 'OPEN', ownerEmail: DANIEL_EMAIL })
+
+    expect((await at(instant).patch(`/api/staff/tickets/${ticketId}/it-priority`).set('Cookie', patricia).send({ itPriority: 'URGENT' })).status).toBe(200)
+    expect((await at(new Date(instant.getTime() - 10_000)).patch(`/api/staff/tickets/${ticketId}/it-priority`).set('Cookie', patricia).send({ itPriority: 'LOW' })).status).toBe(200)
+
+    const events = await eventsOf(ticketId)
+    expect(events.map((e) => e.payload)).toEqual([
+      { from: 'MEDIUM', to: 'URGENT' },
+      { from: 'URGENT', to: 'LOW' },
+    ])
+    expect(strictlyAscending(events)).toBe(true)
   })
 })
 
