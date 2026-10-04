@@ -193,13 +193,20 @@ test('E2E-03 · AC-14 · AC-19 · AC-36 · a conflict and a save failure keep wh
   await expect(rows(page).first()).toContainText('My wording, written while Patricia edited too.')
 })
 
-test('RESP-01 · AC-34 · Ticket Detail with Actions fits every width, with 2000 characters in every field', async ({ page, e2eSummaries }) => {
+test('RESP-01 · AC-34 · Ticket Detail with Actions fits every width, with 2000-character Description, Follow-up Note and Result and 500-character Attachment Notes', async ({ page, e2eSummaries }) => {
   const { ticketId } = await workedTicket(page, e2eSummaries, 'responsive actions')
   const olivia = await userIdByName(page.request, ticketId, 'Olivia Reed')
   const long = 'W'.repeat(2000)
   await addAction(page.request, ticketId, olivia, long, { followUpRequired: true, followUpNote: long, attachmentNotes: 'n'.repeat(500) })
   await addAction(page.request, ticketId, olivia, 'A short Action.')
   await addAction(page.request, ticketId, olivia, 'Another Action with a normal description.')
+  const finished = await addAction(page.request, ticketId, olivia, 'An Action with the longest Result.')
+  const started = await page.request.patch(`${API_BASE_URL}/api/tickets/${ticketId}/actions/${finished.id}/status`, { data: { expectedVersion: 1, status: 'IN_PROGRESS' } })
+  expect(started.ok(), 'starting the Action').toBeTruthy()
+  const completed = await page.request.patch(`${API_BASE_URL}/api/tickets/${ticketId}/actions/${finished.id}/status`, {
+    data: { expectedVersion: 2, status: 'COMPLETED', result: 'R'.repeat(2000) },
+  })
+  expect(completed.ok(), 'completing the Action with a 2000-character Result').toBeTruthy()
   await login(page.request, PEOPLE.olivia)
 
   const widths = [
@@ -214,9 +221,12 @@ test('RESP-01 · AC-34 · Ticket Detail with Actions fits every width, with 2000
   for (const { width, height, name } of widths) {
     await page.setViewportSize({ width, height })
     await page.goto(`/staff/tickets/${ticketId}`)
-    await expect(rows(page)).toHaveCount(3)
+    await expect(rows(page)).toHaveCount(4)
     await view(page, 0).click()
     await expect(panel(page)).toContainText('W'.repeat(100))
+    await expectNoPageOverflow(page)
+    await view(page, 3).click()
+    await expect(panel(page)).toContainText('R'.repeat(100))
     await expectNoPageOverflow(page)
 
     // A table from 992 px, labelled cards below it (AC-03, AC-34).
