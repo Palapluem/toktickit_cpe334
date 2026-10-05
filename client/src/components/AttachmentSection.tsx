@@ -8,6 +8,7 @@ import {
 } from 'react'
 import type { TicketAttachment } from '../api.js'
 import { Button } from './Button.js'
+import { formatBangkokTime } from '../dateTime.js'
 
 export type AttachmentSectionProps = {
   ticketId: string
@@ -27,13 +28,6 @@ function formatBytes(sizeBytes: number): string {
   if (sizeBytes < 1024) return `${sizeBytes} B`
   if (sizeBytes < 1024 * 1024) return `${Math.ceil(sizeBytes / 1024)} KB`
   return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value))
 }
 
 function fileTypeLabel(mimeType: string): string {
@@ -273,7 +267,7 @@ export function AttachmentSection({
                       </a>
                     )}
                     <p className="attachment-section__metadata">
-                      {fileTypeLabel(attachment.mimeType)} · {formatBytes(attachment.sizeBytes)} · uploaded {formatDate(attachment.createdAt)}
+                      {fileTypeLabel(attachment.mimeType)} · {formatBytes(attachment.sizeBytes)} · uploaded {formatBangkokTime(attachment.createdAt)}
                     </p>
                     {removed ? (
                       <p className="attachment-section__removed-detail">
@@ -282,7 +276,7 @@ export function AttachmentSection({
                           {attachment.removedReason ?? 'No reason provided'}
                         </span>{' · '}
                         <span>
-                          {formatDate(attachment.removedAt ?? attachment.createdAt)}
+                          {formatBangkokTime(attachment.removedAt ?? attachment.createdAt)}
                         </span>
                       </p>
                     ) : null}

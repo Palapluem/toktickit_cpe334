@@ -15,13 +15,7 @@ import {
 import { RoleBadge } from './Badge.js'
 import { Button } from './Button.js'
 import { FormField } from './FormField.js'
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value))
-}
+import { formatBangkokTime } from '../dateTime.js'
 
 function Entry({ entry, internal }: { entry: ThreadEntry; internal: boolean }) {
   return (
@@ -32,7 +26,7 @@ function Entry({ entry, internal }: { entry: ThreadEntry; internal: boolean }) {
         {/* On every internal entry, not only on the section heading: an entry
             read on its own must still say what it is. */}
         {internal ? <span className="thread__internal-tag">Internal</span> : null}
-        <time dateTime={entry.createdAt}>{formatDate(entry.createdAt)}</time>
+        <time dateTime={entry.createdAt}>{formatBangkokTime(entry.createdAt)}</time>
       </p>
       {/* React escapes this; dangerouslySetInnerHTML is never used (SEC-029). */}
       <p className="thread__body">{entry.body}</p>

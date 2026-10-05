@@ -179,7 +179,7 @@ describe.each(['UTC', 'America/Los_Angeles'])('UI-26 · a device set to %s', (zo
       />,
     )
 
-    expect(await screen.findByText(/uploaded 4 Oct 2026, 10:12/)).toBeInTheDocument()
+    expect(await screen.findAllByText(/uploaded 4 Oct 2026, 10:12/)).toHaveLength(2)
     expect(screen.getByText('5 Oct 2026, 01:30')).toBeInTheDocument()
   })
 

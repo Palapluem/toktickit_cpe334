@@ -35,6 +35,7 @@ import {
   PublicCommentsSection,
 } from '../components/ThreadSection.js'
 import { joinLabels, pluralActions, statusLabel } from '../ticketLabels.js'
+import { formatBangkokTime } from '../dateTime.js'
 
 const STALE_MESSAGE =
   'This Ticket changed since you opened it. The latest status is shown — review and try again.'
@@ -42,13 +43,6 @@ const STALE_MESSAGE =
 const PRIORITIES: Priority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
 
 type Phase = 'loading' | 'ready' | 'forbidden' | 'notFound' | 'failed'
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value))
-}
 
 function ReadOnly({ id, label, value }: { id: string; label: string; value: string }) {
   return (
@@ -425,7 +419,7 @@ export function StaffTicketDetail() {
         <h2 id="ticket-information-heading">Ticket Information</h2>
         <div className="ticket-detail-card__grid">
           <ReadOnly id="ticketNo" label="Ticket No." value={ticket.ticketNo} />
-          <ReadOnly id="ticketDate" label="Ticket Date" value={formatDate(ticket.createdAt)} />
+          <ReadOnly id="ticketDate" label="Ticket Date" value={formatBangkokTime(ticket.createdAt)} />
           <ReadOnly id="requester" label="Requester" value={ticket.requester.displayName} />
           <ReadOnly id="category" label="Category" value={ticket.category.name} />
           <ReadOnly

@@ -18,19 +18,13 @@ import { Button } from '../components/Button.js'
 import { PriorityBadge, StatusBadge } from '../components/Badge.js'
 import { HistorySection } from '../components/HistorySection.js'
 import { ErrorState, LoadingState } from '../components/States.js'
+import { formatBangkokTime } from '../dateTime.js'
 
 /** Nothing is owed on a Ticket in these, so there is nothing to report about. */
 const CLOSED_STATUSES: TicketStatus[] = ['CLOSED', 'CANCELLED']
 
 export type RequesterTicketDetailProps = {
   ticket?: Ticket
-}
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value))
 }
 
 function ReadOnlyValue({
@@ -246,7 +240,7 @@ export function RequesterTicketDetail({
         <h2 id="ticket-information-heading">Ticket Information</h2>
         <div className="ticket-detail-card__grid">
           <ReadOnlyValue label="Ticket No." value={ticket.ticketNo} />
-          <ReadOnlyValue label="Ticket Date" value={formatDate(ticket.createdAt)} />
+          <ReadOnlyValue label="Ticket Date" value={formatBangkokTime(ticket.createdAt)} />
           <ReadOnlyValue label="Category" value={ticket.category.name} />
           <ReadOnlyValue label="Related System" value={ticket.relatedSystem.name} />
           <ReadOnlyValue label="Requester" value={ticket.requester.displayName} />
