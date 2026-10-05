@@ -107,6 +107,7 @@
 | WF-14 | Workflow | AC-19, BR-31 | Status change without `expectedVersion` | 400 `VALIDATION_FAILED` | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
 | WF-15 | Workflow | AC-22, BR-29 | A claim then a priority change in one millisecond; a change 5 ms into a 40-Action cancellation burst; a change after the clock went back | Events keep commit order and `createdAt` is strictly increasing, in the database and in the History response | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
 | WF-16 | Workflow | BR-35, BR-38 | Every kind of change (owner, IT Priority, status, Action create, edit and move) carrying an instant earlier than the Ticket's `updatedAt`; one carrying a later instant | `updatedAt` keeps the later value; a later instant moves it forward | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-17 | Workflow | AC-25, BR-25, BR-31, BR-33, BR-35 | The Requester indication while another transaction holds the Ticket and cancels or closes it; with an earlier clock; with a later one | Waits and records (control); 409 `TICKET_CLOSED` and nothing stored once the Ticket closed; `updatedAt` never moves back and equals `requesterResolvedAt` | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
 
 ### Dashboards and lists
 
@@ -132,6 +133,7 @@
 | MIG-03 | Migration | AC-38, BR-21 | Legacy Tickets after migration | Status unchanged; zero Actions; `version = 1` | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
 | MIG-04 | Seed | AC-39, BR-42 | Seed run twice | No duplicates, every Action column unchanged by the second run; Tickets with 0, 1 and several Actions exist | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
 | MIG-05 | Migration | BR-27 | Direct SQL `UPDATE` and `DELETE` on an event row; then `TRUNCATE` | Both rejected by the trigger and the row is unchanged; the reset by `TRUNCATE` still works | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
+| LOCK-01 | Test helper | BR-33 | The helper the lock tests wait on, with a waiter on the Ticket and with a waiter on another table | Settles for the first, and refuses the second with a clear message, so a lock test cannot pass because of an unrelated wait | `server/tests/lab-04/lock-helpers.api.test.ts` | PASS (#92) |
 | PERF-01 | Performance | AC-40 | 2,000 Tickets / 6,000 Actions; each dashboard endpoint called 20 times | p95 ≤ 300 ms; machine, dataset and command recorded | `server/scripts/perf-smoke.mjs` (planned) | NOT RUN |
 | PERF-02 | Performance | AC-40, BR-40 | Query count at 200 vs 2,000 Tickets | Equal | `server/scripts/perf-smoke.mjs` | NOT RUN |
 
@@ -158,6 +160,7 @@
 | UI-17 | UI | AC-31 | Requester dashboard states | Loading; failure → Try again; forbidden | `client/tests/lab-04/RequesterDashboard.test.tsx` | NOT RUN |
 | UI-18 | UI | AC-32, FR-21 | Navigation per role | Dashboard first and active; post-login redirect lands on it | `client/tests/lab-04/AppNavigation.test.tsx` | NOT RUN |
 | UI-19 | UI | api-spec §1, BR-38 | History times and the formatter on devices set to UTC, America/Los_Angeles, Asia/Bangkok and Pacific/Kiritimati | 03:12 UTC reads 10:12 and the date moves exactly at 17:00 UTC | `client/tests/lab-04/dateTime.test.ts`, `client/tests/lab-04/TicketWorkflow.test.tsx` | PARTIAL: History PASS (#92); Actions follow in #91 |
+| UI-26 | UI | api-spec §1, BR-38 | Staff and Requester Ticket Detail, the staff queue, comments, attachments, My Tickets (a date alone) and the Create Ticket confirmation on devices set to UTC and America/Los_Angeles | Each shows the Bangkok time or date, including a date that falls on the next day | `client/tests/lab-04/BangkokTime.test.tsx` | PASS (#92) |
 
 ### UI style
 
@@ -252,7 +255,7 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 | Labsheet path (§12) | Planned tests |
 |---|---|
 | `server/tests/lab-04/actions-taken.api.test.ts` | API-01–API-18, SEC-01, and the Actions part of SEC-02, SEC-03 and SEC-07 |
-| `server/tests/lab-04/ticket-workflow.api.test.ts` | WF-01–WF-16, SEC-02, SEC-03, SEC-06, SEC-07 |
+| `server/tests/lab-04/ticket-workflow.api.test.ts` | WF-01–WF-17, SEC-02, SEC-03, SEC-06, SEC-07 |
 | `server/tests/lab-04/requester-dashboard.api.test.ts` | DASH-07–DASH-10, SEC-05 |
 | `server/tests/lab-04/staff-dashboard.api.test.ts` | DASH-01–DASH-06, SEC-04 |
 | `client/tests/lab-04/StaffDashboard.test.tsx` | UI-14, UI-15 |
@@ -260,6 +263,7 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 | `client/tests/lab-04/ActionsTaken.test.tsx` | UI-01–UI-10, STYLE-02–STYLE-05 |
 | `client/tests/lab-04/TicketWorkflow.test.tsx` | UI-11–UI-13, UI-19 |
 | `client/tests/lab-04/dateTime.test.ts` | UI-19 |
+| `client/tests/lab-04/BangkokTime.test.tsx` | UI-26 |
 | `e2e/lab-04/actions-taken-flow.spec.ts` | E2E-01, RESP-01, A11Y-01 |
 | `e2e/lab-04/ticket-resolution.spec.ts` | E2E-02, E2E-03 |
 | `e2e/lab-04/dashboards.spec.ts` | E2E-04, E2E-05, RESP-01 |
@@ -267,6 +271,7 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 Supporting files beyond the minimum:
 
 - `server/tests/lab-04/transition-oracle.ts` (the status table of §5.2, shared by UNIT-04 and WF-06);
+- `server/tests/lab-04/lock-helpers.api.test.ts` (LOCK-01, the lock-wait helper behind API-17, WF-08 and WF-17);
 - `server/tests/lab-04/action-rules.unit.test.ts`, `workflow-rules.unit.test.ts`, `dashboard-metrics.unit.test.ts` and `migration-seed.api.test.ts` (MIG-03–MIG-05);
 - `server/tests/lab-04/test-transport.unit.test.ts` (#96, the loopback guard behind the suite-stability fix);
 - `client/tests/lab-04/AppNavigation.test.tsx`;

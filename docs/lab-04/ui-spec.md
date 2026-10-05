@@ -34,6 +34,7 @@ Dashboard becomes the first destination for every role. Because the post-login r
 
 - Active-page indication (`--zen-secondary`, STY-007), the mobile toggle, Escape-to-close and focus restoration are unchanged.
 - An unauthorised dashboard route shows the Lab 3 forbidden state, with a link to the user's own dashboard.
+- **Times:** every time and date on every screen is Asia/Bangkok whatever the device's zone (api-spec §1, BR-38), including the Lab 2 and Lab 3 screens and the date-only column of My Tickets.
 - **Removed (FR-26):** any leftover development-only route reference. The E2E readiness probe moves off `/select-requester`.
 
 ## 3. Screen: IT Staff Dashboard (`/staff/dashboard`)

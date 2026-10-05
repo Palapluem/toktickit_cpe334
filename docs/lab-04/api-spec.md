@@ -276,7 +276,7 @@ Request and response shapes are unchanged (BR-32). Each success now increments t
 
 ### `POST /api/tickets/:id/requester-resolution` (behaviour only)
 
-Unchanged and still advisory (BR-25). It increments the Ticket's `version`, because the resolution indication is a Ticket field (BR-31).
+Unchanged and still advisory (BR-25). It increments the Ticket's `version` and moves `updatedAt` to the same instant as `requesterResolvedAt`, because the resolution indication is a Ticket field (BR-31, BR-35). It runs under the Ticket lock: a Ticket that was cancelled or closed while the request waited is answered `409 TICKET_CLOSED` and nothing is stored (BR-33).
 
 ### `GET /api/staff/tickets/:id` · `GET /api/tickets/:id` (additive)
 
