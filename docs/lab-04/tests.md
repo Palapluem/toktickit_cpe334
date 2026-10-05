@@ -72,7 +72,7 @@
 | API-14 | API | BR-01 | An `actionId` of another Ticket used under this Ticket's path | 404; nothing changes | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
 | API-15 | API | BR-35 | Ticket `updatedAt` after Action writes and after a comment | Changed by Action writes; unchanged by the comment | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
 | API-16 | API | AC-03, BR-17 | Requester reads their own Ticket's Actions | Requester view: display names only, no ids, emails or `isActive`, including the names of who completed or cancelled | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
-| API-17 | API | BR-33 | Create an Action while another transaction holds the Ticket row | The create waits and finishes after the lock is released | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-17 | API | BR-33 | Create an Action while another transaction holds the Ticket row, once with no change and once after the holder moved the Ticket to `RESOLVED` | The create is known to be blocked (a lock wait is visible in the database), finishes with 201 after the release, or reads the Ticket after the lock and answers 409 `TICKET_NOT_WORKABLE` | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
 | API-18 | API | BR-26, BR-30 | One event per Action write; an event that cannot be written | Identifiers and field names only, no free text; the Action write is rolled back | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
 
 ### Security / authorization — called directly, never through the UI
