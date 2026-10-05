@@ -193,7 +193,7 @@ test('E2E-03 · AC-14 · AC-19 · AC-36 · a conflict and a save failure keep wh
   await expect(rows(page).first()).toContainText('My wording, written while Patricia edited too.')
 })
 
-test('RESP-01 · AC-34 · Ticket Detail with Actions fits every width, with 2000-character Description, Follow-up Note and Result and 500-character Attachment Notes', async ({ page, e2eSummaries }) => {
+test('RESP-01 · AC-34 · Ticket Detail with Actions fits every width, with 2000-character Description, Follow-up Note and Result, 500-character Attachment Notes and a 120-character name', async ({ page, e2eSummaries }) => {
   const { ticketId } = await workedTicket(page, e2eSummaries, 'responsive actions')
   const olivia = await userIdByName(page.request, ticketId, 'Olivia Reed')
   const long = 'W'.repeat(2000)
@@ -207,8 +207,22 @@ test('RESP-01 · AC-34 · Ticket Detail with Actions fits every width, with 2000
     data: { expectedVersion: 2, status: 'COMPLETED', result: 'R'.repeat(2000) },
   })
   expect(completed.ok(), 'completing the Action with a 2000-character Result').toBeTruthy()
-  await login(page.request, PEOPLE.olivia)
+  // The longest name an Administrator can give a person (120 characters, with no place to break), on every Action row.
+  // Patricia reads them: the page header that shows who is signed in has its own, Lab 3, rules.
+  const longName = `O${'x'.repeat(119)}`
+  await login(page.request, PEOPLE.margaret)
+  const renamed = await page.request.patch(`${API_BASE_URL}/api/admin/users/${olivia}`, { data: { displayName: longName } })
+  expect(renamed.ok(), 'giving Olivia a 120-character name').toBeTruthy()
+  try {
+    await login(page.request, PEOPLE.patricia)
+    await checkEveryWidth()
+  } finally {
+    await login(page.request, PEOPLE.margaret)
+    const restored = await page.request.patch(`${API_BASE_URL}/api/admin/users/${olivia}`, { data: { displayName: 'Olivia Reed' } })
+    expect(restored.ok(), 'restoring Olivia Reed').toBeTruthy()
+  }
 
+  async function checkEveryWidth() {
   const widths = [
     { width: 1280, height: 900, name: 'list-multiple-desktop.png' },
     { width: 834, height: 1112, name: 'list-tablet.png' },
@@ -222,8 +236,10 @@ test('RESP-01 · AC-34 · Ticket Detail with Actions fits every width, with 2000
     await page.setViewportSize({ width, height })
     await page.goto(`/staff/tickets/${ticketId}`)
     await expect(rows(page)).toHaveCount(4)
+    await expect(rows(page).first()).toContainText(longName)
     await view(page, 0).click()
     await expect(panel(page)).toContainText('W'.repeat(100))
+    await expect(panel(page)).toContainText(longName)
     await expectNoPageOverflow(page)
     await view(page, 3).click()
     await expect(panel(page)).toContainText('R'.repeat(100))
@@ -240,6 +256,7 @@ test('RESP-01 · AC-34 · Ticket Detail with Actions fits every width, with 2000
       await section(page).scrollIntoViewIfNeeded()
       await captureLab4Screenshot(page, SHOT, name)
     }
+  }
   }
 })
 
