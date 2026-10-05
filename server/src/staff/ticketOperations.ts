@@ -452,28 +452,27 @@ export async function indicateRequesterResolution(
   now: Date,
   db: PrismaClient,
 ) {
-  const ticket = await db.ticket.findFirst({
-    where: { id: ticketId, requesterId },
-    select: { id: true, status: true },
+  // Under the Ticket lock, so a cancellation or closing that commits first is seen and refused (BR-33).
+  return db.$transaction(async (tx) => {
+    const ticket = await lockTicket(tx, ticketId, { requesterId })
+
+    if (ticket.status === 'CANCELLED' || ticket.status === 'CLOSED') {
+      throw new ApiError(
+        409,
+        'TICKET_CLOSED',
+        'This Ticket is closed, so it cannot be marked as appearing resolved.',
+      )
+    }
+
+    const updated = await tx.ticket.update({
+      where: { id: ticketId },
+      // The indication is a Ticket field, so it moves the version on (BR-31) and updatedAt forward (BR-35).
+      data: { requesterResolvedAt: now, version: { increment: 1 }, updatedAt: stampFor(now, ticket) },
+      select: { requesterResolvedAt: true, status: true },
+    })
+
+    // The status is echoed deliberately, so a client that expected a transition
+    // can see there wasn't one (api-spec.md §6).
+    return { requesterResolvedAt: updated.requesterResolvedAt, status: updated.status }
   })
-  if (!ticket) throw ticketNotFound()
-
-  if (ticket.status === 'CANCELLED' || ticket.status === 'CLOSED') {
-    throw new ApiError(
-      409,
-      'TICKET_CLOSED',
-      'This Ticket is closed, so it cannot be marked as appearing resolved.',
-    )
-  }
-
-  const updated = await db.ticket.update({
-    where: { id: ticketId },
-    // The indication is a Ticket field, so it moves the version on (BR-31).
-    data: { requesterResolvedAt: now, version: { increment: 1 } },
-    select: { requesterResolvedAt: true, status: true },
-  })
-
-  // The status is echoed deliberately, so a client that expected a transition
-  // can see there wasn't one (api-spec.md §6).
-  return { requesterResolvedAt: updated.requesterResolvedAt, status: updated.status }
 }
