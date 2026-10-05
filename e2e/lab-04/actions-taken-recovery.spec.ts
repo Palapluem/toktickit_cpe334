@@ -133,14 +133,15 @@ test.describe('E2E-09 · api-spec §1 · times are Bangkok time on a device in a
     await addAction(page.request, ticketId, olivia, 'An Action to date.')
     await login(page.request, PEOPLE.olivia)
 
-    const bangkok = (iso: string) =>
-      new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Bangkok' }).format(new Date(iso))
     const [action] = await storedActions(page, ticketId)
     const history = await page.request.get(`${API_BASE_URL}/api/tickets/${ticketId}/history`)
     const events = ((await history.json()) as { data: { createdAt: string }[] }).data
 
     await page.goto(`/staff/tickets/${ticketId}`)
-    await expect(rows(page).first().getByRole('cell').first()).toHaveText(bangkok(action.actionAt))
-    await expect(page.getByRole('region', { name: 'History' }).locator('time')).toHaveText(events.map((event) => bangkok(event.createdAt)))
+    // The expected text comes from the browser under test, so each engine's own date wording is the reference; only the zone is fixed.
+    const bangkok = (iso: string) =>
+      page.evaluate((value) => new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Bangkok' }).format(new Date(value)), iso)
+    await expect(rows(page).first().getByRole('cell').first()).toHaveText(await bangkok(action.actionAt))
+    await expect(page.getByRole('region', { name: 'History' }).locator('time')).toHaveText(await Promise.all(events.map((event) => bangkok(event.createdAt))))
   })
 })
