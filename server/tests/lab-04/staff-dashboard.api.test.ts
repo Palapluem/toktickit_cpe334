@@ -25,6 +25,7 @@ import {
 
 const BAND = 'TKT-2026-930'
 const makeTicket = ticketFactory(BAND)
+const TERMINAL_URGENT_STATUSES = ['RESOLVED', 'CLOSED', 'CANCELLED'] as const
 let staffCookie = ''
 let requesterCookie = ''
 let adminCookie = ''
@@ -87,8 +88,19 @@ async function sqlStaffCounts() {
   return counts
 }
 
+async function addTerminalUrgentTickets() {
+  const ids: string[] = []
+  for (const status of TERMINAL_URGENT_STATUSES) {
+    const id = await makeTicket({ status })
+    await prisma.ticket.update({ where: { id }, data: { itPriority: 'URGENT' } })
+    ids.push(id)
+  }
+  return ids
+}
+
 describe('DASH-01 · AC-26 · MET-S01–S05 match independent SQL counts', () => {
   it('returns the metric totals and all eight status counts', async () => {
+    await addTerminalUrgentTickets()
     const ticket = await makeTicket({ ownerEmail: STAFF_EMAIL })
     await prisma.ticket.update({ where: { id: ticket }, data: { itPriority: 'URGENT', status: 'REOPENED' } })
     await makeTicket({ ownerEmail: null, status: 'NEW' })
@@ -121,6 +133,7 @@ describe('DASH-01 · AC-26 · MET-S01–S05 match independent SQL counts', () =>
 
 describe('DASH-02 · AC-27 · metric drill-downs reproduce their set', () => {
   it('returns exactly the SQL-matched Tickets for each staff metric query', async () => {
+    const terminalUrgentIds = await addTerminalUrgentTickets()
     await makeTicket({ ownerEmail: null, status: 'NEW' })
     const owned = await makeTicket({ ownerEmail: STAFF_EMAIL, status: 'IN_PROGRESS' })
     await prisma.ticket.update({ where: { id: owned }, data: { itPriority: 'URGENT' } })
@@ -142,6 +155,10 @@ describe('DASH-02 · AC-27 · metric drill-downs reproduce their set', () => {
       expect(rows.body.pagination.totalItems, name).toBe(metric.count)
       expect(rows.body.data.map((row: { id: string }) => row.id).sort(), name)
         .toEqual(expected.map((row) => row.id).sort())
+      if (name === 'urgent') {
+        const ids = rows.body.data.map((row: { id: string }) => row.id)
+        for (const id of terminalUrgentIds) expect(ids).not.toContain(id)
+      }
     }
   })
 })

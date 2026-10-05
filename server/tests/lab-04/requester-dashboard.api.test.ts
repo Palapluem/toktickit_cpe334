@@ -21,6 +21,9 @@ import {
 
 const BAND = 'TKT-2026-931'
 const makeTicket = ticketFactory(BAND)
+const REQUESTER_STATUSES = [
+  'NEW', 'OPEN', 'IN_PROGRESS', 'WAITING_FOR_REQUESTER', 'RESOLVED', 'CLOSED', 'REOPENED', 'CANCELLED',
+] as const
 let requesterCookie = ''
 let otherCookie = ''
 let staffCookie = ''
@@ -81,10 +84,19 @@ async function sqlRequesterCounts(id: string) {
   return counts
 }
 
+async function addRequesterTicketsAcrossStatuses() {
+  const ids: string[] = []
+  for (const [index, status] of REQUESTER_STATUSES.entries()) {
+    const id = await makeTicket({ requesterEmail: REQUESTER_EMAIL, status })
+    await prisma.ticket.update({ where: { id }, data: { updatedAt: new Date(Date.UTC(2099, 0, 1, 0, index)) } })
+    ids.push(id)
+  }
+  return ids
+}
+
 describe('DASH-07 · AC-02/26 · MET-R01–R04 are independently counted and private', () => {
   it('matches SQL for the signed-in Requester and returns no other Requester data', async () => {
-    await makeTicket({ requesterEmail: REQUESTER_EMAIL, status: 'REOPENED' })
-    await makeTicket({ requesterEmail: REQUESTER_EMAIL, status: 'WAITING_FOR_REQUESTER' })
+    const requesterFixtureIds = await addRequesterTicketsAcrossStatuses()
     const foreign = await makeTicket({ requesterEmail: OTHER_REQUESTER_EMAIL, status: 'OPEN' })
     await prisma.ticket.update({ where: { id: foreign }, data: { summary: 'FOREIGN-DASHBOARD-SENTINEL' } })
 
@@ -102,6 +114,7 @@ describe('DASH-07 · AC-02/26 · MET-R01–R04 are independently counted and pri
     })
     expect(JSON.stringify(response.body)).not.toContain('FOREIGN-DASHBOARD-SENTINEL')
     const allReturnedIds = response.body.data.recentlyUpdated.map((row: { id: string }) => row.id)
+    expect(allReturnedIds).toEqual(requesterFixtureIds.slice(-5).reverse())
     const owners = await prisma.ticket.findMany({ where: { id: { in: allReturnedIds } }, select: { requesterId: true } })
     expect(owners.every((row) => row.requesterId === requesterId)).toBe(true)
   })
@@ -109,8 +122,7 @@ describe('DASH-07 · AC-02/26 · MET-R01–R04 are independently counted and pri
 
 describe('DASH-08 · AC-27 · Requester metric drill-downs match their counts', () => {
   it('returns exactly the caller-owned records for each returned metric query', async () => {
-    const openId = await makeTicket({ requesterEmail: REQUESTER_EMAIL, status: 'OPEN' })
-    await makeTicket({ requesterEmail: REQUESTER_EMAIL, status: 'WAITING_FOR_REQUESTER' })
+    await addRequesterTicketsAcrossStatuses()
     const dashboard = await request(app).get('/api/requester/dashboard').set('Cookie', requesterCookie)
     expect(dashboard.status).toBe(200)
     const cases = [
@@ -129,7 +141,6 @@ describe('DASH-08 · AC-27 · Requester metric drill-downs match their counts', 
       expect(rows.body.data.map((row: { id: string }) => row.id).sort(), name)
         .toEqual(expected.map((row) => row.id).sort())
     }
-    expect(openId).toBeTruthy()
   })
 })
 
