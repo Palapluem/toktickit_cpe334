@@ -1,5 +1,5 @@
 // UNIT-04 to UNIT-06 · lab-04 BR-20, BR-23, BR-29, BR-30, AC-18, AC-24 — the pure rules behind the Ticket workflow.
-// The status table below is transcribed from specification §5.2, not read from the implementation.
+// The status table lives in transition-oracle.ts, transcribed from specification §5.2, not read from the implementation.
 import { describe, expect, it } from 'vitest'
 import {
   actionAssignedPayload,
@@ -13,32 +13,10 @@ import {
 import type { Role } from '../../src/auth/types.js'
 import type { TicketStatus } from '../../src/tickets/transitions.js'
 import { CREATION_ORDER, byCreation, workflowFor } from '../../src/tickets/workflowRules.js'
+import { STATUSES, edgesFor } from './transition-oracle.js'
 
-const REQUESTER_EDGES: Record<TicketStatus, TicketStatus[]> = {
-  NEW: ['CANCELLED'],
-  OPEN: [],
-  IN_PROGRESS: [],
-  WAITING_FOR_REQUESTER: [],
-  RESOLVED: ['REOPENED'],
-  CLOSED: [],
-  REOPENED: [],
-  CANCELLED: [],
-}
-const STAFF_EDGES: Record<TicketStatus, TicketStatus[]> = {
-  NEW: ['OPEN', 'IN_PROGRESS', 'CANCELLED'],
-  OPEN: ['IN_PROGRESS', 'WAITING_FOR_REQUESTER', 'RESOLVED', 'CANCELLED'],
-  IN_PROGRESS: ['WAITING_FOR_REQUESTER', 'RESOLVED', 'CANCELLED'],
-  WAITING_FOR_REQUESTER: ['IN_PROGRESS', 'RESOLVED', 'CANCELLED'],
-  RESOLVED: ['CLOSED', 'REOPENED'],
-  CLOSED: ['REOPENED'],
-  REOPENED: ['IN_PROGRESS', 'WAITING_FOR_REQUESTER', 'RESOLVED', 'CANCELLED'],
-  CANCELLED: [],
-}
-const STATUSES = Object.keys(STAFF_EDGES) as TicketStatus[]
 const ROLES: Role[] = ['REQUESTER', 'IT_STAFF', 'ADMINISTRATOR']
 const GATED: TicketStatus[] = ['RESOLVED', 'CLOSED']
-
-const edgesFor = (role: Role, from: TicketStatus) => (role === 'REQUESTER' ? REQUESTER_EDGES[from] : STAFF_EDGES[from])
 
 describe('UNIT-04 · AC-18 · BR-20 · BR-23 · the gate-aware transition table (role × status × open Actions)', () => {
   for (const role of ROLES) {

@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import request from 'supertest'
 import app, { createApp } from '../../src/app.js'
 import prisma from '../../src/prisma.js'
-import { TICKET_STATUSES, allowedTransitions, type TicketStatus } from '../../src/tickets/transitions.js'
+import type { TicketStatus } from '../../src/tickets/transitions.js'
 import type { Role } from '../../src/auth/types.js'
 import {
   ADMIN_EMAIL,
@@ -16,12 +16,15 @@ import {
   REQUESTER_EMAIL,
   STAFF_EMAIL,
   clearHistory,
+  holdTicketLock,
   idFor,
   removeTickets,
   restoreSeededCredentials,
   signIn,
   ticketFactory,
+  waitUntilBlocked,
 } from './lab4-fixtures.js'
+import { STATUSES, edgesFor } from './transition-oracle.js'
 
 const BAND = 'TKT-2026-94'
 const makeTicket = ticketFactory(BAND)
@@ -314,9 +317,9 @@ describe('WF-06 · AC-18 · BR-19 · every §5.2 cell, for every role', () => {
     it(`lets ${role} make each permitted move and refuses every other, on a Ticket with no open Action`, async () => {
       let moved = 0
       let refused = 0
-      for (const from of TICKET_STATUSES) {
-        const permitted = new Set(allowedTransitions(role, from))
-        for (const to of TICKET_STATUSES) {
+      for (const from of STATUSES) {
+        const permitted = new Set(edgesFor(role, from))
+        for (const to of STATUSES) {
           const ticketId = await makeTicket({ status: from, ownerEmail: DANIEL_EMAIL })
           const response = await setStatus(ticketId, cookies[role], { status: to, expectedVersion: 1 })
           const label = `${role}: ${from} -> ${to}`
@@ -431,25 +434,42 @@ describe('WF-08 · AC-20 · BR-33 · creating an Action and resolving at the sam
 
   it('makes the status change wait for the Ticket row lock, and finish once it is released', async () => {
     const ticketId = await makeTicket({ status: 'IN_PROGRESS', ownerEmail: DANIEL_EMAIL })
-    let release: () => void = () => {}
-    const held = new Promise<void>((resolve) => { release = resolve })
-    const holder = prisma.$transaction(
-      async (tx) => {
-        await tx.$queryRaw`SELECT "id" FROM "Ticket" WHERE "id" = ${ticketId}::uuid FOR UPDATE`
-        await held
-      },
-      { timeout: 20_000 },
-    )
-    await sleep(150)
+    const lock = holdTicketLock(ticketId)
+    await lock.acquired
 
-    const pending = setStatus(ticketId, patricia, { status: 'RESOLVED', expectedVersion: 1 }).then((response) => response)
-    const outcome = await Promise.race([pending.then(() => 'finished'), sleep(600).then(() => 'waiting')])
-    expect(outcome).toBe('waiting')
+    let finished = false
+    const pending = setStatus(ticketId, patricia, { status: 'RESOLVED', expectedVersion: 1 }).then((response) => {
+      finished = true
+      return response
+    })
+    await waitUntilBlocked()
+    expect(finished).toBe(false)
     expect((await row(ticketId)).status).toBe('IN_PROGRESS')
 
-    release()
-    await holder
+    lock.release()
+    await lock.done
     expect((await pending).status).toBe(200)
+  })
+
+  it('reads the version only after the lock, so a change the holder committed makes it stale (BR-31, BR-33)', async () => {
+    const ticketId = await makeTicket({ status: 'IN_PROGRESS', ownerEmail: DANIEL_EMAIL })
+    const lock = holdTicketLock(ticketId, (tx) => tx.ticket.update({ where: { id: ticketId }, data: { version: { increment: 1 } } }))
+    await lock.acquired
+
+    let finished = false
+    const pending = setStatus(ticketId, patricia, { status: 'RESOLVED', expectedVersion: 1 }).then((response) => {
+      finished = true
+      return response
+    })
+    await waitUntilBlocked()
+    expect(finished).toBe(false)
+
+    lock.release()
+    await lock.done
+    const response = await pending
+    expect(response.status).toBe(409)
+    expect(response.body.error.code).toBe('STALE_VERSION')
+    expect(await row(ticketId)).toMatchObject({ status: 'IN_PROGRESS', version: 2 })
   })
 })
 
