@@ -479,7 +479,7 @@ Every labsheet example can be expressed as a state count or a "five most recent"
 Lab 2 and Lab 3 accept a single `status`. An "Open" metric spans five statuses, and its drill-down must show exactly the counted Tickets (BR-37).
 
 **11.12 Dashboard is the landing page for every role, and Administrators reuse the IT Staff dashboard.**
-Labsheet §8.1 calls the dashboard "a concise operational starting point", and §4.6 allows the reuse. One E2E assertion from Lab 3 (landing on My Tickets) changes accordingly.
+Labsheet §8.1 calls the dashboard "a concise operational starting point", and §4.6 allows the reuse. Three Lab 3 assertions about where a user lands after signing in or changing a password change accordingly, and nothing else in the Lab 1 to 3 tests changes: the E2E AUTH-03 (Requester lands on My Tickets, now Dashboard), the E2E ADMIN-04 (after the forced password change the page showed the Ticket Queue, now the Dashboard), and the client tests `Login.test.tsx` and `ChangePassword.test.tsx` (the Requester's route after sign-in). The first version of this section named only AUTH-03; the other two were found when Issue #93 ran the full regression (5 October 2026).
 
 **11.13 Evidence capture is explicit.**
 Every Lab 3 E2E run rewrote 48 committed screenshots. From Lab 4, a normal run writes only to ignored runner output, and captures go to `artifacts/lab-04/screenshots/` only with `CAPTURE_EVIDENCE=1`.
