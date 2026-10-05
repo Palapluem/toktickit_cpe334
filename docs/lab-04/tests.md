@@ -96,9 +96,9 @@
 | WF-03 | Workflow | AC-16 | Resolve when every Action is terminal | `RESOLVED`; `STATUS_CHANGED` written | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
 | WF-04 | Workflow | AC-16, BR-21 | Resolve a zero-Action Ticket and a seeded legacy Ticket | `RESOLVED` | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
 | WF-05 | Workflow | AC-17, BR-22 | Cancel a Ticket with two open and one completed Action; repeat with a failure injected after the cascade | Ticket `CANCELLED`; two Actions cancelled with the system reason and `cancelledBy`; completed one untouched / with the injected failure, nothing persisted | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
-| WF-06 | Workflow | AC-18, BR-19 | Every §5.2 cell for Requester, IT Staff and Administrator | Each permitted edge succeeds; each absent edge is refused (400 or 403, as in Lab 3) | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-06 | Workflow | AC-18, BR-19 | Every §5.2 cell for Requester, IT Staff and Administrator, against the table transcribed in `transition-oracle.ts` | Each permitted edge succeeds; each absent edge is refused (400 or 403, as in Lab 3); a wrong edge in the code fails the test | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
 | WF-07 | Workflow | AC-19, BR-31 | Status change with the version read before an owner change | 409 `STALE_VERSION`; the owner change is kept | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
-| WF-08 | Workflow | AC-20, BR-33 | Create-Action and resolve sent concurrently, repeated 20 times | Never `RESOLVED` with an open Action; in each pair, one request is refused or ordered after the other | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-08 | Workflow | AC-20, BR-33 | Create-Action and resolve sent concurrently, repeated 20 times; a status change blocked behind a held lock, with and without a change the holder commits | Never `RESOLVED` with an open Action; in each pair, one request is refused or ordered after the other; the blocked request is known to wait (a lock wait is visible in the database) and reads the version after the lock (409 `STALE_VERSION`) | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
 | WF-09 | Workflow | AC-22, BR-26 | A scripted sequence of status, owner, priority and Action changes | One event per change, with the right type, actor and order | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
 | WF-10 | Workflow | AC-23, BR-28 | The same history read by its Requester and by IT Staff | Requester gets `STATUS_CHANGED` only; IT Staff get every event | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
 | WF-11 | Workflow | AC-24, BR-29 | Actions, comments, notes and events inserted with identical `createdAt` | Identical order across five repeated reads | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
@@ -106,6 +106,7 @@
 | WF-13 | Workflow | BR-32 | Owner and IT Priority changes in the Lab 3 request shape | Succeed without a version; version +1; event written. A change to what is already stored, an Action edit that changes nothing and a same-status request leave `version`, events and `updatedAt` as they were | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
 | WF-14 | Workflow | AC-19, BR-31 | Status change without `expectedVersion` | 400 `VALIDATION_FAILED` | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
 | WF-15 | Workflow | AC-22, BR-29 | A claim then a priority change in one millisecond; a change 5 ms into a 40-Action cancellation burst; a change after the clock went back | Events keep commit order and `createdAt` is strictly increasing, in the database and in the History response | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-16 | Workflow | BR-35, BR-38 | Every kind of change (owner, IT Priority, status, Action create, edit and move) carrying an instant earlier than the Ticket's `updatedAt`; one carrying a later instant | `updatedAt` keeps the later value; a later instant moves it forward | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
 
 ### Dashboards and lists
 
@@ -251,7 +252,7 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 | Labsheet path (§12) | Planned tests |
 |---|---|
 | `server/tests/lab-04/actions-taken.api.test.ts` | API-01–API-18, SEC-01, and the Actions part of SEC-02, SEC-03 and SEC-07 |
-| `server/tests/lab-04/ticket-workflow.api.test.ts` | WF-01–WF-15, SEC-02, SEC-03, SEC-06, SEC-07 |
+| `server/tests/lab-04/ticket-workflow.api.test.ts` | WF-01–WF-16, SEC-02, SEC-03, SEC-06, SEC-07 |
 | `server/tests/lab-04/requester-dashboard.api.test.ts` | DASH-07–DASH-10, SEC-05 |
 | `server/tests/lab-04/staff-dashboard.api.test.ts` | DASH-01–DASH-06, SEC-04 |
 | `client/tests/lab-04/StaffDashboard.test.tsx` | UI-14, UI-15 |
@@ -265,6 +266,7 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 
 Supporting files beyond the minimum:
 
+- `server/tests/lab-04/transition-oracle.ts` (the status table of §5.2, shared by UNIT-04 and WF-06);
 - `server/tests/lab-04/action-rules.unit.test.ts`, `workflow-rules.unit.test.ts`, `dashboard-metrics.unit.test.ts` and `migration-seed.api.test.ts` (MIG-03–MIG-05);
 - `server/tests/lab-04/test-transport.unit.test.ts` (#96, the loopback guard behind the suite-stability fix);
 - `client/tests/lab-04/AppNavigation.test.tsx`;

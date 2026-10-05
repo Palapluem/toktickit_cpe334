@@ -160,7 +160,7 @@ By decision (§11):
 - **BR-32** Owner and IT Priority changes keep their Lab 3 request shape and need no expected version.
 - **BR-33** Every Ticket status change and every Action creation locks the Ticket row for the length of its transaction, so BR-20 and BR-22 hold under concurrent requests.
 - **BR-34** Action creation carries a client-generated request identifier, unique per Ticket. Repeating it returns the Action already created instead of creating another.
-- **BR-35** Ticket field changes and Action writes update the Ticket's `updatedAt`. Public Comments and Internal Notes do not (Lab 3 behaviour).
+- **BR-35** Ticket field changes and Action writes update the Ticket's `updatedAt`, which never moves backwards: a request that waited for the Ticket lock and carries an earlier clock reading leaves the later value in place (§11.17). Public Comments and Internal Notes do not update it (Lab 3 behaviour).
 
 ### Dashboards
 
@@ -517,3 +517,4 @@ Each is covered by a test; the IDs are in `tests.md`.
 8. **History is a new authorization operation, `history:read`:** own Ticket with status events only for a Requester, any Ticket for staff (§8.1).
 9. **Two structural values widen BR-30's list:** `cascade` (a boolean) and `cascadedActionCount` (a count, present on every cancellation, including 0). Neither carries text or personal data.
 10. **Both Ticket details add `version` and `openActionCount`.** The Requester can already read the Actions, so this discloses nothing staff-only.
+11. **The Ticket's `updatedAt` never moves backwards.** Every writer holds the Ticket lock and keeps the later of its own clock reading and the stored `updatedAt`, so "recently updated" (BR-38) follows the order the changes were committed in, as the history does. Test WF-16.
