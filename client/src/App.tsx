@@ -44,15 +44,6 @@ function ShellLayout() {
   )
 }
 
-function RequesterTicketsRoute() {
-  const location = useLocation()
-  const state = location.state as { dashboardLanding?: unknown } | null
-  if (state?.dashboardLanding === true) {
-    return <Navigate to="/dashboard" replace state={null} />
-  }
-  return <MyTickets />
-}
-
 /**
  * The shell renders the identity and Logout but no navigation: there is
  * nowhere else to go, and links that all redirect back here are a loop the
@@ -116,7 +107,7 @@ function App() {
           path="/tickets"
           element={
             <RequireSession>
-              <RequesterTicketsRoute />
+              <MyTickets />
             </RequireSession>
           }
         />

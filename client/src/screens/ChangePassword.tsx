@@ -57,11 +57,7 @@ export function ChangePassword() {
       await changePassword(current, next)
       await refresh()
       const role = user?.role ?? 'REQUESTER'
-      const requesterLanding = role === 'REQUESTER'
-      navigate(
-        requesterLanding ? '/tickets' : homeFor(role),
-        { replace: true, state: requesterLanding ? { dashboardLanding: true } : undefined },
-      )
+      navigate(homeFor(role), { replace: true })
     } catch (error) {
       setSubmitting(false)
       if (!(error instanceof ApiRequestError)) {

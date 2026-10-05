@@ -51,14 +51,9 @@ export function Login() {
     try {
       const user = await login(email.trim(), password)
       await refresh()
-      const requesterLanding = !user.mustChangePassword && user.role === 'REQUESTER'
       navigate(
-        user.mustChangePassword
-          ? CHANGE_PASSWORD_ROUTE
-          : requesterLanding
-            ? '/tickets'
-            : homeFor(user.role),
-        { replace: true, state: requesterLanding ? { dashboardLanding: true } : undefined },
+        user.mustChangePassword ? CHANGE_PASSWORD_ROUTE : homeFor(user.role),
+        { replace: true },
       )
     } catch {
       // Every failure reads the same, including one that is not the server's
