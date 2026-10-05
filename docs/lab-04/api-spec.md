@@ -30,6 +30,7 @@ Request bodies are validated strictly. An unknown property, or a server-owned pr
 |---|---|---|
 | 400 | `ASSIGNEE_NOT_ELIGIBLE` | The named assignee is not an active IT Staff or Administrator user (BR-07) |
 | 400 | `INVALID_ACTION_TRANSITION` | The requested Action move is not in §5.1 of the specification. The response includes `currentStatus` and `permittedTransitions` |
+| 404 | `ACTION_NOT_FOUND` | The Action does not exist, belongs to another Ticket, or its identifier is not a UUID. The answer is the same in each case and nothing changes (BR-01) |
 | 409 | `OPEN_ACTIONS_BLOCK_RESOLUTION` | `RESOLVED` or `CLOSED` requested while Actions are open (BR-20). The response includes `openActionCount` |
 | 409 | `TICKET_NOT_WORKABLE` | Action write on a Ticket in `RESOLVED`, `CLOSED` or `CANCELLED` (BR-23). The response includes `ticketStatus` |
 | 409 | `ACTION_TERMINAL` | Edit, reassignment or transition of a `COMPLETED` or `CANCELLED` Action (BR-10) |
@@ -85,6 +86,8 @@ The same fields, except that every person is `{ "displayName": "…" }` only: no
   "details": { "from": "IN_PROGRESS", "to": "RESOLVED" }
 }
 ```
+
+The database stores a payload as identifiers, statuses, priorities and field names (BR-30). This shape is built when history is read: person identifiers become the person's current display name, so a renamed person shows the current name.
 
 `details` by type (BR-30 — no free text):
 
@@ -175,6 +178,8 @@ Editable: `description`, `result` (at most 2000), `followUpRequired`, `followUpN
 2. Applies the fields. When `followUpRequired` becomes `false`, the stored note is cleared (BR-14).
 3. Increments `version` and updates the Ticket's `updatedAt`.
 4. Writes `ACTION_ASSIGNED` when the assignee changed and `ACTION_UPDATED` when other fields changed.
+
+**No change.** When every supplied value equals the stored value and the assignee is unchanged, the request is a success: **200** with the unchanged Action, no new `version` and no event (BR-31). A request with no editable field at all is `400 VALIDATION_FAILED`.
 
 **200** `{ "data": ActionTaken }`
 
