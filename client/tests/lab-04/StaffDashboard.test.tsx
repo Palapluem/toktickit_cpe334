@@ -28,7 +28,7 @@ const DASHBOARD = {
       actionId: `action-${index}`,
       status: index % 2 ? 'IN_PROGRESS' : 'PLANNED',
       description: `Inspect relay item ${index}`,
-      actionAt: `2026-10-0${index + 1}T00:00:00.000Z`,
+      actionAt: `2026-10-${String(index + 1).padStart(2, '0')}T00:00:00.000Z`,
       ticket: {
         id: `ticket-${index}`,
         ticketNo: `TKT-2026-${String(index + 1).padStart(6, '0')}`,
@@ -63,7 +63,7 @@ describe('UI-14 · AC-27/28 · staff metrics and work items', () => {
     expect(screen.getByRole('link', { name: 'View 1 assigned ticket' }))
       .toHaveAttribute('href', '/staff/tickets?ownerId=me&statusGroup=active')
     expect(screen.getByText('Tickets by status')).toBeInTheDocument()
-    expect(screen.getAllByRole('row')).toHaveLength(9)
+    expect(screen.getByRole('list', { name: 'Tickets by status' }).querySelectorAll('li')).toHaveLength(8)
     expect(screen.getByText('Showing the 10 oldest of 12 open Actions.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /TKT-2026-000001/ })).toHaveAttribute('href', '/staff/tickets/ticket-0#actions')
   })

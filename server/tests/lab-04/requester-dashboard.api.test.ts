@@ -181,4 +181,22 @@ describe('SEC-03/05/07 · dashboard boundaries are enforced outside the UI', () 
     expect((await request(app).get('/api/requester/dashboard').set('Cookie', otherCookie)).body.data.totalTickets)
       .toBe(Number((await sqlRequesterCounts(otherId)).total))
   })
+
+  it('SEC-07 · AC-02 does not expose hashes, session identifiers, or user emails', async () => {
+    const [requester, staff] = await Promise.all([
+      request(app).get('/api/requester/dashboard').set('Cookie', requesterCookie),
+      request(app).get('/api/staff/dashboard').set('Cookie', staffCookie),
+    ])
+    expect(requester.status).toBe(200)
+    expect(staff.status).toBe(200)
+    const serialized = JSON.stringify([requester.body, staff.body])
+    const cookieValues = [requesterCookie, staffCookie]
+      .map((cookie) => cookie.split(';')[0]?.split('=').slice(1).join('='))
+    for (const secret of [
+      'passwordHash', 'sessionId', REQUESTER_EMAIL, OTHER_REQUESTER_EMAIL, STAFF_EMAIL,
+      ...cookieValues.filter((value): value is string => Boolean(value)),
+    ]) {
+      expect(serialized).not.toContain(secret)
+    }
+  })
 })

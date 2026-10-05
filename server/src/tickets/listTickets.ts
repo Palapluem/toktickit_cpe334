@@ -5,6 +5,7 @@ import {
   type SortField,
   type TicketListQuery,
 } from './query.js'
+import { activeTicketWhere } from '../dashboard/metrics.js'
 
 const TICKET_LIST_SELECT = {
   id: true,
@@ -117,6 +118,7 @@ export async function listTickets(
       : {}),
     ...(query.itPriority ? { itPriority: query.itPriority } : {}),
     ...(query.status ? { status: query.status } : {}),
+    ...(query.statusGroup ? activeTicketWhere() : {}),
   }
 
   const skip = (query.page - 1) * query.pageSize
@@ -162,6 +164,7 @@ export async function listTickets(
       requestedPriority: query.requestedPriority,
       itPriority: query.itPriority,
       status: query.status,
+      statusGroup: query.statusGroup ?? null,
       sort: `${query.sort.field}:${query.sort.direction}`,
     },
   }

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   fetchCategories,
   fetchTickets,
@@ -44,6 +44,7 @@ type FilterState = {
   requestedPriority: Priority | ''
   itPriority: Priority | ''
   status: TicketStatus | ''
+  statusGroup: 'active' | ''
   sort: SortValue
   page: number
   pageSize: number
@@ -55,6 +56,7 @@ const DEFAULT_FILTERS: FilterState = {
   requestedPriority: '',
   itPriority: '',
   status: '',
+  statusGroup: '',
   sort: 'createdAt:desc',
   page: 1,
   pageSize: 10,
@@ -76,6 +78,7 @@ function toTicketQuery(filters: FilterState): TicketListQuery {
   }
   if (filters.itPriority) query.itPriority = filters.itPriority
   if (filters.status) query.status = filters.status
+  if (filters.statusGroup) query.statusGroup = filters.statusGroup
 
   return query
 }
@@ -88,8 +91,42 @@ function hasAppliedFilters(response: TicketListResponse): boolean {
       appliedFilters.relatedSystemId ||
       appliedFilters.requestedPriority ||
       appliedFilters.itPriority ||
-      appliedFilters.status,
+      appliedFilters.status ||
+      appliedFilters.statusGroup,
   )
+}
+
+function filtersFromSearchParams(params: URLSearchParams): FilterState {
+  const status = params.get('status')
+  const rawSort = params.get('sort')?.split(':') ?? []
+  const sortFields: SortField[] = ['ticketNo', 'createdAt', 'summary', 'updatedAt']
+  const rawPage = Number(params.get('page'))
+  const rawPageSize = Number(params.get('pageSize'))
+
+  return {
+    ...DEFAULT_FILTERS,
+    search: params.get('search') ?? '',
+    requestedPriority: PRIORITIES.includes(params.get('requestedPriority') as Priority)
+      ? (params.get('requestedPriority') as Priority)
+      : '',
+    itPriority: PRIORITIES.includes(params.get('itPriority') as Priority)
+      ? (params.get('itPriority') as Priority)
+      : '',
+    status: STATUSES.includes(status as TicketStatus) ? (status as TicketStatus) : '',
+    statusGroup:
+      params.get('statusGroup') === 'active' && !STATUSES.includes(status as TicketStatus)
+        ? 'active'
+        : '',
+    sort:
+      sortFields.includes(rawSort[0] as SortField) &&
+      (rawSort[1] === 'asc' || rawSort[1] === 'desc')
+        ? `${rawSort[0]}:${rawSort[1]}` as SortValue
+        : DEFAULT_FILTERS.sort,
+    page: Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1,
+    pageSize: Number.isSafeInteger(rawPageSize) && rawPageSize > 0 && rawPageSize <= 50
+      ? rawPageSize
+      : DEFAULT_FILTERS.pageSize,
+  }
 }
 
 function formatDate(value: string): string {
@@ -201,16 +238,27 @@ function LoadingResults() {
 export function MyTickets() {
   const { user, status: sessionStatus } = useSession()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const appliedSearchKey = useRef(searchParams.toString())
+  const searchKey = searchParams.toString()
   const [categories, setCategories] = useState<Category[]>([])
   const [categoriesLoading, setCategoriesLoading] = useState(false)
-  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
-  const [searchInput, setSearchInput] = useState(DEFAULT_FILTERS.search)
+  const [filters, setFilters] = useState<FilterState>(() => filtersFromSearchParams(searchParams))
+  const [searchInput, setSearchInput] = useState(() => filtersFromSearchParams(searchParams).search)
   const [response, setResponse] = useState<TicketListResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const [retryNumber, setRetryNumber] = useState(0)
   // Identity is the cookie's; this only says whether there is one to load for.
   const signedIn = user !== null
+
+  useEffect(() => {
+    if (searchKey === appliedSearchKey.current) return
+    appliedSearchKey.current = searchKey
+    const next = filtersFromSearchParams(new URLSearchParams(searchKey))
+    setFilters(next)
+    setSearchInput(next.search)
+  }, [searchKey])
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -285,6 +333,7 @@ export function MyTickets() {
     setFilters((current) => ({
       ...current,
       [key]: value,
+      ...(key === 'status' && value ? { statusGroup: '' } : {}),
       page: 1,
     }))
   }
@@ -434,6 +483,10 @@ export function MyTickets() {
           </select>
         </FormField>
       </section>
+
+      {filters.statusGroup === 'active' ? (
+        <p className="zen-page-kicker" role="status">Showing active Tickets</p>
+      ) : null}
 
       {loading ? <LoadingResults /> : null}
 

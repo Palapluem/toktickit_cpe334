@@ -96,6 +96,7 @@ export type TicketListQuery = {
   requestedPriority?: Priority
   itPriority?: Priority
   status?: TicketStatus
+  statusGroup?: 'active'
   sort?: string
   page?: number
   pageSize?: number
@@ -133,6 +134,7 @@ export interface TicketListResponse {
     requestedPriority: Priority | null
     itPriority: Priority | null
     status: TicketStatus | null
+    statusGroup?: 'active' | null
     sort: string
   }
 }
@@ -329,6 +331,7 @@ export interface StaffQueueRow {
 export interface StaffQueueQuery {
   search?: string
   status?: string
+  statusGroup?: 'active'
   itPriority?: string
   categoryId?: string
   ownerId?: string
@@ -343,6 +346,7 @@ export interface StaffQueueResponse {
   appliedFilters: {
     search: string | null
     status: string | null
+    statusGroup?: 'active' | null
     itPriority: string | null
     categoryId: string | null
     ownerId: string | null
@@ -371,6 +375,65 @@ export async function fetchStaffQueue(
   }
 
   return (await response.json()) as StaffQueueResponse
+}
+
+export type DashboardMetric = {
+  count: number
+  query: Record<string, string>
+}
+
+export type ActionStatus = 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+
+export interface StaffDashboardResponse {
+  generatedAt: string
+  metrics: {
+    unassigned: DashboardMetric
+    assignedToMe: DashboardMetric
+    urgent: DashboardMetric
+    waitingForRequester: DashboardMetric
+  }
+  byStatus: Array<{ status: TicketStatus; count: number; query: Record<string, string> }>
+  myOpenActions: {
+    total: number
+    items: Array<{
+      actionId: string
+      status: ActionStatus
+      description: string
+      actionAt: string
+      ticket: Pick<StaffQueueRow, 'id' | 'ticketNo' | 'summary' | 'itPriority' | 'status'>
+    }>
+  }
+  recentlyUpdated: Array<{
+    id: string
+    ticketNo: string
+    summary: string
+    status: TicketStatus
+    itPriority: Priority
+    owner: Pick<Requester, 'displayName'> | null
+    updatedAt: string
+  }>
+  recentlyUpdatedQuery: Record<string, string>
+}
+
+export interface RequesterDashboardResponse {
+  generatedAt: string
+  totalTickets: number
+  metrics: {
+    open: DashboardMetric
+    needsAttention: DashboardMetric
+    resolved: DashboardMetric
+    closed: DashboardMetric
+  }
+  recentlyUpdated: Array<Pick<TicketListItem, 'id' | 'ticketNo' | 'summary' | 'status' | 'updatedAt'>>
+  recentlyUpdatedQuery: Record<string, string>
+}
+
+export function fetchStaffDashboard(): Promise<StaffDashboardResponse> {
+  return get<StaffDashboardResponse>('/api/staff/dashboard', 'Staff dashboard')
+}
+
+export function fetchRequesterDashboard(): Promise<RequesterDashboardResponse> {
+  return get<RequesterDashboardResponse>('/api/requester/dashboard', 'Requester dashboard')
 }
 
 export interface StaffTicket extends Omit<StaffQueueRow, 'category'> {
@@ -561,6 +624,7 @@ export async function fetchTickets(
   add('requestedPriority', query.requestedPriority)
   add('itPriority', query.itPriority)
   add('status', query.status)
+  add('statusGroup', query.statusGroup)
   add('sort', query.sort)
   add('page', query.page)
   add('pageSize', query.pageSize)

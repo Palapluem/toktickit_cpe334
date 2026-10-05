@@ -23,6 +23,7 @@ export type TicketListQuery = {
   requestedPriority: Priority | null
   itPriority: Priority | null
   status: TicketStatus | null
+  statusGroup?: 'active'
   sort: { field: SortField; direction: SortDirection }
   page: number
   pageSize: number
@@ -40,6 +41,7 @@ const QUERY_FIELDS = new Set([
   'requestedPriority',
   'itPriority',
   'status',
+  'statusGroup',
   'sort',
   'page',
   'pageSize',
@@ -177,6 +179,18 @@ export function parseTicketQuery(query: unknown): TicketQueryParseResult {
     } else {
       value.status = status
     }
+  }
+
+  const statusGroup = readSingle('statusGroup')
+  if (statusGroup !== undefined) {
+    if (statusGroup !== 'active') {
+      errors.push({ field: 'statusGroup', message: 'Choose the active status group.' })
+    } else {
+      value.statusGroup = 'active'
+    }
+  }
+  if (value.statusGroup && value.status) {
+    errors.push({ field: 'statusGroup', message: 'Use status or statusGroup, not both.' })
   }
 
   const sort = readSingle('sort')

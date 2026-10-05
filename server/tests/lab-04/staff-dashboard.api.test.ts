@@ -3,8 +3,13 @@
 import { randomUUID } from 'node:crypto'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import request from 'supertest'
-import app from '../../src/app.js'
+import app, { createApp } from '../../src/app.js'
 import prisma from '../../src/prisma.js'
+import { PrismaClient } from '../../src/generated/prisma/client.js'
+import { PrismaPg } from '@prisma/adapter-pg'
+import { getStaffDashboard } from '../../src/dashboard/dashboards.js'
+import { hashPassword } from '../../src/auth/password.js'
+import { DEVELOPMENT_PASSWORD } from '../../src/seed/roster.js'
 import {
   ADMIN_EMAIL,
   DANIEL_EMAIL,
@@ -25,6 +30,9 @@ let requesterCookie = ''
 let adminCookie = ''
 let staffId = ''
 let danielId = ''
+let dashboardStaffId = ''
+let dashboardStaffEmail = ''
+let dashboardStaffCookie = ''
 
 beforeAll(async () => {
   ;[staffCookie, requesterCookie, adminCookie] = await Promise.all([
@@ -33,6 +41,19 @@ beforeAll(async () => {
     signIn(ADMIN_EMAIL),
   ])
   ;[staffId, danielId] = await Promise.all([idFor(STAFF_EMAIL), idFor(DANIEL_EMAIL)])
+  dashboardStaffEmail = `codex93-dashboard-staff-${randomUUID()}@example.ac.th`
+  const dashboardStaff = await prisma.user.create({
+    data: {
+      displayName: 'Dashboard Fixture Staff',
+      email: dashboardStaffEmail,
+      passwordHash: await hashPassword(DEVELOPMENT_PASSWORD),
+      role: 'IT_STAFF',
+      mustChangePassword: false,
+    },
+    select: { id: true },
+  })
+  dashboardStaffId = dashboardStaff.id
+  dashboardStaffCookie = await signIn(dashboardStaffEmail)
 }, 60_000)
 
 beforeEach(async () => {
@@ -42,6 +63,10 @@ beforeEach(async () => {
 afterAll(async () => {
   await removeTickets(BAND)
   await clearHistory()
+  if (dashboardStaffId) {
+    await prisma.session.deleteMany({ where: { userId: dashboardStaffId } })
+    await prisma.user.delete({ where: { id: dashboardStaffId } })
+  }
   await restoreSeededCredentials()
 })
 
@@ -122,16 +147,16 @@ describe('DASH-02 · AC-27 · metric drill-downs reproduce their set', () => {
 })
 
 describe('DASH-03 · AC-28 · open Actions are bounded, oldest first, and caller-assigned', () => {
-  it('returns 12 open Actions but only their 10 oldest, excluding terminal and other-assignee rows', async () => {
+  it('returns 12 fixture open Actions but only their 10 oldest, excluding terminal and other-assignee rows', async () => {
     const base = new Date('2020-01-01T00:00:00.000Z')
     const expectedOldest: string[] = []
-    for (let index = 0; index < 10; index += 1) {
+    for (let index = 0; index < 12; index += 1) {
       const ticketId = await makeTicket({ ownerEmail: DANIEL_EMAIL })
       const action = await prisma.actionTaken.create({
         data: {
           ticketId,
           description: `Dashboard open action ${index}`,
-          assigneeId: staffId,
+          assigneeId: dashboardStaffId,
           performedById: danielId,
           requestId: randomUUID(),
           status: index % 2 ? 'IN_PROGRESS' : 'PLANNED',
@@ -143,7 +168,7 @@ describe('DASH-03 · AC-28 · open Actions are bounded, oldest first, and caller
     }
     const terminalTicket = await makeTicket()
     await prisma.actionTaken.create({ data: {
-      ticketId: terminalTicket, description: 'Terminal row', assigneeId: staffId,
+      ticketId: terminalTicket, description: 'Terminal row', assigneeId: dashboardStaffId,
       performedById: danielId, requestId: randomUUID(), status: 'COMPLETED',
       result: 'Done', completedById: danielId, completedAt: base,
     } })
@@ -153,12 +178,12 @@ describe('DASH-03 · AC-28 · open Actions are bounded, oldest first, and caller
       performedById: staffId, requestId: randomUUID(), status: 'PLANNED',
     } })
 
-    const response = await request(app).get('/api/staff/dashboard').set('Cookie', staffCookie)
+    const response = await request(app).get('/api/staff/dashboard').set('Cookie', dashboardStaffCookie)
     expect(response.status).toBe(200)
     expect(response.body.data.myOpenActions.total).toBe(12)
     expect(response.body.data.myOpenActions.items).toHaveLength(10)
     expect(response.body.data.myOpenActions.items.map((item: { actionId: string }) => item.actionId))
-      .toEqual(expectedOldest)
+      .toEqual(expectedOldest.slice(0, 10))
   })
 })
 
@@ -172,6 +197,19 @@ describe('DASH-04 · AC-29 · administrators receive the same complete zero-capa
     ])
     expect(response.body.data.myOpenActions).toEqual({ total: 0, items: [] })
     expect(response.body.data.metrics).toHaveProperty('unassigned.count')
+  })
+
+  it('zero-fills all eight status buckets when no status rows exist', async () => {
+    const emptyDb = {
+      $queryRaw: async () => [{ unassigned: 0n, assignedToMe: 0n, urgent: 0n, waitingForRequester: 0n }],
+      ticket: { groupBy: async () => [], findMany: async () => [] },
+      actionTaken: { count: async () => 0, findMany: async () => [] },
+    } as unknown as PrismaClient
+    const result = await getStaffDashboard(staffId, emptyDb)
+    expect(result.byStatus).toHaveLength(8)
+    expect(result.byStatus.every((row) => row.count === 0)).toBe(true)
+    expect(result.recentlyUpdated).toEqual([])
+    expect(result.myOpenActions).toEqual({ total: 0, items: [] })
   })
 })
 
@@ -197,12 +235,53 @@ describe('DASH-05 · BR-38 · recent Tickets use updatedAt then id', () => {
   })
 })
 
-describe('DASH-06 · AC-40 · list payloads remain bounded', () => {
-  it('never returns more than five recent Tickets or ten Actions', async () => {
-    const response = await request(app).get('/api/staff/dashboard').set('Cookie', staffCookie)
-    expect(response.status).toBe(200)
-    expect(response.body.data.recentlyUpdated.length).toBeLessThanOrEqual(5)
-    expect(response.body.data.myOpenActions.items.length).toBeLessThanOrEqual(10)
+describe('DASH-06 · AC-40 · bounded lists and constant query count', () => {
+  it('uses the same five data operations for 50 and 500 Tickets', async () => {
+    const requesterId = await idFor(REQUESTER_EMAIL)
+    const categoryId = (await prisma.category.findFirstOrThrow({ select: { id: true } })).id
+    const relatedSystemId = (await prisma.relatedSystem.findFirstOrThrow({ select: { id: true } })).id
+    const createTickets = (start: number, count: number) => prisma.ticket.createMany({
+      data: Array.from({ length: count }, (_, offset) => ({
+        ticketNo: `${BAND}${String(start + offset).padStart(4, '0')}`,
+        requesterId,
+        categoryId,
+        relatedSystemId,
+        summary: `Dashboard query-count fixture ${start + offset}`,
+        description: 'Synthetic data used only by the isolated test database.',
+        requestedPriority: 'MEDIUM' as const,
+        itPriority: 'MEDIUM' as const,
+        status: 'OPEN' as const,
+        ownerId: null,
+        createdAt: new Date(Date.UTC(2026, 0, 1, 0, start + offset)),
+        updatedAt: new Date(Date.UTC(2026, 0, 1, 0, start + offset)),
+      })),
+    })
+    const measuredDb = new PrismaClient({
+      adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
+      log: [{ level: 'query', emit: 'event' }],
+    })
+    let sqlQueryCount = 0
+    measuredDb.$on('query', () => { sqlQueryCount += 1 })
+    try {
+      const measuredApp = createApp({ db: measuredDb })
+      const runDashboard = async () => {
+        sqlQueryCount = 0
+        const response = await request(measuredApp).get('/api/staff/dashboard').set('Cookie', staffCookie)
+        expect(response.status).toBe(200)
+        expect(response.body.data.recentlyUpdated).toHaveLength(5)
+        expect(response.body.data.myOpenActions.items.length).toBeLessThanOrEqual(10)
+        return sqlQueryCount
+      }
+
+      await createTickets(1, 50)
+      const atFifty = await runDashboard()
+      await createTickets(51, 450)
+      const atFiveHundred = await runDashboard()
+      expect(atFifty).toBeGreaterThan(0)
+      expect(atFiveHundred).toBe(atFifty)
+    } finally {
+      await measuredDb.$disconnect()
+    }
   })
 })
 

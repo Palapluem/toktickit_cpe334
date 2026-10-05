@@ -54,7 +54,7 @@ describe('UI-17 · AC-29/31 · Requester empty, forbidden and failure states', (
     fetchRequesterDashboardMock.mockResolvedValueOnce({ ...DASHBOARD, totalTickets: 0 })
     renderDashboard()
     expect(await screen.findByText('You have not submitted any Tickets yet.')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Create Ticket' })).toHaveAttribute('href', '/tickets/new')
+    expect(screen.getAllByRole('link', { name: 'Create Ticket' })[0]).toHaveAttribute('href', '/tickets/new')
     expect(screen.queryByText('Needs my attention')).not.toBeInTheDocument()
   })
 

@@ -6,8 +6,8 @@
 // Updated because a queue asks what has gone quiet. Requested Priority is
 // not a queue filter at all — IT Priority governs the queue, and the
 // Requester's value is visible in Ticket Detail.
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   ApiRequestError,
   fetchStaffQueue,
@@ -46,12 +46,13 @@ const OWNER_OPTIONS = [
 ]
 
 /** Only the fields api-spec.md §8 whitelists; anything else is a 400. */
-type SortField = 'ticketNo' | 'itPriority' | 'status' | 'lastActivityAt'
+type SortField = 'ticketNo' | 'itPriority' | 'status' | 'lastActivityAt' | 'updatedAt'
 type SortDirection = 'asc' | 'desc'
 
 type Filters = {
   search: string
   status: string
+  statusGroup: 'active' | ''
   itPriority: string
   ownerId: string
   sort: { field: SortField; direction: SortDirection }
@@ -61,6 +62,7 @@ type Filters = {
 const DEFAULT_FILTERS: Filters = {
   search: '',
   status: '',
+  statusGroup: '',
   itPriority: '',
   ownerId: '',
   sort: { field: 'itPriority', direction: 'desc' },
@@ -68,6 +70,41 @@ const DEFAULT_FILTERS: Filters = {
 }
 
 type Phase = 'loading' | 'ready' | 'forbidden' | 'failed'
+
+function filtersFromSearchParams(params: URLSearchParams): Filters {
+  const status = params.get('status')
+  const itPriority = params.get('itPriority')
+  const rawSort = params.get('sort')?.split(':') ?? []
+  const sortField = rawSort[0]
+  const sortDirection = rawSort[1]
+  const rawPage = Number(params.get('page'))
+  const ownerId = params.get('ownerId') ?? ''
+  const validOwner =
+    ownerId === 'me' ||
+    ownerId === 'unassigned' ||
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(ownerId)
+  const validSortFields: SortField[] = [
+    'ticketNo', 'itPriority', 'status', 'lastActivityAt', 'updatedAt',
+  ]
+
+  return {
+    ...DEFAULT_FILTERS,
+    search: params.get('search') ?? '',
+    status: STATUSES.includes(status as TicketStatus) ? status! : '',
+    statusGroup:
+      params.get('statusGroup') === 'active' && !STATUSES.includes(status as TicketStatus)
+        ? 'active'
+        : '',
+    itPriority: PRIORITIES.includes(itPriority as Priority) ? itPriority! : '',
+    ownerId: validOwner ? ownerId : '',
+    sort:
+      validSortFields.includes(sortField as SortField) &&
+      (sortDirection === 'asc' || sortDirection === 'desc')
+        ? { field: sortField as SortField, direction: sortDirection }
+        : DEFAULT_FILTERS.sort,
+    page: Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1,
+  }
+}
 
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat('en-GB', {
@@ -77,7 +114,8 @@ function formatDate(value: string): string {
 }
 
 function ariaSortFor(field: SortField, sort: Filters['sort']) {
-  if (sort.field !== field) return 'none' as const
+  const updatedAlias = field === 'lastActivityAt' && sort.field === 'updatedAt'
+  if (sort.field !== field && !updatedAlias) return 'none' as const
   return sort.direction === 'asc' ? ('ascending' as const) : ('descending' as const)
 }
 
@@ -92,7 +130,7 @@ function SortButton({
   sort: Filters['sort']
   onSort: (field: SortField) => void
 }) {
-  const active = sort.field === field
+  const active = sort.field === field || (field === 'lastActivityAt' && sort.field === 'updatedAt')
   const direction = sort.direction === 'asc' ? 'ascending' : 'descending'
   return (
     <Button
@@ -115,11 +153,22 @@ function OwnerCell({ owner }: { owner: StaffQueueRow['owner'] }) {
 }
 
 export function StaffTicketQueue() {
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
-  const [searchInput, setSearchInput] = useState('')
+  const [searchParams] = useSearchParams()
+  const appliedSearchKey = useRef(searchParams.toString())
+  const [filters, setFilters] = useState<Filters>(() => filtersFromSearchParams(searchParams))
+  const [searchInput, setSearchInput] = useState(() => filtersFromSearchParams(searchParams).search)
+  const searchKey = searchParams.toString()
   const [response, setResponse] = useState<StaffQueueResponse | null>(null)
   const [phase, setPhase] = useState<Phase>('loading')
   const [retryNumber, setRetryNumber] = useState(0)
+
+  useEffect(() => {
+    if (searchKey === appliedSearchKey.current) return
+    appliedSearchKey.current = searchKey
+    const next = filtersFromSearchParams(new URLSearchParams(searchKey))
+    setFilters(next)
+    setSearchInput(next.search)
+  }, [searchKey])
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -140,6 +189,7 @@ export function StaffTicketQueue() {
       status: filters.status,
       itPriority: filters.itPriority,
       ownerId: filters.ownerId,
+      statusGroup: filters.statusGroup || undefined,
       sort: `${filters.sort.field}:${filters.sort.direction}`,
       page: filters.page,
     })
@@ -179,7 +229,12 @@ export function StaffTicketQueue() {
   }, [])
 
   const update = useCallback((patch: Partial<Filters>) => {
-    setFilters((current) => ({ ...current, ...patch, page: 1 }))
+    setFilters((current) => ({
+      ...current,
+      ...patch,
+      ...(patch.status ? { statusGroup: '' } : {}),
+      page: 1,
+    }))
   }, [])
 
   // Paging is the one change that must not reset the page.
@@ -192,7 +247,7 @@ export function StaffTicketQueue() {
     const applied = response?.appliedFilters
     if (!applied) return false
     return Boolean(
-      applied.search ?? applied.status ?? applied.itPriority ?? applied.categoryId ?? applied.ownerId,
+      applied.search ?? applied.status ?? applied.statusGroup ?? applied.itPriority ?? applied.categoryId ?? applied.ownerId,
     )
   }, [response])
 
@@ -201,6 +256,7 @@ export function StaffTicketQueue() {
   const hasFilters =
     filters.search !== '' ||
     filters.status !== '' ||
+    filters.statusGroup !== '' ||
     filters.itPriority !== '' ||
     filters.ownerId !== ''
 
@@ -283,6 +339,10 @@ export function StaffTicketQueue() {
           Clear Filters
         </Button>
       </div>
+
+      {filters.statusGroup === 'active' ? (
+        <p className="zen-page-kicker" role="status">Showing active Tickets</p>
+      ) : null}
 
       {phase === 'loading' ? <LoadingState label="Loading the queue…" /> : null}
 

@@ -12,6 +12,8 @@ import { StaffTicketDetail } from './screens/StaffTicketDetail.js'
 import { UserManagement } from './screens/UserManagement.js'
 import { Login } from './screens/Login.js'
 import { ChangePassword } from './screens/ChangePassword.js'
+import { StaffDashboard } from './screens/StaffDashboard.js'
+import { RequesterDashboard } from './screens/RequesterDashboard.js'
 import { RequireSession } from './components/RequireSession.js'
 import { useSession } from './context/SessionContext.js'
 import { CHANGE_PASSWORD_ROUTE, LOGIN_ROUTE, homeFor } from './routes.js'
@@ -19,7 +21,9 @@ import { CHANGE_PASSWORD_ROUTE, LOGIN_ROUTE, homeFor } from './routes.js'
 function ShellLayout() {
   const { pathname } = useLocation()
   const breadcrumb =
-    pathname === '/admin/users'
+    pathname === '/dashboard' || pathname === '/staff/dashboard'
+      ? ['Dashboard']
+      : pathname === '/admin/users'
       ? ['User Management']
       : pathname.startsWith('/staff/tickets/')
         ? ['Ticket Queue', 'Ticket Details']
@@ -38,6 +42,15 @@ function ShellLayout() {
       <Outlet />
     </AppShell>
   )
+}
+
+function RequesterTicketsRoute() {
+  const location = useLocation()
+  const state = location.state as { dashboardLanding?: unknown } | null
+  if (state?.dashboardLanding === true) {
+    return <Navigate to="/dashboard" replace state={null} />
+  }
+  return <MyTickets />
 }
 
 /**
@@ -75,20 +88,35 @@ function LoginRoute() {
   return <Login />
 }
 
+function HomeRoute() {
+  const { user, status } = useSession()
+  if (status === 'loading') return null
+  if (!user) return <Navigate to={LOGIN_ROUTE} replace />
+  return <Navigate to={user.mustChangePassword ? CHANGE_PASSWORD_ROUTE : homeFor(user.role)} replace />
+}
+
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/tickets" replace />} />
+      <Route path="/" element={<HomeRoute />} />
 
       <Route path={LOGIN_ROUTE} element={<LoginRoute />} />
       <Route path={CHANGE_PASSWORD_ROUTE} element={<ChangePasswordLayout />} />
 
       <Route element={<ShellLayout />}>
         <Route
+          path="/dashboard"
+          element={<RequireSession><RequesterDashboard /></RequireSession>}
+        />
+        <Route
+          path="/staff/dashboard"
+          element={<RequireSession><StaffDashboard /></RequireSession>}
+        />
+        <Route
           path="/tickets"
           element={
             <RequireSession>
-              <MyTickets />
+              <RequesterTicketsRoute />
             </RequireSession>
           }
         />
