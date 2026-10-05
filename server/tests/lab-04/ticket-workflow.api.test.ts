@@ -1,4 +1,4 @@
-// WF-01 to WF-16, SEC-02, SEC-03, SEC-06, SEC-07 · lab-04 AC-15 to AC-25, BR-19 to BR-33 — the Ticket workflow over HTTP.
+// WF-01 to WF-17, SEC-02, SEC-03, SEC-06, SEC-07 · lab-04 AC-15 to AC-25, BR-19 to BR-33 — the Ticket workflow over HTTP.
 // Expectations are written from specification §5.2 and api-spec §4, not read back from the implementation.
 import { execFileSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
@@ -797,6 +797,70 @@ describe('WF-16 · BR-35 · BR-38 · the Ticket updatedAt only moves forward, wh
     expect((await at(new Date(base + 90_000)).patch(`/api/staff/tickets/${ticketId}/it-priority`).set('Cookie', patricia).send({ itPriority: 'LOW' })).status).toBe(200)
 
     expect((await row(ticketId)).updatedAt.getTime()).toBe(base + 90_000)
+  })
+})
+
+describe('WF-17 · AC-25 · BR-25 · BR-33 · BR-35 · the Requester indication is written under the Ticket lock, like every other change', () => {
+  const indicate = (ticketId: string, now?: Date) =>
+    request(now ? createApp({ now: () => now }) : app).post(`/api/tickets/${ticketId}/requester-resolution`).set('Cookie', jennifer).send({})
+
+  /** Starts the request while another transaction holds the Ticket and commits `whileHeld`, then lets it go. */
+  async function indicateBehindLock(ticketId: string, whileHeld?: Parameters<typeof holdTicketLock>[1]) {
+    const lock = holdTicketLock(ticketId, whileHeld)
+    await lock.acquired
+    let finished = false
+    const pending = indicate(ticketId).then((response) => {
+      finished = true
+      return response
+    })
+    await waitUntilBlocked()
+    expect(finished, 'the request waits for the lock').toBe(false)
+    lock.release()
+    await lock.done
+    return pending
+  }
+
+  it('waits for the lock and then records the indication (positive control)', async () => {
+    const ticketId = await makeTicket({ status: 'IN_PROGRESS', ownerEmail: DANIEL_EMAIL })
+
+    const response = await indicateBehindLock(ticketId)
+
+    expect(response.status).toBe(200)
+    expect(await row(ticketId)).toMatchObject({ status: 'IN_PROGRESS', version: 2 })
+    expect((await row(ticketId)).requesterResolvedAt).not.toBeNull()
+  })
+
+  it.each(['CANCELLED', 'CLOSED'] as const)('refuses it, and stores nothing, when the Ticket became %s while the request waited', async (terminal) => {
+    const ticketId = await makeTicket({ status: 'OPEN', ownerEmail: DANIEL_EMAIL })
+
+    const response = await indicateBehindLock(ticketId, (tx) => tx.ticket.update({ where: { id: ticketId }, data: { status: terminal, version: { increment: 1 } } }))
+
+    expect(response.status).toBe(409)
+    expect(response.body.error.code).toBe('TICKET_CLOSED')
+    const stored = await row(ticketId)
+    expect(stored).toMatchObject({ status: terminal, version: 2, requesterResolvedAt: null })
+  })
+
+  it('keeps the later instant when the request carries an earlier one, as every other change does (BR-35)', async () => {
+    const ticketId = await makeTicket({ status: 'IN_PROGRESS', ownerEmail: DANIEL_EMAIL })
+    const base = Date.now() + 120_000
+    const first = await request(createApp({ now: () => new Date(base) })).patch(`/api/staff/tickets/${ticketId}/it-priority`).set('Cookie', patricia).send({ itPriority: 'URGENT' })
+    expect(first.status).toBe(200)
+
+    expect((await indicate(ticketId, new Date(base - 30_000))).status).toBe(200)
+
+    expect((await row(ticketId)).updatedAt.getTime()).toBe(base)
+  })
+
+  it('stamps the Ticket with the same instant as the indication, so one clock explains both (BR-35)', async () => {
+    const ticketId = await makeTicket({ status: 'IN_PROGRESS', ownerEmail: DANIEL_EMAIL })
+    const later = new Date(Date.now() + 90_000)
+
+    expect((await indicate(ticketId, later)).status).toBe(200)
+
+    const stored = await row(ticketId)
+    expect(stored.requesterResolvedAt!.getTime()).toBe(later.getTime())
+    expect(stored.updatedAt.getTime()).toBe(later.getTime())
   })
 })
 
