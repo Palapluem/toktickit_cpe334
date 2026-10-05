@@ -185,7 +185,7 @@
 |---|---|---|---|---|---|---|
 | REG-01 | Regression | AC-37 | Full Lab 1–3 server suites. The only planned edit is the status request body gaining `expectedVersion` (specification §11.9) | All pass; nothing skipped | `server/tests/lab-01`, `lab-02`, `lab-03` | NOT RUN |
 | REG-02 | Regression | AC-37 | Full Lab 2–3 client suites | All pass | `client/tests/lab-02`, `lab-03` | NOT RUN |
-| REG-03 | Regression | AC-37, FR-22 | Lab 2–3 E2E specs with capture disabled. AUTH-03's landing assertion moves to the Dashboard (§11.12) | All pass; no tracked file modified | `e2e/lab-02`, `e2e/lab-03` | NOT RUN |
+| REG-03 | Regression | AC-32, AC-37, FR-21 | Lab 2–3 E2E specs and Lab 3 sign-in/password-change flows. Besides AUTH-03, the three affected legacy landing assertions (ADMIN-04, Login, Change Password) now expect Dashboard, as required by Lab 4's role home; `/tickets` remains the plain My Tickets route. | All pass with capture disabled; no tracked screenshot modified | `e2e/lab-02`, `e2e/lab-03`, `client/tests/lab-03/Login.test.tsx`, `client/tests/lab-03/ChangePassword.test.tsx` | PASS (full E2E 46/46; client suite 227/227) |
 | REG-04 | Regression | FR-22 | Representative Part 8 journeys: sign-in, My Tickets, detail with attachments and comments, Queue, Internal Notes, User Management | Each journey succeeds; captured in `regression/` | `e2e/lab-04/regression.spec.ts` | NOT RUN |
 
 ---
