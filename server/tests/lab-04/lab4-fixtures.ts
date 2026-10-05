@@ -73,3 +73,36 @@ export async function removeTickets(band: string): Promise<void> {
   await prisma.publicComment.deleteMany({ where: { ticketId: { in: ids } } })
   await prisma.ticket.deleteMany({ where: { id: { in: ids } } })
 }
+
+/**
+ * Holds a Ticket's row lock until released; `acquired` settles once the lock is really held, not after a guess.
+ * `whileHeld` runs inside the holder's transaction, so its change is committed only when the lock is released.
+ */
+export function holdTicketLock(ticketId: string, whileHeld?: (tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0]) => Promise<unknown>) {
+  let release: () => void = () => {}
+  let signal: () => void = () => {}
+  const held = new Promise<void>((resolve) => { release = resolve })
+  const acquired = new Promise<void>((resolve) => { signal = resolve })
+  const done = prisma.$transaction(
+    async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "Ticket" WHERE "id" = ${ticketId}::uuid FOR UPDATE`
+      await whileHeld?.(tx)
+      signal()
+      await held
+    },
+    { timeout: 20_000 },
+  )
+  return { acquired, release, done }
+}
+
+/** Settles once a backend of this database is waiting for a lock, so a request is known to be blocked, not just slow. */
+export async function waitUntilBlocked(timeoutMs = 5_000): Promise<void> {
+  const deadline = Date.now() + timeoutMs
+  for (;;) {
+    const [row] = await prisma.$queryRaw<{ waiting: bigint }[]>`
+      SELECT count(*) AS "waiting" FROM pg_stat_activity WHERE datname = current_database() AND wait_event_type = 'Lock'`
+    if (Number(row.waiting) > 0) return
+    if (Date.now() > deadline) throw new Error('No request is waiting for a lock.')
+    await new Promise((resolve) => setTimeout(resolve, 20))
+  }
+}

@@ -18,11 +18,13 @@ import {
   STAFF_EMAIL,
   WORKABLE,
   clearHistory,
+  holdTicketLock,
   idFor,
   removeTickets,
   restoreSeededCredentials,
   signIn,
   ticketFactory,
+  waitUntilBlocked,
 } from './lab4-fixtures.js'
 
 const BAND = 'TKT-2026-98'
@@ -51,7 +53,6 @@ const valid = (assigneeId: string, over: Record<string, unknown> = {}) => ({
   assigneeId,
   ...over,
 })
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /** A fresh Ticket (owned by Daniel) with one Action created by Patricia for Olivia. */
 async function withAction(ticketStatus: TicketStatus = 'IN_PROGRESS') {
@@ -677,25 +678,42 @@ describe('API-16 · AC-03 · BR-17 · what the Requester sees', () => {
 describe('API-17 · BR-33 · creating an Action waits for the Ticket row lock', () => {
   it('does not finish while another transaction holds the Ticket, and finishes once it lets go', async () => {
     const ticketId = await makeTicket()
-    let release: () => void = () => {}
-    const held = new Promise<void>((resolve) => { release = resolve })
-    const holder = prisma.$transaction(
-      async (tx) => {
-        await tx.$queryRaw`SELECT "id" FROM "Ticket" WHERE "id" = ${ticketId}::uuid FOR UPDATE`
-        await held
-      },
-      { timeout: 20_000 },
-    )
-    await sleep(150)
+    const lock = holdTicketLock(ticketId)
+    await lock.acquired
 
-    const pending = create(ticketId, patricia, valid(id.olivia)).then((response) => response)
-    const outcome = await Promise.race([pending.then(() => 'finished'), sleep(600).then(() => 'waiting')])
-    expect(outcome).toBe('waiting')
+    let finished = false
+    const pending = create(ticketId, patricia, valid(id.olivia)).then((response) => {
+      finished = true
+      return response
+    })
+    await waitUntilBlocked()
+    expect(finished).toBe(false)
     expect(await prisma.actionTaken.count({ where: { ticketId } })).toBe(0)
 
-    release()
-    await holder
+    lock.release()
+    await lock.done
     expect((await pending).status).toBe(201)
+  })
+
+  it('reads the Ticket only after the lock, so it sees what the holder committed and refuses', async () => {
+    const ticketId = await makeTicket()
+    const lock = holdTicketLock(ticketId, (tx) => tx.ticket.update({ where: { id: ticketId }, data: { status: 'RESOLVED' } }))
+    await lock.acquired
+
+    let finished = false
+    const pending = create(ticketId, patricia, valid(id.olivia)).then((response) => {
+      finished = true
+      return response
+    })
+    await waitUntilBlocked()
+    expect(finished).toBe(false)
+
+    lock.release()
+    await lock.done
+    const response = await pending
+    expect(response.status).toBe(409)
+    expect(response.body.error.code).toBe('TICKET_NOT_WORKABLE')
+    expect(await prisma.actionTaken.count({ where: { ticketId } })).toBe(0)
   })
 })
 
