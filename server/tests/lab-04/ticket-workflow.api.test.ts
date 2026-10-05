@@ -1,4 +1,4 @@
-// WF-01 to WF-15, SEC-02, SEC-03, SEC-06, SEC-07 · lab-04 AC-15 to AC-25, BR-19 to BR-33 — the Ticket workflow over HTTP.
+// WF-01 to WF-16, SEC-02, SEC-03, SEC-06, SEC-07 · lab-04 AC-15 to AC-25, BR-19 to BR-33 — the Ticket workflow over HTTP.
 // Expectations are written from specification §5.2 and api-spec §4, not read back from the implementation.
 import { execFileSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
@@ -735,6 +735,46 @@ describe('WF-15 · AC-22 · BR-29 · one Ticket\'s events keep the order the cha
       { from: 'URGENT', to: 'LOW' },
     ])
     expect(strictlyAscending(events)).toBe(true)
+  })
+})
+
+describe('WF-16 · BR-35 · BR-38 · the Ticket updatedAt only moves forward, whatever the clock of a request says', () => {
+  const at = (when: Date) => request(createApp({ now: () => when }))
+  const base = Date.now() + 120_000
+
+  it('keeps the latest instant when a request that waited for the lock carries an earlier one, for every kind of change', async () => {
+    const ticketId = await makeTicket({ status: 'IN_PROGRESS', ownerEmail: DANIEL_EMAIL })
+    const updatedAt = async () => (await row(ticketId)).updatedAt.getTime()
+
+    expect((await at(new Date(base)).patch(`/api/staff/tickets/${ticketId}/it-priority`).set('Cookie', patricia).send({ itPriority: 'URGENT' })).status).toBe(200)
+    expect(await updatedAt()).toBe(base)
+
+    expect((await at(new Date(base - 30_000)).patch(`/api/staff/tickets/${ticketId}/owner`).set('Cookie', patricia).send({ ownerId: id.olivia })).status).toBe(200)
+    expect(await updatedAt(), 'owner change').toBe(base)
+    expect((await at(new Date(base - 40_000)).patch(`/api/staff/tickets/${ticketId}/status`).set('Cookie', patricia).send({ status: 'WAITING_FOR_REQUESTER', expectedVersion: 3 })).status).toBe(200)
+    expect(await updatedAt(), 'status change').toBe(base)
+
+    const created = await at(new Date(base - 50_000)).post(`/api/tickets/${ticketId}/actions`).set('Cookie', patricia)
+      .send({ requestId: randomUUID(), description: 'Collect the relay error.', assigneeId: id.olivia })
+    expect(created.status).toBe(201)
+    expect(await updatedAt(), 'Action create').toBe(base)
+    const edited = await at(new Date(base - 60_000)).patch(`/api/tickets/${ticketId}/actions/${created.body.data.id}`).set('Cookie', patricia)
+      .send({ expectedVersion: 1, description: 'Collect the relay error and the gateway log.' })
+    expect(edited.status).toBe(200)
+    expect(await updatedAt(), 'Action edit').toBe(base)
+    const started = await at(new Date(base - 70_000)).patch(`/api/tickets/${ticketId}/actions/${created.body.data.id}/status`).set('Cookie', patricia)
+      .send({ expectedVersion: 2, status: 'IN_PROGRESS' })
+    expect(started.status).toBe(200)
+    expect(await updatedAt(), 'Action move').toBe(base)
+  })
+
+  it('still moves forward when a request carries a later instant (positive control)', async () => {
+    const ticketId = await makeTicket({ status: 'OPEN', ownerEmail: DANIEL_EMAIL })
+
+    expect((await at(new Date(base)).patch(`/api/staff/tickets/${ticketId}/it-priority`).set('Cookie', patricia).send({ itPriority: 'URGENT' })).status).toBe(200)
+    expect((await at(new Date(base + 90_000)).patch(`/api/staff/tickets/${ticketId}/it-priority`).set('Cookie', patricia).send({ itPriority: 'LOW' })).status).toBe(200)
+
+    expect((await row(ticketId)).updatedAt.getTime()).toBe(base + 90_000)
   })
 })
 
