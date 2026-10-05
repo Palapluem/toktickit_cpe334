@@ -1499,6 +1499,11 @@ body {
   overflow-wrap: anywhere;
 }
 
+/* A name with no place to break must not widen the table past its card (AC-34). */
+.actions__table td {
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 991.98px) {
   .actions__table,
   .actions__table tbody,
