@@ -323,7 +323,14 @@ Cross-browser run (Chromium is the only project in `playwright.config.ts`; brows
 // playwright.cross-browser.config.ts
 import { devices } from '@playwright/test'
 import base from './playwright.config'
-export default { ...base, projects: [{ name: 'firefox', use: { ...devices['Desktop Firefox'] } }, { name: 'webkit', use: { ...devices['Desktop Safari'] } }] }
+export default {
+  ...base,
+  projects: [
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    { name: 'msedge', use: { ...devices['Desktop Edge'], channel: 'msedge' } }, // the installed Microsoft Edge, with Playwright's own temporary profile
+  ],
+}
 ```
 
 ```bash
@@ -345,7 +352,7 @@ Each will record the commit, environment, commands, full runner output location,
 
 ## 7. Known Limitations
 
-- **Cross-browser coverage is ad hoc.** The suite runs on Chromium. A run of `e2e/lab-04` on the #91 head also passed on Firefox, and on WebKit except A11Y-01's Tab walk: WebKit's default Tab order skips checkboxes and buttons (Safari's "Press Tab to highlight each item" setting), so that walk is Chromium and Firefox only. The dialog and focus tests of A11Y-02 pass on WebKit. No screen reader has been used (ui-spec §11, row 21).
+- **Cross-browser coverage is ad hoc.** The suite runs on Chromium. A run of `e2e/lab-04` on the #91 head also passed on Firefox (12 of 12), on the student's everyday browser Microsoft Edge 154 (12 of 12, run twice, the second time by an independent audit), and on WebKit except A11Y-01's Tab walk: WebKit's default Tab order skips checkboxes and buttons (Safari's "Press Tab to highlight each item" setting), so that walk is Chromium and Firefox only. The dialog and focus tests of A11Y-02 pass on WebKit. No screen reader has been used (ui-spec §11, row 21).
 - **A very long name in the page header is not covered.** A person whose own display name is 120 characters with no break widens the shell header (Lab 3's shell, found while testing RESP-01); the Actions area wraps such a name. Recorded, not changed.
 - The performance smoke result is a local measurement on one Mac, not production capacity (specification §11.14).
 - Dashboard and Action failure, loading and empty captures that need a broken server are produced by API interception and labelled *fixture*. The API tests prove the backend behaviour.
