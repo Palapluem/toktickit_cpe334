@@ -260,3 +260,5 @@ Run against the integrated staging candidate before the release, and again on fi
 | 17 | Conflict and save failure keep entered values | E2E; screenshot | NOT RUN |
 | 18 | Dashboard is first and active in navigation; it is the landing page for each role | E2E; screenshots | NOT RUN |
 | 19 | No console error, broken link, placeholder text or no-op control in the journeys | E2E console and link audit output | NOT RUN |
+| 20 | The Lab 4 journeys also pass on Firefox and WebKit, not only Chromium | Run output of the cross-browser command in `tests.md` §5, on the staging candidate | NOT RUN |
+| 21 | A screen-reader walk of the Actions section: the table and cards, the dialog's name and focus, the validation messages and the status announcements | Dated notes: browser, screen reader and version, what was read out | NOT RUN |

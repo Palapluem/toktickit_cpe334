@@ -317,6 +317,19 @@ TEST_DATABASE_URL=… npm test          # from server/; a fresh database whose n
 - A default `npm run test:e2e` writes nothing tracked: 40 passed with and without `CAPTURE_EVIDENCE=1`, and `git status -- artifacts` stayed clean both times. Lab 2 and Lab 3 captures are frozen.
 - Runner output moved to the ignored `artifacts/lab-04/playwright-results/`.
 
+Cross-browser run (Chromium is the only project in `playwright.config.ts`; browsers installed once with `npx playwright install firefox webkit`). A throwaway config, not committed, next to it:
+
+```ts
+// playwright.cross-browser.config.ts
+import { devices } from '@playwright/test'
+import base from './playwright.config'
+export default { ...base, projects: [{ name: 'firefox', use: { ...devices['Desktop Firefox'] } }, { name: 'webkit', use: { ...devices['Desktop Safari'] } }] }
+```
+
+```bash
+npx playwright test -c playwright.cross-browser.config.ts e2e/lab-04   # under the E2E lock
+```
+
 Still planned: `server/scripts/verify-migration.mjs` (#90) and `server/scripts/perf-smoke.mjs` (#93).
 
 Suites always run sequentially. `toktickit_dev` is never a target.
@@ -332,6 +345,8 @@ Each will record the commit, environment, commands, full runner output location,
 
 ## 7. Known Limitations
 
+- **Cross-browser coverage is ad hoc.** The suite runs on Chromium. A run of `e2e/lab-04` on the #91 head also passed on Firefox, and on WebKit except A11Y-01's Tab walk: WebKit's default Tab order skips checkboxes and buttons (Safari's "Press Tab to highlight each item" setting), so that walk is Chromium and Firefox only. The dialog and focus tests of A11Y-02 pass on WebKit. No screen reader has been used (ui-spec §11, row 21).
+- **A very long name in the page header is not covered.** A person whose own display name is 120 characters with no break widens the shell header (Lab 3's shell, found while testing RESP-01); the Actions area wraps such a name. Recorded, not changed.
 - The performance smoke result is a local measurement on one Mac, not production capacity (specification §11.14).
 - Dashboard and Action failure, loading and empty captures that need a broken server are produced by API interception and labelled *fixture*. The API tests prove the backend behaviour.
 - History begins with Lab 4. Seeded and legacy Tickets have no events for earlier changes (specification §7).
