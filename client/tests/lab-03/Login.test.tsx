@@ -33,7 +33,7 @@ function renderLogin() {
       <SessionProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/tickets" element={<p>My Tickets screen</p>} />
+          <Route path="/dashboard" element={<p>Dashboard screen</p>} />
           <Route path="/change-password" element={<p>Change password screen</p>} />
         </Routes>
       </SessionProvider>
@@ -70,7 +70,7 @@ describe('UI-01 · AC-01 · a valid sign-in reaches the application', () => {
     renderLogin()
     await signIn()
 
-    expect(await screen.findByText('My Tickets screen')).toBeInTheDocument()
+    expect(await screen.findByText('Dashboard screen')).toBeInTheDocument()
   })
 
   it('routes a user with an initial password to Change Password (AC-02)', async () => {
