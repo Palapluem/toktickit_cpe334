@@ -144,8 +144,9 @@ function requireCurrent(action: ActionRow, expectedVersion: number, ticketStatus
   requireWorking(ticketStatus)
 }
 
+/** Moves the Ticket's updatedAt to `now`, but never back past what an earlier change set (BR-35). */
 async function touchTicket(tx: Tx, ticketId: string, now: Date): Promise<void> {
-  await tx.ticket.update({ where: { id: ticketId }, data: { updatedAt: now }, select: { id: true } })
+  await tx.$executeRaw`UPDATE "Ticket" SET "updatedAt" = GREATEST("updatedAt", ${now}::timestamptz) WHERE "id" = ${ticketId}::uuid`
 }
 
 export async function listActions(ticketId: string, callerId: string, grant: Scope, db: PrismaClient) {

@@ -766,6 +766,8 @@ describe('WF-16 · BR-35 · BR-38 · the Ticket updatedAt only moves forward, wh
       .send({ expectedVersion: 2, status: 'IN_PROGRESS' })
     expect(started.status).toBe(200)
     expect(await updatedAt(), 'Action move').toBe(base)
+    expect((await at(new Date(base - 80_000)).patch(`/api/staff/tickets/${ticketId}/it-priority`).set('Cookie', patricia).send({ itPriority: 'LOW' })).status).toBe(200)
+    expect(await updatedAt(), 'IT Priority change').toBe(base)
   })
 
   it('still moves forward when a request carries a later instant (positive control)', async () => {

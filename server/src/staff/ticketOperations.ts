@@ -160,13 +160,16 @@ export async function getStaffTicketDetail(
 /** The Ticket row, locked for the rest of the transaction (BR-33). Another Requester's Ticket is not found. */
 async function lockTicket(tx: Tx, ticketId: string, scope?: { requesterId: string }) {
   const rows = await tx.$queryRaw<
-    { status: string; version: number; requesterId: string; ownerId: string | null; itPriority: string }[]
+    { status: string; version: number; requesterId: string; ownerId: string | null; itPriority: string; updatedAt: Date }[]
   >`
-    SELECT "status"::text AS "status", "version", "requesterId", "ownerId", "itPriority"::text AS "itPriority"
+    SELECT "status"::text AS "status", "version", "requesterId", "ownerId", "itPriority"::text AS "itPriority", "updatedAt"
     FROM "Ticket" WHERE "id" = ${ticketId}::uuid FOR UPDATE`
   if (rows.length === 0 || (scope && rows[0].requesterId !== scope.requesterId)) throw ticketNotFound()
   return rows[0]
 }
+
+/** A request that waited for the lock may carry an instant earlier than the change before it; updatedAt never goes back. */
+const stampFor = (now: Date, ticket: { updatedAt: Date }): Date => (ticket.updatedAt > now ? ticket.updatedAt : now)
 
 export async function setTicketOwner(
   ticketId: string,
@@ -220,7 +223,7 @@ export async function setTicketOwner(
         ownerId: targetId,
         ...(claimsNewTicket ? { status: 'OPEN' } : {}),
         version: { increment: 1 },
-        updatedAt: now,
+        updatedAt: stampFor(now, ticket),
       },
       select: { id: true },
     })
@@ -274,7 +277,7 @@ export async function setItPriority(
 
     await tx.ticket.update({
       where: { id: ticketId },
-      data: { itPriority: raw as Priority, version: { increment: 1 }, updatedAt: now },
+      data: { itPriority: raw as Priority, version: { increment: 1 }, updatedAt: stampFor(now, ticket) },
       select: { id: true },
     })
     await appendEvents(tx, now, [
@@ -401,7 +404,7 @@ export async function setTicketStatus(
       data: {
         status: to,
         version: { increment: 1 },
-        updatedAt: now,
+        updatedAt: stampFor(now, ticket),
         // BR-23: the Requester's signal is about the problem they reported, and
         // reopening says it was not solved after all.
         ...(to === 'REOPENED' ? { requesterResolvedAt: null } : {}),
