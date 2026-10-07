@@ -14,6 +14,7 @@ import { Button } from '../components/Button.js'
 import { FormField } from '../components/FormField.js'
 import { ErrorState, LoadingState } from '../components/States.js'
 import { useSession } from '../context/SessionContext.js'
+import { formatBangkokTime } from '../dateTime.js'
 
 const PRIORITIES: Priority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
 const MAX_ATTACHMENTS = 5
@@ -278,7 +279,7 @@ export function CreateTicket() {
             </FormField>
             <FormField id="ticketDate" label="Ticket Date" readOnly>
               <input
-                value={createdTicket ? new Date(createdTicket.createdAt).toLocaleString() : 'Set on submission'}
+                value={createdTicket ? formatBangkokTime(createdTicket.createdAt) : 'Set on submission'}
                 readOnly
               />
             </FormField>

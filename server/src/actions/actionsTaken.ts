@@ -8,7 +8,15 @@ import { ApiError, type FieldError } from '../http/errors.js'
 import type { Scope } from '../auth/matrix.js'
 import type { Role } from '../auth/types.js'
 import { UUID } from '../tickets/validation.js'
-import { appendActionEvent, type Tx } from './events.js'
+import { CREATION_ORDER } from '../tickets/workflowRules.js'
+import {
+  actionAssignedPayload,
+  actionCreatedPayload,
+  actionMovedPayload,
+  actionUpdatedPayload,
+  appendEvents,
+  type Tx,
+} from './events.js'
 import {
   ATTACHMENT_NOTES_MAX,
   DESCRIPTION_MAX,
@@ -136,8 +144,9 @@ function requireCurrent(action: ActionRow, expectedVersion: number, ticketStatus
   requireWorking(ticketStatus)
 }
 
+/** Moves the Ticket's updatedAt to `now`, but never back past what an earlier change set (BR-35). */
 async function touchTicket(tx: Tx, ticketId: string, now: Date): Promise<void> {
-  await tx.ticket.update({ where: { id: ticketId }, data: { updatedAt: now }, select: { id: true } })
+  await tx.$executeRaw`UPDATE "Ticket" SET "updatedAt" = GREATEST("updatedAt", ${now}::timestamptz) WHERE "id" = ${ticketId}::uuid`
 }
 
 export async function listActions(ticketId: string, callerId: string, grant: Scope, db: PrismaClient) {
@@ -150,7 +159,7 @@ export async function listActions(ticketId: string, callerId: string, grant: Sco
   const rows = await db.actionTaken.findMany({
     where: { ticketId },
     include: INCLUDE,
-    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+    orderBy: [...CREATION_ORDER],
   })
   return rows.map((row) => view(row, grant !== 'own'))
 }
@@ -195,13 +204,15 @@ export async function createAction(ticketId: string, callerId: string, body: unk
       include: INCLUDE,
     })
     await touchTicket(tx, ticketId, now)
-    await appendActionEvent(tx, {
-      ticketId,
-      actionId: created.id,
-      actorId: callerId,
-      type: 'ACTION_CREATED',
-      payload: { assigneeId: created.assigneeId },
-    })
+    await appendEvents(tx, now, [
+      {
+        ticketId,
+        actionId: created.id,
+        actorId: callerId,
+        type: 'ACTION_CREATED',
+        payload: actionCreatedPayload({ assigneeId: created.assigneeId }),
+      },
+    ])
     return { created: true, action: view(created, true) }
   })
 }
@@ -273,17 +284,22 @@ export async function updateAction(
       include: INCLUDE,
     })
     await touchTicket(tx, ticketId, now)
-    if (changedFields.length > 0) {
-      await appendActionEvent(tx, {
-        ticketId, actionId, actorId: callerId, type: 'ACTION_UPDATED', payload: { changedFields },
-      })
-    }
-    if (reassigned) {
-      await appendActionEvent(tx, {
-        ticketId, actionId, actorId: callerId, type: 'ACTION_ASSIGNED',
-        payload: { fromAssigneeId: current.assigneeId, toAssigneeId: updated.assigneeId },
-      })
-    }
+    await appendEvents(tx, now, [
+      ...(changedFields.length > 0
+        ? [{ ticketId, actionId, actorId: callerId, type: 'ACTION_UPDATED' as const, payload: actionUpdatedPayload(changedFields) }]
+        : []),
+      ...(reassigned
+        ? [
+            {
+              ticketId,
+              actionId,
+              actorId: callerId,
+              type: 'ACTION_ASSIGNED' as const,
+              payload: actionAssignedPayload({ fromAssigneeId: current.assigneeId, toAssigneeId: updated.assigneeId }),
+            },
+          ]
+        : []),
+    ])
     return view(updated, true)
   })
 }
@@ -354,13 +370,15 @@ export async function transitionAction(
 
     const updated = await tx.actionTaken.update({ where: { id: actionId }, data: changes, include: INCLUDE })
     await touchTicket(tx, ticketId, now)
-    await appendActionEvent(tx, {
-      ticketId,
-      actionId,
-      actorId: callerId,
-      type: TRANSITION_EVENT[target as keyof typeof TRANSITION_EVENT],
-      payload: { from: current.status, to: target },
-    })
+    await appendEvents(tx, now, [
+      {
+        ticketId,
+        actionId,
+        actorId: callerId,
+        type: TRANSITION_EVENT[target as keyof typeof TRANSITION_EVENT],
+        payload: actionMovedPayload({ from: current.status, to: target }),
+      },
+    ])
     return view(updated, true)
   })
 }

@@ -8,6 +8,7 @@ import { ApiError, type FieldError } from '../http/errors.js'
 import { logSecurityEvent } from '../http/securityLog.js'
 import type { Scope } from '../auth/matrix.js'
 import type { Role } from '../auth/types.js'
+import { CREATION_ORDER } from './workflowRules.js'
 
 export const MIN_BODY_LENGTH = 1
 export const MAX_BODY_LENGTH = 2000
@@ -93,7 +94,7 @@ export async function listPublicComments(
   return db.publicComment.findMany({
     where: { ticketId },
     select: ENTRY_SELECT,
-    orderBy: { createdAt: 'asc' },
+    orderBy: [...CREATION_ORDER],
   })
 }
 
@@ -132,7 +133,7 @@ export async function listInternalNotes(
   return db.internalNote.findMany({
     where: { ticketId },
     select: ENTRY_SELECT,
-    orderBy: { createdAt: 'asc' },
+    orderBy: [...CREATION_ORDER],
   })
 }
 

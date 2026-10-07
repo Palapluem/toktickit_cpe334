@@ -1423,6 +1423,59 @@ body {
   gap: var(--zen-space-2);
 }
 
+/* ---- Ticket history and the status control's feedback (lab-04 ui-spec §6, §7) ---- */
+
+.history__events {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.history__event {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--zen-space-1) var(--zen-space-3);
+  border-top: 1px solid var(--zen-border);
+  padding: var(--zen-space-2) 0;
+  overflow-wrap: anywhere;
+}
+
+.history__event time {
+  font-size: 0.8125rem;
+  color: var(--zen-text-muted);
+}
+
+.history__actor {
+  font-weight: 600;
+}
+
+.history__empty {
+  margin: 0;
+  color: var(--zen-text-muted);
+}
+
+.staff-ticket__gate,
+.staff-ticket__notice {
+  margin: var(--zen-space-2) 0 0;
+  color: var(--zen-text-muted);
+}
+
+.staff-ticket__confirm {
+  margin-top: var(--zen-space-3);
+  padding: var(--zen-space-3);
+  border: 1px solid var(--zen-border);
+  border-radius: var(--zen-radius);
+}
+
+.staff-ticket__confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--zen-space-2);
+}
+
 /* ---- Comment and note threads (lab-03 ui-spec §9) ---- */
 
 .thread__audience {

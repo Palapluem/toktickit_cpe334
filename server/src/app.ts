@@ -25,6 +25,7 @@ import {
   MAX_ATTACHMENTS,
 } from './tickets/attachmentRules.js'
 import { listTickets } from './tickets/listTickets.js'
+import { listHistory } from './tickets/history.js'
 import { listStaffQueue } from './staff/staffQueue.js'
 import {
   createUser,
@@ -574,6 +575,7 @@ export function createApp(options: CreateTicketOptions = {}) {
         req.user!.id,
         req.user!.role,
         req.body,
+        options.now?.() ?? new Date(),
         options.db ?? prisma,
       )
       res.json({ data })
@@ -588,8 +590,10 @@ export function createApp(options: CreateTicketOptions = {}) {
     async (req, res) => {
       const data = await setItPriority(
         ticketParameter(req.params.id),
+        req.user!.id,
         req.user!.role,
         req.body,
+        options.now?.() ?? new Date(),
         options.db ?? prisma,
       )
       res.json({ data })
@@ -608,6 +612,23 @@ export function createApp(options: CreateTicketOptions = {}) {
         req.user!.role,
         req.grant!,
         req.body,
+        options.now?.() ?? new Date(),
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.get(
+    '/api/tickets/:id/history',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('history:read'),
+    async (req, res) => {
+      const data = await listHistory(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.grant!,
         options.db ?? prisma,
       )
       res.json({ data })

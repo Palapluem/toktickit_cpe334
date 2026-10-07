@@ -233,7 +233,7 @@ IT Staff and Administrator. Moves an Action through §5.1.
 
 Roles and the matrix are unchanged (`lab-03` §5.1, specification §5.2). Requesters keep using this endpoint for their own `NEW → CANCELLED` and `RESOLVED → REOPENED`.
 
-**Request** `{ "status": "RESOLVED", "expectedVersion": 7 }` — **`expectedVersion` is now required** (BR-31, §11.9). A request without it is `400 VALIDATION_FAILED`.
+**Request** `{ "status": "RESOLVED", "expectedVersion": 7 }` — **`expectedVersion` is now required** (BR-31, §11.9). A request without it is `400 VALIDATION_FAILED`, even for a Ticket that does not exist: the body is checked before the Ticket is looked up (specification §11.17).
 
 **Processing.** One transaction:
 
@@ -262,21 +262,21 @@ Roles and the matrix are unchanged (`lab-03` §5.1, specification §5.2). Reques
 
 **Failures:**
 
-- `400 INVALID_STATUS_TRANSITION` (Lab 3);
+- `400 INVALID_STATUS_TRANSITION` (Lab 3), including a request for the status the Ticket already has;
 - `400 VALIDATION_FAILED`;
 - `401`;
 - `403` (a Requester asking for `RESOLVED`, as in Lab 3);
 - `404`;
 - `409 OPEN_ACTIONS_BLOCK_RESOLUTION` with `details.openActionCount` (AC-15);
-- `409 STALE_VERSION` with `details.currentVersion` and `details.currentStatus` (AC-19).
+- `409 STALE_VERSION` with `details.currentVersion` and `details.currentStatus` (AC-19), also for a repeat of a request that already succeeded.
 
 ### `PATCH /api/staff/tickets/:id/owner` · `PATCH /api/staff/tickets/:id/it-priority` (behaviour only)
 
-Request and response shapes are unchanged (BR-32). Each success now increments the Ticket's `version` and writes `OWNER_CHANGED` or `IT_PRIORITY_CHANGED`. The response additionally carries `version`.
+Request and response shapes are unchanged (BR-32). Each success now increments the Ticket's `version` and writes `OWNER_CHANGED` or `IT_PRIORITY_CHANGED`. The response additionally carries `version`. A request for the owner or priority the Ticket already has is a 200 that changes nothing: no new version, no event, `updatedAt` untouched. Claiming a `NEW` Ticket also moves it to `OPEN` in the same write: one version increment, `OWNER_CHANGED` then `STATUS_CHANGED`.
 
 ### `POST /api/tickets/:id/requester-resolution` (behaviour only)
 
-Unchanged and still advisory (BR-25). It increments the Ticket's `version`, because the resolution indication is a Ticket field (BR-31).
+Unchanged and still advisory (BR-25). It increments the Ticket's `version` and moves `updatedAt` to the same instant as `requesterResolvedAt`, because the resolution indication is a Ticket field (BR-31, BR-35). It runs under the Ticket lock: a Ticket that was cancelled or closed while the request waited is answered `409 TICKET_CLOSED` and nothing is stored (BR-33).
 
 ### `GET /api/staff/tickets/:id` · `GET /api/tickets/:id` (additive)
 
@@ -289,7 +289,7 @@ The staff response's `permittedTransitions` now omits `RESOLVED` and `CLOSED` wh
 
 ### `GET /api/tickets/:id/history`
 
-Requester (own Ticket), IT Staff, Administrator. Events are ordered by `createdAt` ascending, then `id` (BR-29). A Requester receives only `STATUS_CHANGED` events (BR-28, AC-23).
+Requester (own Ticket), IT Staff, Administrator. Events are ordered by `createdAt` ascending, then `id` (BR-29). Within one Ticket `createdAt` is strictly increasing in commit order, and the `id` tie-break stays for rows written outside the application (specification §11.17). A Requester receives only `STATUS_CHANGED` events (BR-28, AC-23).
 
 **200** `{ "data": [TicketEvent, …] }`. An empty array is valid for Tickets that have not changed since Lab 4 began.
 

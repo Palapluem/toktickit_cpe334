@@ -47,9 +47,10 @@
 | UNIT-01 | Unit | BR-09, BR-10 | Every Action (from, to) pair | Only §5.1 moves are allowed; terminal states allow none | `server/tests/lab-04/action-rules.unit.test.ts` | PASS (#98) |
 | UNIT-02 | Unit | BR-12–BR-16, AC-10 | Boundaries: Description 0/1/2000/2001 · Result 2000/2001 · Follow-up Note conditional, 1/2000/2001 · Reason 0/1/500/501 · Attachment Notes 500/501 · whitespace-only | Correct field error per case; stored values trimmed | `server/tests/lab-04/action-rules.unit.test.ts` | PASS (#98) |
 | UNIT-03 | Unit | BR-11, AC-07 | Effective Result at completion (stored, supplied, blank) | Completion allowed only with a non-blank effective Result | `server/tests/lab-04/action-rules.unit.test.ts` | PASS (#98) |
-| UNIT-04 | Unit | BR-20, BR-23, AC-18 | Decision table: role × Ticket status × open-Action count | `RESOLVED`/`CLOSED` omitted exactly when the count > 0; blocked list reports the count | `server/tests/lab-04/workflow-rules.unit.test.ts` | NOT RUN |
-| UNIT-05 | Unit | BR-29, AC-24 | Ordering comparator with equal timestamps | Deterministic `(createdAt, id)` order | `server/tests/lab-04/workflow-rules.unit.test.ts` | NOT RUN |
-| UNIT-06 | Unit | BR-30 | Event payload builder for each event type | Only identifiers, statuses, priorities and field names; no free text | `server/tests/lab-04/workflow-rules.unit.test.ts` | NOT RUN |
+| UNIT-04 | Unit | BR-20, BR-23, AC-18 | Decision table: role × Ticket status × open-Action count | `RESOLVED`/`CLOSED` omitted exactly when the count > 0; blocked list reports the count | `server/tests/lab-04/workflow-rules.unit.test.ts` | PASS (#92) |
+| UNIT-05 | Unit | BR-29, AC-24 | Ordering comparator with equal timestamps | Deterministic `(createdAt, id)` order | `server/tests/lab-04/workflow-rules.unit.test.ts` | PASS (#92) |
+| UNIT-06 | Unit | BR-30 | Event payload builder for each event type | Only identifiers, statuses, priorities and field names; no free text | `server/tests/lab-04/workflow-rules.unit.test.ts` | PASS (#92) |
+| UNIT-08 | Unit | BR-19–BR-22, AC-18 | The §5.2 table, read as text from `specification.md`, against `transitions.ts`, the gate in `workflowRules.ts` and `transition-oracle.ts`, for each of the eight statuses and three roles; the † and ‡ marks and the own-Ticket marker | Every cell equal in all four places; † is exactly what the gate holds back while work is open; ‡ marks every move into `CANCELLED`; the Administrator column is the IT Staff column | `server/tests/lab-04/transition-spec.unit.test.ts` | PASS (#92) |
 | UNIT-07 | Unit | BR-36, BR-37 | `ACTIVE` group and each metric's query object | Exactly five statuses; each query reproduces its predicate | `server/tests/lab-04/dashboard-metrics.unit.test.ts` | NOT RUN |
 
 ### API — Actions Taken
@@ -80,31 +81,34 @@
 | Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
 |---|---|---|---|---|---|---|
 | SEC-01 | Security | AC-12, BR-18 | Requester calls create, edit and status on their own Ticket's Actions | 403 `FORBIDDEN`; database unchanged | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
-| SEC-02 | Security | AC-12, AC-23 | Requester reads Actions and history of another Requester's Ticket | 404, identical to a missing Ticket | `server/tests/lab-04/actions-taken.api.test.ts` (Actions) · `server/tests/lab-04/ticket-workflow.api.test.ts` (history) | PARTIAL: Actions endpoints PASS (#98); history and dashboards follow in #92 and #93 |
-| SEC-03 | Security | lab-03 BR-12 | Every new endpoint without a session | 401 for each | `server/tests/lab-04/actions-taken.api.test.ts` (Actions) · `server/tests/lab-04/ticket-workflow.api.test.ts` (history) | PARTIAL: Actions endpoints PASS (#98); history and dashboards follow in #92 and #93 |
+| SEC-02 | Security | AC-12, AC-23 | Requester reads Actions and history of another Requester's Ticket | 404, identical to a missing Ticket | `server/tests/lab-04/actions-taken.api.test.ts` (Actions) · `server/tests/lab-04/ticket-workflow.api.test.ts` (history) | PASS (#98, #92) |
+| SEC-03 | Security | lab-03 BR-12 | Every new endpoint without a session | 401 for each | `server/tests/lab-04/actions-taken.api.test.ts` (Actions) · `server/tests/lab-04/ticket-workflow.api.test.ts` (history) | PARTIAL: Actions (#98), history and status (#92) PASS; dashboards follow in #93 |
 | SEC-04 | Security | AC-30 | Requester → IT Staff dashboard; IT Staff and Administrator → Requester dashboard | 403 for each | `server/tests/lab-04/staff-dashboard.api.test.ts` | NOT RUN |
 | SEC-05 | Security | AC-02, BR-39 | Requester dashboard with two Requesters' Tickets present | Counts and rows from the caller's Tickets only; no foreign ids | `server/tests/lab-04/requester-dashboard.api.test.ts` | NOT RUN |
-| SEC-06 | Security | AC-22, BR-27 | Direct SQL `UPDATE` and `DELETE` on an event row | Both rejected by the trigger; row unchanged | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| SEC-07 | Security | BR-30; testing contract §7 | Action, history and dashboard responses scanned for hashes, session ids, other users' emails | None present | `server/tests/lab-04/actions-taken.api.test.ts` (Actions) · `server/tests/lab-04/ticket-workflow.api.test.ts` (history) | PARTIAL: Actions endpoints PASS (#98); history and dashboards follow in #92 and #93 |
+| SEC-06 | Security | AC-22, BR-27 | Direct SQL `UPDATE` and `DELETE` on an event row | Both rejected by the trigger; row unchanged | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| SEC-07 | Security | BR-30; testing contract §7 | Action, history and dashboard responses scanned for hashes, session ids, other users' emails | None present | `server/tests/lab-04/actions-taken.api.test.ts` (Actions) · `server/tests/lab-04/ticket-workflow.api.test.ts` (history) | PARTIAL: Actions (#98) and history (#92) PASS; dashboards follow in #93 |
 
 ### Workflow
 
 | Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
 |---|---|---|---|---|---|---|
-| WF-01 | Workflow | AC-15, BR-20 | `RESOLVED` requested directly with a `PLANNED`, then an `IN_PROGRESS`, Action | 409 `OPEN_ACTIONS_BLOCK_RESOLUTION` with `openActionCount`; status unchanged | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| WF-02 | Workflow | AC-15, BR-20 | `CLOSED` requested on a `RESOLVED` Ticket holding an open Action inserted directly into the database | 409; the gate holds against out-of-band data | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| WF-03 | Workflow | AC-16 | Resolve when every Action is terminal | `RESOLVED`; `STATUS_CHANGED` written | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| WF-04 | Workflow | AC-16, BR-21 | Resolve a zero-Action Ticket and a seeded legacy Ticket | `RESOLVED` | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| WF-05 | Workflow | AC-17, BR-22 | Cancel a Ticket with two open and one completed Action; repeat with a failure injected after the cascade | Ticket `CANCELLED`; two Actions cancelled with the system reason and `cancelledBy`; completed one untouched / with the injected failure, nothing persisted | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| WF-06 | Workflow | AC-18, BR-19 | Every §5.2 cell for Requester, IT Staff and Administrator | Each permitted edge succeeds; each absent edge is refused (400 or 403, as in Lab 3) | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| WF-07 | Workflow | AC-19, BR-31 | Status change with the version read before an owner change | 409 `STALE_VERSION`; the owner change is kept | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| WF-08 | Workflow | AC-20, BR-33 | Create-Action and resolve sent concurrently, repeated 20 times | Never `RESOLVED` with an open Action; in each pair, one request is refused or ordered after the other | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| WF-09 | Workflow | AC-22, BR-26 | A scripted sequence of status, owner, priority and Action changes | One event per change, with the right type, actor and order | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| WF-10 | Workflow | AC-23, BR-28 | The same history read by its Requester and by IT Staff | Requester gets `STATUS_CHANGED` only; IT Staff get every event | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| WF-11 | Workflow | AC-24, BR-29 | Actions, comments, notes and events inserted with identical `createdAt` | Identical order across five repeated reads | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| WF-12 | Workflow | AC-25, BR-25 | Requester resolution indication on a Ticket with open Actions | Indication recorded; status unchanged; version +1 | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| WF-13 | Workflow | BR-32 | Owner and IT Priority changes in the Lab 3 request shape | Succeed without a version; version +1; event written | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
-| WF-14 | Workflow | AC-19, BR-31 | Status change without `expectedVersion` | 400 `VALIDATION_FAILED` | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
+| WF-01 | Workflow | AC-15, BR-20 | `RESOLVED` requested directly with a `PLANNED`, then an `IN_PROGRESS`, Action | 409 `OPEN_ACTIONS_BLOCK_RESOLUTION` with `openActionCount`; status unchanged | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-02 | Workflow | AC-15, BR-20 | `CLOSED` requested on a `RESOLVED` Ticket holding an open Action inserted directly into the database | 409; the gate holds against out-of-band data | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-03 | Workflow | AC-16 | Resolve when every Action is terminal | `RESOLVED`; `STATUS_CHANGED` written | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-04 | Workflow | AC-16, BR-21 | Resolve a zero-Action Ticket and a seeded legacy Ticket | `RESOLVED` | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-05 | Workflow | AC-17, BR-22 | Cancel a Ticket with two open and one completed Action; repeat with a failure injected after the cascade | Ticket `CANCELLED`; two Actions cancelled with the system reason and `cancelledBy`; completed one untouched / with the injected failure, nothing persisted | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-06 | Workflow | AC-18, BR-19 | Every §5.2 cell for Requester, IT Staff and Administrator, against the table transcribed in `transition-oracle.ts` | Each permitted edge succeeds; each absent edge is refused (400 or 403, as in Lab 3); a wrong edge in the code fails the test | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-07 | Workflow | AC-19, BR-31 | Status change with the version read before an owner change | 409 `STALE_VERSION`; the owner change is kept | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-08 | Workflow | AC-20, BR-33 | Create-Action and resolve sent concurrently, repeated 20 times; a status change blocked behind a held lock, with and without a change the holder commits | Never `RESOLVED` with an open Action; in each pair, one request is refused or ordered after the other; the blocked request is known to wait (a lock wait is visible in the database) and reads the version after the lock (409 `STALE_VERSION`) | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-09 | Workflow | AC-22, BR-26 | A scripted sequence of status, owner, priority and Action changes | One event per change, with the right type, actor and order | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-10 | Workflow | AC-23, BR-28 | The same history read by its Requester and by IT Staff | Requester gets `STATUS_CHANGED` only; IT Staff get every event | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-11 | Workflow | AC-24, BR-29 | Actions, comments, notes and events inserted with identical `createdAt` | Identical order across five repeated reads | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-12 | Workflow | AC-25, BR-25 | Requester resolution indication on a Ticket with open Actions | Indication recorded; status unchanged; version +1 | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-13 | Workflow | BR-32 | Owner and IT Priority changes in the Lab 3 request shape | Succeed without a version; version +1; event written. A change to what is already stored, an Action edit that changes nothing and a same-status request leave `version`, events and `updatedAt` as they were | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-14 | Workflow | AC-19, BR-31 | Status change without `expectedVersion` | 400 `VALIDATION_FAILED` | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-15 | Workflow | AC-22, BR-29 | A claim then a priority change in one millisecond; a change 5 ms into a 40-Action cancellation burst; a change after the clock went back | Events keep commit order and `createdAt` is strictly increasing, in the database and in the History response | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-16 | Workflow | BR-35, BR-38 | Every kind of change (owner, IT Priority, status, Action create, edit and move) carrying an instant earlier than the Ticket's `updatedAt`; one carrying a later instant | `updatedAt` keeps the later value; a later instant moves it forward | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-17 | Workflow | AC-25, BR-25, BR-31, BR-33, BR-35 | The Requester indication while another transaction holds the Ticket and cancels or closes it; with an earlier clock; with a later one | Waits and records (control); 409 `TICKET_CLOSED` and nothing stored once the Ticket closed; `updatedAt` never moves back and equals `requesterResolvedAt` | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
 
 ### Dashboards and lists
 
@@ -130,6 +134,7 @@
 | MIG-03 | Migration | AC-38, BR-21 | Legacy Tickets after migration | Status unchanged; zero Actions; `version = 1` | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
 | MIG-04 | Seed | AC-39, BR-42 | Seed run twice | No duplicates, every Action column unchanged by the second run; Tickets with 0, 1 and several Actions exist | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
 | MIG-05 | Migration | BR-27 | Direct SQL `UPDATE` and `DELETE` on an event row; then `TRUNCATE` | Both rejected by the trigger and the row is unchanged; the reset by `TRUNCATE` still works | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
+| LOCK-01 | Test helper | BR-33 | The helper the lock tests wait on, with a waiter on the Ticket and with a waiter on another table | Settles for the first, and refuses the second with a clear message, so a lock test cannot pass because of an unrelated wait | `server/tests/lab-04/lock-helpers.api.test.ts` | PASS (#92) |
 | PERF-01 | Performance | AC-40 | 2,000 Tickets / 6,000 Actions; each dashboard endpoint called 20 times | p95 ≤ 300 ms; machine, dataset and command recorded | `server/scripts/perf-smoke.mjs` (planned) | NOT RUN |
 | PERF-02 | Performance | AC-40, BR-40 | Query count at 200 vs 2,000 Tickets | Equal | `server/scripts/perf-smoke.mjs` | NOT RUN |
 
@@ -147,14 +152,16 @@
 | UI-08 | UI | AC-12, BR-17 | Requester view | Read-only; no controls; display names only | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
 | UI-09 | UI | FR-24, AC-14 | Busy state, double click and retry | Save disabled while in flight; one request per click burst; retry reuses `requestId` | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
 | UI-10 | UI | AC-36 | Save failure and `STALE_VERSION` | Entered values kept; conflict or failure message; save possible again | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
-| UI-11 | UI | AC-18, AC-21 | Status control | Only permitted transitions; blocked helper text shows the open count | `client/tests/lab-04/TicketWorkflow.test.tsx` | NOT RUN |
-| UI-12 | UI | AC-21 | Status outcomes | Success refreshes badge and controls and announces; 409 open-Actions and stale messages keep the previous status | `client/tests/lab-04/TicketWorkflow.test.tsx` | NOT RUN |
-| UI-13 | UI | AC-23 | History | IT Staff see every type; Requester sees status changes only; empty state | `client/tests/lab-04/TicketWorkflow.test.tsx` | NOT RUN |
+| UI-11 | UI | AC-18, AC-21 | Status control | Only permitted transitions; blocked helper text shows the open count | `client/tests/lab-04/TicketWorkflow.test.tsx` | PASS (#92) |
+| UI-12 | UI | AC-21 | Status outcomes | Success refreshes badge and controls and announces; 409 open-Actions and stale messages keep the previous status | `client/tests/lab-04/TicketWorkflow.test.tsx` | PASS (#92) |
+| UI-13 | UI | AC-23 | History | IT Staff see every type; Requester sees status changes only; empty state | `client/tests/lab-04/TicketWorkflow.test.tsx` | PASS (#92) |
 | UI-14 | UI | AC-27, AC-28 | Staff dashboard content | Cards link with the returned `query`; open-Actions list and "10 oldest" footer | `client/tests/lab-04/StaffDashboard.test.tsx` | NOT RUN |
 | UI-15 | UI | AC-29, AC-31 | Staff dashboard states | Loading; failure → Try again → recovered; forbidden; zero values | `client/tests/lab-04/StaffDashboard.test.tsx` | NOT RUN |
 | UI-16 | UI | AC-02, AC-29 | Requester dashboard content | Cards and links; attention cue as text; first-use empty state | `client/tests/lab-04/RequesterDashboard.test.tsx` | NOT RUN |
 | UI-17 | UI | AC-31 | Requester dashboard states | Loading; failure → Try again; forbidden | `client/tests/lab-04/RequesterDashboard.test.tsx` | NOT RUN |
 | UI-18 | UI | AC-32, FR-21 | Navigation per role | Dashboard first and active; post-login redirect lands on it | `client/tests/lab-04/AppNavigation.test.tsx` | NOT RUN |
+| UI-19 | UI | api-spec §1, BR-38 | History times and the formatter on devices set to UTC, America/Los_Angeles, Asia/Bangkok and Pacific/Kiritimati | 03:12 UTC reads 10:12 and the date moves exactly at 17:00 UTC | `client/tests/lab-04/dateTime.test.ts`, `client/tests/lab-04/TicketWorkflow.test.tsx` | PARTIAL: History PASS (#92); Actions follow in #91 |
+| UI-26 | UI | api-spec §1, BR-38 | Staff and Requester Ticket Detail, the staff queue, comments, attachments, My Tickets (a date alone) and the Create Ticket confirmation on devices set to UTC and America/Los_Angeles | Each shows the Bangkok time or date, including a date that falls on the next day | `client/tests/lab-04/BangkokTime.test.tsx` | PASS (#92) |
 
 ### UI style
 
@@ -171,8 +178,8 @@
 | Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
 |---|---|---|---|---|---|---|
 | E2E-01 | E2E | AC-01–AC-10, AC-12, BR-02 | Daniel owns the Ticket; Olivia creates several Actions, assigns Patricia, edits, starts, completes, cancels; inactive Thomas is refused; the Requester sees everything read-only | Each step visible and persisted; captured in `actions-taken/` | `e2e/lab-04/actions-taken-flow.spec.ts` | NOT RUN |
-| E2E-02 | E2E | AC-13, AC-15–AC-17, AC-21–AC-23 | Resolve blocked → work completed → resolved; cancel with cascade; history for IT Staff vs Requester | Each state visible; status refreshes; captured in `ticket-workflow/` | `e2e/lab-04/ticket-resolution.spec.ts` | NOT RUN |
-| E2E-03 | E2E | AC-19, AC-36 | Two browser sessions change the same Action and the same Ticket status | Conflict message; entered values kept; save succeeds after review | `e2e/lab-04/ticket-resolution.spec.ts` | NOT RUN |
+| E2E-02 | E2E | AC-13, AC-15–AC-17, AC-21–AC-23 | Resolve blocked → work completed → resolved; cancel with cascade; history for IT Staff vs Requester | Each state visible; status refreshes; captured in `ticket-workflow/` | `e2e/lab-04/ticket-resolution.spec.ts` | PASS (#92) |
+| E2E-03 | E2E | AC-19, AC-36 | Two browser sessions change the same Action and the same Ticket status | Conflict message; entered values kept; save succeeds after review | `e2e/lab-04/ticket-resolution.spec.ts` | PARTIAL: status half PASS (#92); Action half follows in #91 |
 | E2E-04 | E2E | AC-26–AC-29, AC-32 | Both dashboards: values equal the API and SQL at run time; drill-downs show matching rows; zero states; landing after sign-in | Equal values; positive matches; captured in both dashboard folders | `e2e/lab-04/dashboards.spec.ts` | NOT RUN |
 | E2E-05 | E2E | AC-30, AC-31 | Cross-role dashboard routes; load failure by interception (*fixture*) and retry | Forbidden state; failure then recovery | `e2e/lab-04/dashboards.spec.ts` | NOT RUN |
 | RESP-01 | Responsive | AC-34 | Dashboards and Ticket Detail with Actions at 1280, 834 and 390 px; widths 767/768/991/992; 2000-character content | No clipping or overlap; no horizontal page scroll | `e2e/lab-04/dashboards.spec.ts`, `e2e/lab-04/actions-taken-flow.spec.ts` | NOT RUN |
@@ -249,20 +256,24 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 | Labsheet path (§12) | Planned tests |
 |---|---|
 | `server/tests/lab-04/actions-taken.api.test.ts` | API-01–API-18, SEC-01, and the Actions part of SEC-02, SEC-03 and SEC-07 |
-| `server/tests/lab-04/ticket-workflow.api.test.ts` | WF-01–WF-14, SEC-02, SEC-03, SEC-06, SEC-07 |
+| `server/tests/lab-04/ticket-workflow.api.test.ts` | WF-01–WF-17, SEC-02, SEC-03, SEC-06, SEC-07 |
 | `server/tests/lab-04/requester-dashboard.api.test.ts` | DASH-07–DASH-10, SEC-05 |
 | `server/tests/lab-04/staff-dashboard.api.test.ts` | DASH-01–DASH-06, SEC-04 |
 | `client/tests/lab-04/StaffDashboard.test.tsx` | UI-14, UI-15 |
 | `client/tests/lab-04/RequesterDashboard.test.tsx` | UI-16, UI-17 |
 | `client/tests/lab-04/ActionsTaken.test.tsx` | UI-01–UI-10, STYLE-02–STYLE-05 |
-| `client/tests/lab-04/TicketWorkflow.test.tsx` | UI-11–UI-13 |
+| `client/tests/lab-04/TicketWorkflow.test.tsx` | UI-11–UI-13, UI-19 |
+| `client/tests/lab-04/dateTime.test.ts` | UI-19 |
+| `client/tests/lab-04/BangkokTime.test.tsx` | UI-26 |
 | `e2e/lab-04/actions-taken-flow.spec.ts` | E2E-01, RESP-01, A11Y-01 |
 | `e2e/lab-04/ticket-resolution.spec.ts` | E2E-02, E2E-03 |
 | `e2e/lab-04/dashboards.spec.ts` | E2E-04, E2E-05, RESP-01 |
 
 Supporting files beyond the minimum:
 
-- `server/tests/lab-04/action-rules.unit.test.ts`, `workflow-rules.unit.test.ts`, `dashboard-metrics.unit.test.ts` and `migration-seed.api.test.ts` (MIG-03–MIG-05);
+- `server/tests/lab-04/transition-oracle.ts` (the status table of §5.2, shared by UNIT-04 and WF-06);
+- `server/tests/lab-04/lock-helpers.api.test.ts` (LOCK-01, the lock-wait helper behind API-17, WF-08 and WF-17);
+- `server/tests/lab-04/action-rules.unit.test.ts`, `workflow-rules.unit.test.ts`, `transition-spec.unit.test.ts`, `dashboard-metrics.unit.test.ts` and `migration-seed.api.test.ts` (MIG-03–MIG-05);
 - `server/tests/lab-04/test-transport.unit.test.ts` (#96, the loopback guard behind the suite-stability fix);
 - `client/tests/lab-04/AppNavigation.test.tsx`;
 - `e2e/lab-04/regression.spec.ts`;

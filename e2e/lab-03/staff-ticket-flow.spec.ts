@@ -29,6 +29,16 @@ async function signIn(
   expect(login.ok(), `login for ${email}`).toBeTruthy()
 }
 
+/** The version a status change must state (lab-04 BR-31), read from the Ticket the signed-in role may see. */
+async function versionOf(
+  page: import('@playwright/test').Page,
+  path: string,
+): Promise<number> {
+  const response = await page.request.get(`${API}${path}`)
+  expect(response.ok(), `reading ${path}`).toBeTruthy()
+  return ((await response.json()) as { data: { version: number } }).data.version
+}
+
 /** The seeded unassigned NEW Ticket, found through the queue. */
 async function openFirstQueueTicket(
   page: import('@playwright/test').Page,
@@ -232,7 +242,12 @@ test('DETAIL-04 refuses the moves nobody and no role may make', async ({ page })
   // Impossible for any role: 400.
   const impossible = await page.request.patch(
     `${API}/api/staff/tickets/${ticketId}/status`,
-    { data: { status: 'CLOSED' } },
+    {
+      data: {
+        status: 'CLOSED',
+        expectedVersion: await versionOf(page, `/api/staff/tickets/${ticketId}`),
+      },
+    },
   )
   expect(impossible.status()).toBe(400)
   expect((await impossible.json()).error.code).toBe('INVALID_STATUS_TRANSITION')
@@ -261,7 +276,12 @@ test('DETAIL-05 captures the refusal a Requester can actually see', async ({ pag
   // AC-24: and the same Requester cannot declare it solved by any route.
   const resolved = await page.request.patch(
     `${API}/api/staff/tickets/${ticketId}/status`,
-    { data: { status: 'RESOLVED' } },
+    {
+      data: {
+        status: 'RESOLVED',
+        expectedVersion: await versionOf(page, `/api/tickets/${ticketId}`),
+      },
+    },
   )
   expect(resolved.status()).toBe(403)
 })

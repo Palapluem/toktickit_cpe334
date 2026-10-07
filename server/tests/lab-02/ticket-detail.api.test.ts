@@ -99,6 +99,8 @@ describe('API-19 · AC-27 · owned Ticket Detail', () => {
       'description',
       'id',
       'itPriority',
+      // Added by lab-04 (api-spec §4): the version a status change must state, and the work still open.
+      'openActionCount',
       'owner',
       'relatedSystem',
       'requestedPriority',
@@ -110,6 +112,7 @@ describe('API-19 · AC-27 · owned Ticket Detail', () => {
       'summary',
       'ticketNo',
       'updatedAt',
+      'version',
     ])
     expect(response.body.data.attachments).toHaveLength(2)
     expect(response.body.data.attachments).toEqual(

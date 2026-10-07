@@ -147,8 +147,8 @@ By decision (§11):
 - **BR-26** Each material change writes one `TicketEvent` in the same transaction: status change, owner change, IT Priority change, Action created, updated, assigned, started, completed or cancelled. Cascaded cancellations are included.
 - **BR-27** Ticket events are append-only. The application offers no update or delete, and the database rejects `UPDATE` and `DELETE` on the event table.
 - **BR-28** IT Staff and Administrators see every event of a Ticket. A Requester sees only the status-change events of their own Tickets.
-- **BR-29** Actions, Public Comments, Internal Notes and events are ordered by creation time ascending, then by identifier, so records with equal timestamps keep one stable order.
-- **BR-30** An event payload holds only identifiers, statuses, priorities and the names of changed fields. It never holds free text, credentials or personal data beyond the actor reference.
+- **BR-29** Actions, Public Comments, Internal Notes and events are ordered by creation time ascending, then by identifier, so records with equal timestamps keep one stable order. Within one Ticket the events' `createdAt` values are also strictly increasing in commit order (§11.17).
+- **BR-30** An event payload holds only identifiers, statuses, priorities and the names of changed fields. It never holds free text, credentials or personal data beyond the actor reference. Two structural values are allowed besides those: a `cascade` flag on `ACTION_CANCELLED` and a `cascadedActionCount` on the `STATUS_CHANGED` of a cancellation (§11.17).
 
 ### Concurrency and retries
 
@@ -160,7 +160,7 @@ By decision (§11):
 - **BR-32** Owner and IT Priority changes keep their Lab 3 request shape and need no expected version.
 - **BR-33** Every Ticket status change and every Action creation locks the Ticket row for the length of its transaction, so BR-20 and BR-22 hold under concurrent requests.
 - **BR-34** Action creation carries a client-generated request identifier, unique per Ticket. Repeating it returns the Action already created instead of creating another.
-- **BR-35** Ticket field changes and Action writes update the Ticket's `updatedAt`. Public Comments and Internal Notes do not (Lab 3 behaviour).
+- **BR-35** Ticket field changes and Action writes update the Ticket's `updatedAt`, which never moves backwards: a request that waited for the Ticket lock and carries an earlier clock reading leaves the later value in place (§11.17). Public Comments and Internal Notes do not update it (Lab 3 behaviour).
 
 ### Dashboards
 
@@ -503,3 +503,20 @@ Each is covered by a test; the test IDs are in `tests.md`.
 3. **An Action addressed under the wrong Ticket is not found.** Any Action write or status change whose `:actionId` does not belong to `:id`, does not exist, or is not a UUID answers 404 `ACTION_NOT_FOUND`, the same in every case, and changes nothing (BR-01). The code is new in `api-spec.md` §1. Test API-14.
 4. **The seed has eight Actions, not nine.** The list in §7 always summed to eight (1 + 3 + 2 + 1 + 1) and the seed and its test agree; the word "Nine" was a drafting error, corrected in #95. A second seed run now also leaves every Action column as it was, including `updatedAt`. Test MIG-04.
 5. **`TRUNCATE` of the history table is allowed.** The append-only trigger rejects row `UPDATE` and `DELETE` (BR-27) but not `TRUNCATE`, so that disposable test databases can be reset (§7, decision 1). Test MIG-05 proves the trigger rejects `UPDATE` and `DELETE`, leaves the row alone, and still allows the reset.
+
+**11.17 Decisions made while building the Ticket workflow (#92), and what the independent audit changed.**
+Each is covered by a test; the IDs are in `tests.md`.
+
+1. **Events of one Ticket keep their commit order.** Every writer of events holds the Ticket row lock (BR-33). A change starts its events at its own clock reading or 1 ms after the Ticket's latest event, whichever is later, and spaces the events of one change 1 ms apart. `createdAt` is therefore strictly increasing within a Ticket, whatever the server clock does and however long a cancellation cascade ran. A burst can end up to about 1 ms per event ahead of the wall clock; the screen shows minutes. This replaces the earlier rule that spaced only the events of one change, which let a later change sort before the tail of an earlier cascade (AC-22). Test WF-15.
+2. **Events store identifiers, and names are resolved when history is read.** An event for a person who was renamed later shows the current name; history is not a snapshot of names (BR-30).
+3. **A status request for the status the Ticket already has is `400 INVALID_STATUS_TRANSITION`.** A repeat of a request that succeeded, with the old `expectedVersion`, is `409 STALE_VERSION`. Neither moves the version, `updatedAt` or the history. Test WF-13.
+4. **An owner or IT Priority request that changes nothing is a success without effect:** 200, no new version, no event and no change to `updatedAt` (BR-31, BR-35). Test WF-13.
+5. **Claiming a `NEW` Ticket is one write.** The owner and the move to `OPEN` happen together: one version increment, `OWNER_CHANGED` then `STATUS_CHANGED`.
+6. **A status request is checked in this order:** body (400), Ticket (404), `expectedVersion` (409), transition for the role (400 or 403), the gate (409). A missing `expectedVersion` is therefore 400 even for an unknown Ticket. Test WF-14.
+7. **The status response is the summary** (`id`, `status`, `version`, `updatedAt`, `permittedTransitions`, `cancelledActionCount`); the screen reloads the Ticket for the rest.
+8. **History is a new authorization operation, `history:read`:** own Ticket with status events only for a Requester, any Ticket for staff (§8.1).
+9. **Two structural values widen BR-30's list:** `cascade` (a boolean) and `cascadedActionCount` (a count, present on every cancellation, including 0). Neither carries text or personal data.
+10. **Both Ticket details add `version` and `openActionCount`.** The Requester can already read the Actions, so this discloses nothing staff-only.
+11. **The Ticket's `updatedAt` never moves backwards.** Every writer holds the Ticket lock and keeps the later of its own clock reading and the stored `updatedAt`, so "recently updated" (BR-38) follows the order the changes were committed in, as the history does. Test WF-16.
+12. **The Requester's "appears resolved" indication is written under the Ticket lock, like every other change.** It reads the status after taking the lock, so a Ticket that was cancelled or closed while the request waited is refused with `409 TICKET_CLOSED` and nothing is stored (BR-33). It moves the version (BR-31) and stamps `updatedAt` with the same instant as `requesterResolvedAt`, never backwards (BR-35). Tests WF-17.
+13. **Every screen shows times and dates in Asia/Bangkok, including the Lab 2 and Lab 3 screens (BR-38).** This replaces the wording of `lab-02 §11.13` that a date is "rendered in the requester's local time". Its reason, that the year in a Ticket Number and the date beside it must not contradict each other, holds on a device in any zone only if the display zone is fixed. The list column that shows a date alone can differ from the device's date near midnight. Test UI-26.
