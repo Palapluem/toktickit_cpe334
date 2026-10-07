@@ -50,6 +50,7 @@
 | UNIT-04 | Unit | BR-20, BR-23, AC-18 | Decision table: role × Ticket status × open-Action count | `RESOLVED`/`CLOSED` omitted exactly when the count > 0; blocked list reports the count | `server/tests/lab-04/workflow-rules.unit.test.ts` | PASS (#92) |
 | UNIT-05 | Unit | BR-29, AC-24 | Ordering comparator with equal timestamps | Deterministic `(createdAt, id)` order | `server/tests/lab-04/workflow-rules.unit.test.ts` | PASS (#92) |
 | UNIT-06 | Unit | BR-30 | Event payload builder for each event type | Only identifiers, statuses, priorities and field names; no free text | `server/tests/lab-04/workflow-rules.unit.test.ts` | PASS (#92) |
+| UNIT-08 | Unit | BR-19–BR-22, AC-18 | The §5.2 table, read as text from `specification.md`, against `transitions.ts`, the gate in `workflowRules.ts` and `transition-oracle.ts`, for each of the eight statuses and three roles; the † and ‡ marks and the own-Ticket marker | Every cell equal in all four places; † is exactly what the gate holds back while work is open; ‡ marks every move into `CANCELLED`; the Administrator column is the IT Staff column | `server/tests/lab-04/transition-spec.unit.test.ts` | PASS (#92) |
 | UNIT-07 | Unit | BR-36, BR-37 | `ACTIVE` group and each metric's query object | Exactly five statuses; each query reproduces its predicate | `server/tests/lab-04/dashboard-metrics.unit.test.ts` | NOT RUN |
 
 ### API — Actions Taken
@@ -284,7 +285,7 @@ Supporting files beyond the minimum:
 - `server/tests/lab-04/transition-oracle.ts` (the status table of §5.2, shared by UNIT-04 and WF-06);
 - `server/tests/lab-04/lock-helpers.api.test.ts` (LOCK-01, the lock-wait helper behind API-17, WF-08 and WF-17);
 - `e2e/lab-04/actions-taken-recovery.spec.ts` (E2E-07–E2E-09, A11Y-02);
-- `server/tests/lab-04/action-rules.unit.test.ts`, `workflow-rules.unit.test.ts`, `dashboard-metrics.unit.test.ts` and `migration-seed.api.test.ts` (MIG-03–MIG-05);
+- `server/tests/lab-04/action-rules.unit.test.ts`, `workflow-rules.unit.test.ts`, `transition-spec.unit.test.ts`, `dashboard-metrics.unit.test.ts` and `migration-seed.api.test.ts` (MIG-03–MIG-05);
 - `server/tests/lab-04/test-transport.unit.test.ts` (#96, the loopback guard behind the suite-stability fix);
 - `client/tests/lab-04/AppNavigation.test.tsx`;
 - `e2e/lab-04/regression.spec.ts`;
