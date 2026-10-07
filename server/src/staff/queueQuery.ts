@@ -29,6 +29,7 @@ export type OwnerFilter =
 export type QueueQuery = {
   search: string | null
   status: TicketStatus | null
+  statusGroup: 'active' | null
   itPriority: Priority | null
   categoryId: string | null
   owner: OwnerFilter
@@ -45,6 +46,7 @@ export type QueueQueryParseResult = {
 const QUERY_FIELDS = new Set([
   'search',
   'status',
+  'statusGroup',
   'itPriority',
   'categoryId',
   'ownerId',
@@ -93,6 +95,7 @@ export function parseQueueQuery(query: unknown): QueueQueryParseResult {
   const value: QueueQuery = {
     search: null,
     status: null,
+    statusGroup: null,
     itPriority: null,
     categoryId: null,
     owner: { kind: 'any' },
@@ -145,6 +148,18 @@ export function parseQueueQuery(query: unknown): QueueQueryParseResult {
     } else {
       value.status = status
     }
+  }
+
+  const statusGroup = readSingle('statusGroup')
+  if (statusGroup !== undefined) {
+    if (statusGroup !== 'active') {
+      errors.push({ field: 'statusGroup', message: 'Choose the active status group.' })
+    } else {
+      value.statusGroup = 'active'
+    }
+  }
+  if (value.statusGroup && value.status) {
+    errors.push({ field: 'statusGroup', message: 'Use status or statusGroup, not both.' })
   }
 
   const itPriority = readSingle('itPriority')

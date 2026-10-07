@@ -26,6 +26,7 @@ import {
 } from './tickets/attachmentRules.js'
 import { listTickets } from './tickets/listTickets.js'
 import { listStaffQueue } from './staff/staffQueue.js'
+import { getRequesterDashboard, getStaffDashboard } from './dashboard/dashboards.js'
 import {
   createUser,
   listUsers,
@@ -345,6 +346,17 @@ export function createApp(options: CreateTicketOptions = {}) {
     },
   )
 
+  app.get(
+    '/api/staff/dashboard',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('staffDashboard:read'),
+    async (req, res) => {
+      const data = await getStaffDashboard(req.user!.id, options.db ?? prisma)
+      res.json({ data })
+    },
+  )
+
   // Two grants because the response carries two things: the Ticket, and the
   // Internal Notes the contract says it includes (api-spec.md §8). A Requester
   // holds ticket:read scoped to their own and never holds note:read, so this
@@ -643,6 +655,17 @@ export function createApp(options: CreateTicketOptions = {}) {
     )
     res.json(data)
   })
+
+  app.get(
+    '/api/requester/dashboard',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('requesterDashboard:read'),
+    async (req, res) => {
+      const data = await getRequesterDashboard(req.user!.id, options.db ?? prisma)
+      res.json({ data })
+    },
+  )
 
   app.post(
     '/api/tickets',

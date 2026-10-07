@@ -13,6 +13,7 @@ export type TicketStatus =
   | 'CANCELLED'
 
 export type Role = 'REQUESTER' | 'IT_STAFF' | 'ADMINISTRATOR'
+export type ActionStatus = 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
 
 const PRIORITY_CLASS: Record<Priority, string> = {
   LOW: 'zen-badge--priority-low',
@@ -43,6 +44,28 @@ export function StatusBadge({ value }: { value: TicketStatus }) {
   return (
     <span className={`zen-badge zen-badge--status ${STATUS_CLASS[value]}`}>
       {value}
+    </span>
+  )
+}
+
+const ACTION_STATUS_CLASS: Record<ActionStatus, string> = {
+  PLANNED: 'zen-badge--status-open',
+  IN_PROGRESS: 'zen-badge--status-active',
+  COMPLETED: 'zen-badge--status-resolved',
+  CANCELLED: 'zen-badge--status-quiet',
+}
+
+const ACTION_STATUS_LABEL: Record<ActionStatus, string> = {
+  PLANNED: 'Planned',
+  IN_PROGRESS: 'In progress',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled',
+}
+
+export function ActionStatusBadge({ value }: { value: ActionStatus }) {
+  return (
+    <span className={`zen-badge zen-badge--status ${ACTION_STATUS_CLASS[value]}`}>
+      {ACTION_STATUS_LABEL[value]}
     </span>
   )
 }

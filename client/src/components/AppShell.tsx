@@ -4,7 +4,7 @@ import { useRef, useState, type ReactNode } from 'react'
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { logout } from '../api.js'
 import { useOptionalSession } from '../context/SessionContext.js'
-import { LOGIN_ROUTE, navigationFor } from '../routes.js'
+import { LOGIN_ROUTE, homeFor, navigationFor } from '../routes.js'
 import { Button } from './Button.js'
 import { RoleBadge } from './Badge.js'
 
@@ -59,7 +59,7 @@ export function AppShell({
           if (event.key === 'Escape' && menuOpen) closeMenu()
         }}
       >
-        <Link className="zen-shell__brand" to="/tickets">
+        <Link className="zen-shell__brand" to={homeFor(user?.role ?? 'REQUESTER')}>
           TokTickIT
         </Link>
 

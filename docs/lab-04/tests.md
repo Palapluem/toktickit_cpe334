@@ -50,7 +50,7 @@
 | UNIT-04 | Unit | BR-20, BR-23, AC-18 | Decision table: role × Ticket status × open-Action count | `RESOLVED`/`CLOSED` omitted exactly when the count > 0; blocked list reports the count | `server/tests/lab-04/workflow-rules.unit.test.ts` | NOT RUN |
 | UNIT-05 | Unit | BR-29, AC-24 | Ordering comparator with equal timestamps | Deterministic `(createdAt, id)` order | `server/tests/lab-04/workflow-rules.unit.test.ts` | NOT RUN |
 | UNIT-06 | Unit | BR-30 | Event payload builder for each event type | Only identifiers, statuses, priorities and field names; no free text | `server/tests/lab-04/workflow-rules.unit.test.ts` | NOT RUN |
-| UNIT-07 | Unit | BR-36, BR-37 | `ACTIVE` group and each metric's query object | Exactly five statuses; each query reproduces its predicate | `server/tests/lab-04/dashboard-metrics.unit.test.ts` | NOT RUN |
+| UNIT-07 | Unit | BR-36, BR-37 | `ACTIVE` group and each metric's query object | Exactly five statuses; each query reproduces its predicate | `server/tests/lab-04/dashboard-metrics.unit.test.ts` | PASS (9/9; mutation check failed as expected when `REOPENED` was removed) |
 
 ### API — Actions Taken
 
@@ -82,8 +82,8 @@
 | SEC-01 | Security | AC-12, BR-18 | Requester calls create, edit and status on their own Ticket's Actions | 403 `FORBIDDEN`; database unchanged | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
 | SEC-02 | Security | AC-12, AC-23 | Requester reads Actions and history of another Requester's Ticket | 404, identical to a missing Ticket | `server/tests/lab-04/actions-taken.api.test.ts` (Actions) · `server/tests/lab-04/ticket-workflow.api.test.ts` (history) | PARTIAL: Actions endpoints PASS (#98); history and dashboards follow in #92 and #93 |
 | SEC-03 | Security | lab-03 BR-12 | Every new endpoint without a session | 401 for each | `server/tests/lab-04/actions-taken.api.test.ts` (Actions) · `server/tests/lab-04/ticket-workflow.api.test.ts` (history) | PARTIAL: Actions endpoints PASS (#98); history and dashboards follow in #92 and #93 |
-| SEC-04 | Security | AC-30 | Requester → IT Staff dashboard; IT Staff and Administrator → Requester dashboard | 403 for each | `server/tests/lab-04/staff-dashboard.api.test.ts` | NOT RUN |
-| SEC-05 | Security | AC-02, BR-39 | Requester dashboard with two Requesters' Tickets present | Counts and rows from the caller's Tickets only; no foreign ids | `server/tests/lab-04/requester-dashboard.api.test.ts` | NOT RUN |
+| SEC-04 | Security | AC-30 | Requester → IT Staff dashboard; IT Staff and Administrator → Requester dashboard | 403 for each | `server/tests/lab-04/staff-dashboard.api.test.ts` | PASS (full server suite: 568/568) |
+| SEC-05 | Security | AC-02, BR-39 | Requester dashboard with two Requesters' Tickets present | Counts and rows from the caller's Tickets only; no foreign ids | `server/tests/lab-04/requester-dashboard.api.test.ts` | PASS (full server suite: 568/568; ownership mutation detected) |
 | SEC-06 | Security | AC-22, BR-27 | Direct SQL `UPDATE` and `DELETE` on an event row | Both rejected by the trigger; row unchanged | `server/tests/lab-04/ticket-workflow.api.test.ts` | NOT RUN |
 | SEC-07 | Security | BR-30; testing contract §7 | Action, history and dashboard responses scanned for hashes, session ids, other users' emails | None present | `server/tests/lab-04/actions-taken.api.test.ts` (Actions) · `server/tests/lab-04/ticket-workflow.api.test.ts` (history) | PARTIAL: Actions endpoints PASS (#98); history and dashboards follow in #92 and #93 |
 
@@ -110,16 +110,16 @@
 
 | Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
 |---|---|---|---|---|---|---|
-| DASH-01 | API | AC-26, BR-37 | MET-S01–S05 against independent, hand-written SQL `COUNT` queries over a fixture set | Every value equal | `server/tests/lab-04/staff-dashboard.api.test.ts` | NOT RUN |
-| DASH-02 | API | AC-27 | Queue called with each metric's returned `query` | `totalItems` equals the count; the id set equals the SQL set | `server/tests/lab-04/staff-dashboard.api.test.ts` | NOT RUN |
-| DASH-03 | API | AC-28 | 12 open Actions assigned to me, plus terminal ones and others' | Total 12; 10 items, oldest first; terminal and others' excluded | `server/tests/lab-04/staff-dashboard.api.test.ts` | NOT RUN |
-| DASH-04 | API | AC-29 | Administrator with no open Actions; statuses with zero Tickets | Zeros and empty arrays; all eight statuses present; 200 | `server/tests/lab-04/staff-dashboard.api.test.ts` | NOT RUN |
-| DASH-05 | API | BR-38 | Recently updated, including equal `updatedAt` values | Top five by `updatedAt desc, id desc` | `server/tests/lab-04/staff-dashboard.api.test.ts` | NOT RUN |
-| DASH-06 | API | AC-40, BR-40 | Response size and query count with 50 vs 500 Tickets | Same query count; at most 5 and 10 rows | `server/tests/lab-04/staff-dashboard.api.test.ts` | NOT RUN |
-| DASH-07 | API | AC-02, AC-26 | MET-R01–R04 against independent SQL with `requesterId` | Every value equal; only own Tickets | `server/tests/lab-04/requester-dashboard.api.test.ts` | NOT RUN |
-| DASH-08 | API | AC-27 | My Tickets called with each Requester metric's `query` | `totalItems` equals the count | `server/tests/lab-04/requester-dashboard.api.test.ts` | NOT RUN |
-| DASH-09 | API | AC-29 | Requester with no Tickets | `totalTickets = 0`; all counts 0; empty list | `server/tests/lab-04/requester-dashboard.api.test.ts` | NOT RUN |
-| DASH-10 | API | AC-33, FR-20 | `statusGroup=active` on both lists; combined with `status`; unknown value | Only `ACTIVE` Tickets / 400 / 400 | `server/tests/lab-04/requester-dashboard.api.test.ts` | NOT RUN |
+| DASH-01 | API | AC-26, BR-37 | MET-S01–S05 against independent, hand-written SQL `COUNT` queries over a fixture set, including urgent Tickets in each terminal status | Every value equal; terminal urgent Tickets excluded from the active urgent count | `server/tests/lab-04/staff-dashboard.api.test.ts` | PASS (full server suite: 568/568) |
+| DASH-02 | API | AC-27 | Queue called with each metric's returned `query`, including an urgent Ticket in each terminal status | `totalItems` equals the count; the id set equals the SQL set and excludes terminal urgent Tickets | `server/tests/lab-04/staff-dashboard.api.test.ts` | PASS (full server suite: 568/568) |
+| DASH-03 | API | AC-28 | 12 open Actions assigned to me, plus terminal ones and others' | Total 12; 10 items, oldest first; terminal and others' excluded | `server/tests/lab-04/staff-dashboard.api.test.ts` | PASS (full server suite: 568/568; fixture owns all 12 open Actions) |
+| DASH-04 | API | AC-29 | Administrator with no open Actions; statuses with zero Tickets | Zeros and empty arrays; all eight statuses present; 200 | `server/tests/lab-04/staff-dashboard.api.test.ts` | PASS (full server suite: 568/568) |
+| DASH-05 | API | BR-38 | Recently updated, including equal `updatedAt` values | Top five by `updatedAt desc, id desc` | `server/tests/lab-04/staff-dashboard.api.test.ts` | PASS (full server suite: 568/568) |
+| DASH-06 | API | AC-40, BR-40 | Response size and query count with 50 vs 500 Tickets | Same query count; at most 5 and 10 rows | `server/tests/lab-04/staff-dashboard.api.test.ts` | PASS (full server suite: 568/568) |
+| DASH-07 | API | AC-02, AC-26, BR-38 | MET-R01–R04 against independent SQL with `requesterId`; all eight statuses represented; recent list checked with more than five Tickets | Every value equal; only own Tickets; exactly the five newest fixture Tickets in descending `updatedAt` order | `server/tests/lab-04/requester-dashboard.api.test.ts` | PASS (full server suite: 568/568; ownership mutation check failed as expected) |
+| DASH-08 | API | AC-27 | My Tickets called with each Requester metric's `query`; all eight statuses represented | `totalItems` equals the count and the returned id set exactly matches each metric predicate | `server/tests/lab-04/requester-dashboard.api.test.ts` | PASS (full server suite: 568/568) |
+| DASH-09 | API | AC-29 | Requester with no Tickets | `totalTickets = 0`; all counts 0; empty list | `server/tests/lab-04/requester-dashboard.api.test.ts` | PASS (full server suite: 568/568) |
+| DASH-10 | API | AC-33, FR-20 | `statusGroup=active` on both lists; combined with `status`; unknown value | Only `ACTIVE` Tickets / 400 / 400 | `server/tests/lab-04/requester-dashboard.api.test.ts` | PASS (full server suite: 568/568) |
 
 ### Migration, recovery, seed, performance
 
@@ -130,8 +130,8 @@
 | MIG-03 | Migration | AC-38, BR-21 | Legacy Tickets after migration | Status unchanged; zero Actions; `version = 1` | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
 | MIG-04 | Seed | AC-39, BR-42 | Seed run twice | No duplicates, every Action column unchanged by the second run; Tickets with 0, 1 and several Actions exist | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
 | MIG-05 | Migration | BR-27 | Direct SQL `UPDATE` and `DELETE` on an event row; then `TRUNCATE` | Both rejected by the trigger and the row is unchanged; the reset by `TRUNCATE` still works | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
-| PERF-01 | Performance | AC-40 | 2,000 Tickets / 6,000 Actions; each dashboard endpoint called 20 times | p95 ≤ 300 ms; machine, dataset and command recorded | `server/scripts/perf-smoke.mjs` (planned) | NOT RUN |
-| PERF-02 | Performance | AC-40, BR-40 | Query count at 200 vs 2,000 Tickets | Equal | `server/scripts/perf-smoke.mjs` | NOT RUN |
+| PERF-01 | Performance | AC-40 | 2,000 Tickets / 6,000 Actions; each dashboard endpoint called 20 times | p95 ≤ 300 ms; machine, dataset and command recorded | `server/scripts/perf-smoke.mjs` | PASS — Darwin 27.0.0, Apple M5, Node v26.7.0; 2,000 synthetic Tickets / 6,000 Actions + seeded baseline; p95 staff 4.50 ms, requester 1.86 ms (`server`: `./node_modules/.bin/tsx scripts/perf-smoke.mjs`; disposable `toktickit_codex93_test`) |
+| PERF-02 | Performance | AC-40, BR-40 | Query count at 200 vs 2,000 Tickets | Equal | `server/scripts/perf-smoke.mjs` | PASS — staff 7→7, requester 2→2 queries/request (`./node_modules/.bin/tsx scripts/perf-smoke.mjs`; disposable `toktickit_codex93_test`) |
 
 ### UI component
 
@@ -150,11 +150,11 @@
 | UI-11 | UI | AC-18, AC-21 | Status control | Only permitted transitions; blocked helper text shows the open count | `client/tests/lab-04/TicketWorkflow.test.tsx` | NOT RUN |
 | UI-12 | UI | AC-21 | Status outcomes | Success refreshes badge and controls and announces; 409 open-Actions and stale messages keep the previous status | `client/tests/lab-04/TicketWorkflow.test.tsx` | NOT RUN |
 | UI-13 | UI | AC-23 | History | IT Staff see every type; Requester sees status changes only; empty state | `client/tests/lab-04/TicketWorkflow.test.tsx` | NOT RUN |
-| UI-14 | UI | AC-27, AC-28 | Staff dashboard content | Cards link with the returned `query`; open-Actions list and "10 oldest" footer | `client/tests/lab-04/StaffDashboard.test.tsx` | NOT RUN |
-| UI-15 | UI | AC-29, AC-31 | Staff dashboard states | Loading; failure → Try again → recovered; forbidden; zero values | `client/tests/lab-04/StaffDashboard.test.tsx` | NOT RUN |
-| UI-16 | UI | AC-02, AC-29 | Requester dashboard content | Cards and links; attention cue as text; first-use empty state | `client/tests/lab-04/RequesterDashboard.test.tsx` | NOT RUN |
-| UI-17 | UI | AC-31 | Requester dashboard states | Loading; failure → Try again; forbidden | `client/tests/lab-04/RequesterDashboard.test.tsx` | NOT RUN |
-| UI-18 | UI | AC-32, FR-21 | Navigation per role | Dashboard first and active; post-login redirect lands on it | `client/tests/lab-04/AppNavigation.test.tsx` | NOT RUN |
+| UI-14 | UI | AC-27, AC-28 | Staff dashboard content | Cards link with the returned `query`; open-Actions list and "10 oldest" footer | `client/tests/lab-04/StaffDashboard.test.tsx` | PASS (included in client suite: 227/227) |
+| UI-15 | UI | AC-29, AC-31 | Staff dashboard states | Loading; failure → Try again → recovered; forbidden; zero values | `client/tests/lab-04/StaffDashboard.test.tsx` | PASS (included in client suite: 227/227) |
+| UI-16 | UI | AC-02, AC-29 | Requester dashboard content | Cards and links; attention cue as text; first-use empty state | `client/tests/lab-04/RequesterDashboard.test.tsx` | PASS (included in client suite: 227/227) |
+| UI-17 | UI | AC-31 | Requester dashboard states | Loading; failure → Try again; forbidden | `client/tests/lab-04/RequesterDashboard.test.tsx` | PASS (included in client suite: 227/227) |
+| UI-18 | UI | AC-32, FR-21 | Navigation per role | Dashboard first and active; post-login redirect lands on it | `client/tests/lab-04/AppNavigation.test.tsx` | PASS (all 3 roles: E2E sign-in route + active first navigation link; included in client suite 227/227) |
 
 ### UI style
 
@@ -173,10 +173,10 @@
 | E2E-01 | E2E | AC-01–AC-10, AC-12, BR-02 | Daniel owns the Ticket; Olivia creates several Actions, assigns Patricia, edits, starts, completes, cancels; inactive Thomas is refused; the Requester sees everything read-only | Each step visible and persisted; captured in `actions-taken/` | `e2e/lab-04/actions-taken-flow.spec.ts` | NOT RUN |
 | E2E-02 | E2E | AC-13, AC-15–AC-17, AC-21–AC-23 | Resolve blocked → work completed → resolved; cancel with cascade; history for IT Staff vs Requester | Each state visible; status refreshes; captured in `ticket-workflow/` | `e2e/lab-04/ticket-resolution.spec.ts` | NOT RUN |
 | E2E-03 | E2E | AC-19, AC-36 | Two browser sessions change the same Action and the same Ticket status | Conflict message; entered values kept; save succeeds after review | `e2e/lab-04/ticket-resolution.spec.ts` | NOT RUN |
-| E2E-04 | E2E | AC-26–AC-29, AC-32 | Both dashboards: values equal the API and SQL at run time; drill-downs show matching rows; zero states; landing after sign-in | Equal values; positive matches; captured in both dashboard folders | `e2e/lab-04/dashboards.spec.ts` | NOT RUN |
-| E2E-05 | E2E | AC-30, AC-31 | Cross-role dashboard routes; load failure by interception (*fixture*) and retry | Forbidden state; failure then recovery | `e2e/lab-04/dashboards.spec.ts` | NOT RUN |
-| RESP-01 | Responsive | AC-34 | Dashboards and Ticket Detail with Actions at 1280, 834 and 390 px; widths 767/768/991/992; 2000-character content | No clipping or overlap; no horizontal page scroll | `e2e/lab-04/dashboards.spec.ts`, `e2e/lab-04/actions-taken-flow.spec.ts` | NOT RUN |
-| A11Y-01 | Accessibility | AC-35 | Keyboard-only: Action form, cancel dialog, status control, dashboard drill-downs | Every control reachable; focus visible; dialog focus trap and return | `e2e/lab-04/actions-taken-flow.spec.ts` | NOT RUN |
+| E2E-04 | E2E | AC-26–AC-29, AC-32 | Both dashboards: values equal the API and SQL at run time; drill-downs show matching rows; zero states; landing after sign-in | Equal values; positive matches; captured in both dashboard folders | `e2e/lab-04/dashboards.spec.ts` | PASS (4 dashboard/landing tests; all three role sign-ins exercised; 6/6 dashboard E2E total) |
+| E2E-05 | E2E | AC-30, AC-31 | Cross-role dashboard routes; load failure by interception (*fixture*) and retry | Forbidden state; failure then recovery | `e2e/lab-04/dashboards.spec.ts` | PASS (2 tests; failure/empty captures explicitly named `fixture`) |
+| RESP-01 | Responsive | AC-34 | Dashboards and Ticket Detail with Actions at 1280, 834 and 390 px; widths 767/768/991/992; 2000-character content | No clipping or overlap; no horizontal page scroll | `e2e/lab-04/dashboards.spec.ts`, `e2e/lab-04/actions-taken-flow.spec.ts` | PARTIAL — both dashboards pass all listed viewports and boundaries; Ticket Detail with Actions and 2,000-character Action content are out of this base/scope (#91) |
+| A11Y-01 | Accessibility | AC-35 | Keyboard-only: Action form, cancel dialog, status control, dashboard drill-downs | Every control reachable; focus visible; dialog focus trap and return | `e2e/lab-04/actions-taken-flow.spec.ts` | PARTIAL — Requester dashboard drill-down reachable by Tab with `:focus-visible`; Action form/dialog and status control are not in this base (#91/#92); no screen reader used |
 | E2E-06 | E2E | AC-41, FR-26 | Console errors, failed requests and broken links collected across every Lab 4 journey | None | All `e2e/lab-04` specs (shared helper) | NOT RUN |
 
 ### Regression
@@ -185,7 +185,7 @@
 |---|---|---|---|---|---|---|
 | REG-01 | Regression | AC-37 | Full Lab 1–3 server suites. The only planned edit is the status request body gaining `expectedVersion` (specification §11.9) | All pass; nothing skipped | `server/tests/lab-01`, `lab-02`, `lab-03` | NOT RUN |
 | REG-02 | Regression | AC-37 | Full Lab 2–3 client suites | All pass | `client/tests/lab-02`, `lab-03` | NOT RUN |
-| REG-03 | Regression | AC-37, FR-22 | Lab 2–3 E2E specs with capture disabled. AUTH-03's landing assertion moves to the Dashboard (§11.12) | All pass; no tracked file modified | `e2e/lab-02`, `e2e/lab-03` | NOT RUN |
+| REG-03 | Regression | AC-32, AC-37, FR-21 | Lab 2–3 E2E specs and Lab 3 sign-in/password-change flows. Besides AUTH-03, the three affected legacy landing assertions (ADMIN-04, Login, Change Password) now expect Dashboard, as required by Lab 4's role home; `/tickets` remains the plain My Tickets route. | All pass with capture disabled; no tracked screenshot modified | `e2e/lab-02`, `e2e/lab-03`, `client/tests/lab-03/Login.test.tsx`, `client/tests/lab-03/ChangePassword.test.tsx` | PASS (full E2E 46/46; client suite 227/227) |
 | REG-04 | Regression | FR-22 | Representative Part 8 journeys: sign-in, My Tickets, detail with attachments and comments, Queue, Internal Notes, User Management | Each journey succeeds; captured in `regression/` | `e2e/lab-04/regression.spec.ts` | NOT RUN |
 
 ---
@@ -193,6 +193,8 @@
 ## 3. Acceptance-Criterion Traceability
 
 Every criterion maps to at least one planned test and, where the rubric asks for visible proof, to a planned capture (`artifacts/lab-04/screenshots/…`).
+
+Checked on 8 October 2026 for the dashboard criteria (AC-02, AC-26 to AC-33, AC-40): every test listed has a row in §2, its file exists, and the file contains the test ID (SEC-04 and SEC-05 are inside the `SEC-03/04` and `SEC-03/05/07` blocks).
 
 Twelve tests prove a business or style rule rather than a criterion, and are traced through their Requirement column instead:
 
@@ -230,7 +232,7 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 | AC-26 | DASH-01, DASH-07, E2E-04 | Dashboard capture beside the SQL count output |
 | AC-27 | DASH-02, DASH-08, UI-14, E2E-04 | `staff-dashboard/drilldown-unassigned`, `requester-dashboard/drilldown-open` |
 | AC-28 | DASH-03, UI-14, E2E-04 | `staff-dashboard/desktop` |
-| AC-29 | DASH-04, DASH-09, UI-15, UI-16, E2E-04 | `staff-dashboard/admin-no-open-actions`, `requester-dashboard/first-use-empty` |
+| AC-29 | DASH-04, DASH-09, UI-15, UI-16, E2E-04 | `staff-dashboard/admin-no-open-actions`, `requester-dashboard/first-use-empty-fixture` |
 | AC-30 | SEC-04, E2E-05 | `staff-dashboard/forbidden-requester` |
 | AC-31 | UI-15, UI-17, E2E-05 | `staff-dashboard/failure-fixture`, `requester-dashboard/failure-fixture` |
 | AC-32 | UI-18, E2E-04 | Dashboard captures show the active navigation item |
