@@ -194,6 +194,7 @@
 | E2E-07 | E2E | AC-14, AC-36 | The server commits a create and its answer is lost (real response aborted); the Description is changed; Try again | One Action, with the changed text, created once and updated once | `e2e/lab-04/actions-taken-recovery.spec.ts` | PASS (#91) |
 | E2E-08 | E2E | AC-13, BR-23 | The Ticket is resolved from the same page while Add Action is open | The form keeps its text, is disabled, has no Save, and nothing is stored | `e2e/lab-04/actions-taken-recovery.spec.ts` | PASS (#91) |
 | E2E-09 | E2E | api-spec §1 | A device set to America/Los_Angeles opens a Ticket with an Action | Every time in the list and the History equals the Asia/Bangkok rendering of the API's value | `e2e/lab-04/actions-taken-recovery.spec.ts` | PASS (#91) |
+| E2E-10 | E2E | AC-34, AC-35, AC-10, AC-12 | One Ticket with a Planned, an In progress, a Completed and a Cancelled Action, at 1280, 834 and 390 px: the list (button and badge stay on one line in the table), the Add form, an empty save, the edit panel, and the Requester's read-only view | No horizontal page scroll; the error beside Description with the focus on it; no control for the Requester; captured in `actions-taken/` | `e2e/lab-04/actions-taken-flow.spec.ts` | PASS (#91) |
 | A11Y-02 | Accessibility | AC-35, ui-spec §9 | Real Chromium: invalid follow-up note; close the details; Tab inside a busy cancel dialog | The note has the focus; View has it back; Tab and Shift+Tab never leave the dialog; the heading has the focus after the cancellation | `e2e/lab-04/actions-taken-recovery.spec.ts` | PASS (#91) |
 
 ### Regression
@@ -219,18 +220,18 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 
 | AC | Planned tests | Planned visible evidence |
 |---|---|---|
-| AC-01 | API-01, E2E-01 | `actions-taken/create-form`, `list-multiple-desktop` |
+| AC-01 | API-01, E2E-01, E2E-10 | `actions-taken/create-form-{desktop,tablet,mobile}`, `list-{desktop,tablet,mobile}` |
 | AC-02 | SEC-05, DASH-07, UI-16 | `requester-dashboard/desktop` |
-| AC-03 | API-02, API-16, UI-01, E2E-01 | `actions-taken/list-multiple-desktop`, `requester-read-only` |
+| AC-03 | API-02, API-16, UI-01, E2E-01 | `actions-taken/list-{desktop,tablet,mobile}`, `requester-read-only-{desktop,tablet,mobile}` |
 | AC-04 | API-03, E2E-01 | `actions-taken/inactive-assignee-refused` |
-| AC-05 | API-04, E2E-01 | `actions-taken/edit-reassign` |
+| AC-05 | API-04, E2E-01 | `actions-taken/edit-reassign-{desktop,tablet,mobile}` |
 | AC-06 | API-05, E2E-01 | `actions-taken/started`, `completed` |
 | AC-07 | API-06, UNIT-03, UI-04 | `actions-taken/complete-result-required` |
 | AC-08 | API-07, UI-05, E2E-01 | `actions-taken/cancel-dialog`, `cancelled` |
 | AC-09 | API-08, UI-06 | `actions-taken/completed` (no controls) |
-| AC-10 | API-09, UNIT-02, UI-02, E2E-01 | `actions-taken/follow-up-required` |
+| AC-10 | API-09, UNIT-02, UI-02, E2E-01, E2E-10 | `actions-taken/follow-up-required`, `description-required-{desktop,tablet,mobile}` |
 | AC-11 | API-10 | API test output |
-| AC-12 | SEC-01, SEC-02, UI-08, E2E-01 | `actions-taken/requester-read-only`; API test output |
+| AC-12 | SEC-01, SEC-02, UI-08, E2E-01 | `actions-taken/requester-read-only-{desktop,tablet,mobile}`; API test output |
 | AC-13 | API-11, UI-07, E2E-02 | `actions-taken/ticket-not-workable` |
 | AC-14 | API-12, UI-09 | API test output |
 | AC-15 | WF-01, WF-02, E2E-02 | `ticket-workflow/resolve-blocked` |

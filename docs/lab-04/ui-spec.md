@@ -213,7 +213,7 @@ Lab 2's three viewports are unchanged: desktop ≥ 992, tablet 768–991, mobile
 
 ## 10. Screenshot paths
 
-Captures are written only when `CAPTURE_EVIDENCE=1` is set (specification §11.13). A normal test run writes nothing tracked. A failure, empty or loading state produced by intercepting the API is labelled `fixture` in its filename and caption.
+Captures are written only when `CAPTURE_EVIDENCE=1` is set (specification §11.13). Actions Taken captures are cropped to the Actions Taken card (the cancel dialog to the visible viewport) so that they stay readable; `list-long-content-*` is the 2000-character and 120-character-name stress case of RESP-01, not the ordinary list. A normal test run writes nothing tracked. A failure, empty or loading state produced by intercepting the API is labelled `fixture` in its filename and caption.
 
 `artifacts/lab-04/screenshots/`
 
@@ -222,11 +222,12 @@ staff-dashboard/      desktop · tablet · mobile · loading-fixture · failure-
                       admin-no-open-actions · forbidden-requester · drilldown-unassigned
 requester-dashboard/  desktop · tablet · mobile · first-use-empty · failure-fixture ·
                       drilldown-open · drilldown-needs-attention
-actions-taken/        list-multiple-desktop · list-tablet · list-mobile · create-form ·
-                      follow-up-required · inactive-assignee-refused · edit-reassign ·
-                      started · complete-result-required · completed · cancel-dialog ·
-                      cancelled · requester-read-only · ticket-not-workable ·
-                      conflict · save-failure-fixture
+actions-taken/        list-{desktop,tablet,mobile} · list-long-content-{desktop,tablet,mobile} ·
+                      create-form-{desktop,tablet,mobile} · description-required-{desktop,tablet,mobile} ·
+                      edit-reassign-{desktop,tablet,mobile} · requester-read-only-{desktop,tablet,mobile} ·
+                      follow-up-required · inactive-assignee-refused · started · complete-result-required ·
+                      completed · cancel-dialog · cancelled · ticket-not-workable · conflict ·
+                      save-failure-fixture
 ticket-workflow/      resolve-blocked · resolved-after-work-complete · cancel-cascade ·
                       stale-status · history-staff · history-requester
 regression/           login · my-tickets · requester-detail-attachments-comments ·
