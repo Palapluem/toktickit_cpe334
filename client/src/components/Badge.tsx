@@ -59,3 +59,18 @@ export function RoleBadge({ value }: { value: Role }) {
     <span className={`zen-badge ${ROLE_CLASS[value]}`}>{value.replace('_', ' ')}</span>
   )
 }
+
+// Action statuses carry their text too (lab-04 STY-018, STY-019). The palette is the Ticket one, reused.
+export type ActionStatus = 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+
+const ACTION_STATUS: Record<ActionStatus, { label: string; className: string }> = {
+  PLANNED: { label: 'Planned', className: 'zen-badge--status-open' },
+  IN_PROGRESS: { label: 'In progress', className: 'zen-badge--status-active' },
+  COMPLETED: { label: 'Completed', className: 'zen-badge--status-resolved' },
+  CANCELLED: { label: 'Cancelled', className: 'zen-badge--status-quiet' },
+}
+
+export function ActionStatusBadge({ value }: { value: ActionStatus }) {
+  const { label, className } = ACTION_STATUS[value]
+  return <span className={`zen-badge zen-badge--status ${className}`}>{label}</span>
+}

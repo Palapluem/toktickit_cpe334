@@ -142,16 +142,16 @@
 
 | Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
 |---|---|---|---|---|---|---|
-| UI-01 | UI | AC-03 | Actions list | Every field rendered in creation order; "(inactive)" marker; table ≥ 992 px, cards below | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
-| UI-02 | UI | AC-10, BR-13–BR-15 | Create form: required, conditional and boundary inputs | Field messages; API not called while invalid; note hidden and cleared when unticked | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
-| UI-03 | UI | BR-06, BR-07 | Assignee control | Defaults to the current user; options are `assignableOwners` only | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
-| UI-04 | UI | AC-07 | Complete without a Result | Field error under Result, focus moved there; no request | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
-| UI-05 | UI | AC-08, AC-35 | Cancel dialog | Reason required; focus trapped; Escape closes; focus returns to the trigger | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
-| UI-06 | UI | AC-09 | Terminal Action | Read-only, with no Edit or status buttons | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
-| UI-07 | UI | AC-13 | Ticket not workable | Banner replaces Add Action; no edit controls | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
-| UI-08 | UI | AC-12, BR-17 | Requester view | Read-only; no controls; display names only | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
-| UI-09 | UI | FR-24, AC-14 | Busy state, double click and retry | Save disabled while in flight; one request per click burst; retry reuses `requestId` | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
-| UI-10 | UI | AC-36 | Save failure and `STALE_VERSION` | Entered values kept; conflict or failure message; save possible again | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
+| UI-01 | UI | AC-03 | Actions list | Every field rendered in creation order; "(inactive)" marker; table ≥ 992 px, cards below | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-02 | UI | AC-10, BR-13–BR-15 | Create form: required, conditional and boundary inputs | Field messages; API not called while invalid; note hidden and cleared when unticked | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-03 | UI | BR-06, BR-07 | Assignee control | Defaults to the current user; options are `assignableOwners` only | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-04 | UI | AC-07 | Complete without a Result | Field error under Result, focus moved there; no request | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-05 | UI | AC-08, AC-35 | Cancel dialog | Reason required; focus trapped; Escape closes; focus returns to the trigger | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-06 | UI | AC-09 | Terminal Action | Read-only, with no Edit or status buttons | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-07 | UI | AC-13 | Ticket not workable | Banner replaces Add Action; no edit controls | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-08 | UI | AC-12, BR-17 | Requester view | Read-only; no controls; display names only | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-09 | UI | FR-24, AC-14 | Busy state, double click and retry | Save disabled while in flight; one request per click burst; retry reuses `requestId` | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-10 | UI | AC-36 | Save failure and `STALE_VERSION` | Entered values kept; conflict or failure message; save possible again | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
 | UI-11 | UI | AC-18, AC-21 | Status control | Only permitted transitions; blocked helper text shows the open count | `client/tests/lab-04/TicketWorkflow.test.tsx` | PASS (#92) |
 | UI-12 | UI | AC-21 | Status outcomes | Success refreshes badge and controls and announces; 409 open-Actions and stale messages keep the previous status | `client/tests/lab-04/TicketWorkflow.test.tsx` | PASS (#92) |
 | UI-13 | UI | AC-23 | History | IT Staff see every type; Requester sees status changes only; empty state | `client/tests/lab-04/TicketWorkflow.test.tsx` | PASS (#92) |
@@ -160,7 +160,13 @@
 | UI-16 | UI | AC-02, AC-29 | Requester dashboard content | Cards and links; attention cue as text; first-use empty state | `client/tests/lab-04/RequesterDashboard.test.tsx` | NOT RUN |
 | UI-17 | UI | AC-31 | Requester dashboard states | Loading; failure → Try again; forbidden | `client/tests/lab-04/RequesterDashboard.test.tsx` | NOT RUN |
 | UI-18 | UI | AC-32, FR-21 | Navigation per role | Dashboard first and active; post-login redirect lands on it | `client/tests/lab-04/AppNavigation.test.tsx` | NOT RUN |
-| UI-19 | UI | api-spec §1, BR-38 | History times and the formatter on devices set to UTC, America/Los_Angeles, Asia/Bangkok and Pacific/Kiritimati | 03:12 UTC reads 10:12 and the date moves exactly at 17:00 UTC | `client/tests/lab-04/dateTime.test.ts`, `client/tests/lab-04/TicketWorkflow.test.tsx` | PARTIAL: History PASS (#92); Actions follow in #91 |
+| UI-19 | UI | api-spec §1, BR-38 | History and Actions times and the formatter on devices set to UTC, America/Los_Angeles, Asia/Bangkok and Pacific/Kiritimati | 03:12 UTC reads 10:12 and the date moves exactly at 17:00 UTC | `client/tests/lab-04/dateTime.test.ts`, `client/tests/lab-04/TicketWorkflow.test.tsx`, `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#92, #91) |
+| UI-20 | UI | AC-10, ui-spec §9 | An invalid create, edit, server-refused and cancel-dialog submission | The first invalid field in display order has the focus, once the controls are enabled again | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-21 | UI | ui-spec §9 | Close the details, cancel and save the create form, discard and save the edit form, cancel an Action | The focus returns to View, Add Action or Edit; after a cancellation it lands on the details heading, not on the page | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-22 | UI | AC-35 | Tab and Shift+Tab in the cancel dialog while its save is in flight and after it fails | The dialog takes the focus when its last control is disabled, and the focus never leaves it | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-23 | UI | AC-14, AC-36, BR-34 | A create whose answer is lost, entries changed, then Try again; the update failing; no change; a refused first attempt | The first entries are resent under their key, then the changes are saved as an update; one Action; the update alone is retried | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-24 | UI | AC-13, BR-22, BR-23 | The Ticket becomes Resolved or Cancelled while the create form, the edit form or the cancel dialog is open; a status change | The forms are read-only with their text kept and no Save; the dialog closes; the Actions are loaded again | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-25 | UI | AC-12, BR-17 | A Requester opens a Planned and an In progress Action | Only Close; no Edit, Start, Complete, Cancel Action or textbox | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
 | UI-26 | UI | api-spec §1, BR-38 | Staff and Requester Ticket Detail, the staff queue, comments, attachments, My Tickets (a date alone) and the Create Ticket confirmation on devices set to UTC and America/Los_Angeles | Each shows the Bangkok time or date, including a date that falls on the next day | `client/tests/lab-04/BangkokTime.test.tsx` | PASS (#92) |
 
 ### UI style
@@ -168,23 +174,28 @@
 | Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
 |---|---|---|---|---|---|---|
 | STYLE-01 | UI style | STY-001–STY-003 | Colour literals and Bootstrap colour utilities across all of `client/src` | Literals only in the `:root` token block; no colour utilities | `client/tests/lab-03/StyleContract.test.tsx` (existing; already scans every `client/src` file) | NOT RUN |
-| STYLE-02 | UI style | STY-018, STY-019 | Action status badges | Text label for each of the four values, from the single badge mapping | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
-| STYLE-03 | UI style | STY-026 | Every new input | A programmatically associated label | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
-| STYLE-04 | UI style | STY-012 | Validation placement | Message below its field, error token, input text not red | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
-| STYLE-05 | UI style | STY-009, STY-010 | System fields | Rendered on the read-only surface, never as inputs | `client/tests/lab-04/ActionsTaken.test.tsx` | NOT RUN |
+| STYLE-02 | UI style | STY-018, STY-019 | Action status badges | Text label for each of the four values, from the single badge mapping | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| STYLE-03 | UI style | STY-026 | Every new input | A programmatically associated label | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| STYLE-04 | UI style | STY-012 | Validation placement | Message below its field, error token, input text not red | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| STYLE-05 | UI style | STY-009, STY-010 | System fields | Rendered on the read-only surface, never as inputs | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
 
 ### Responsive, accessibility and E2E
 
 | Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
 |---|---|---|---|---|---|---|
-| E2E-01 | E2E | AC-01–AC-10, AC-12, BR-02 | Daniel owns the Ticket; Olivia creates several Actions, assigns Patricia, edits, starts, completes, cancels; inactive Thomas is refused; the Requester sees everything read-only | Each step visible and persisted; captured in `actions-taken/` | `e2e/lab-04/actions-taken-flow.spec.ts` | NOT RUN |
+| E2E-01 | E2E | AC-01–AC-10, AC-12, BR-02 | Daniel owns the Ticket; Olivia creates several Actions, assigns Patricia, edits, starts, completes, cancels; inactive Thomas is refused; the Requester sees everything read-only | Each step visible and persisted; captured in `actions-taken/` | `e2e/lab-04/actions-taken-flow.spec.ts` | PASS (#91) |
 | E2E-02 | E2E | AC-13, AC-15–AC-17, AC-21–AC-23 | Resolve blocked → work completed → resolved; cancel with cascade; history for IT Staff vs Requester | Each state visible; status refreshes; captured in `ticket-workflow/` | `e2e/lab-04/ticket-resolution.spec.ts` | PASS (#92) |
-| E2E-03 | E2E | AC-19, AC-36 | Two browser sessions change the same Action and the same Ticket status | Conflict message; entered values kept; save succeeds after review | `e2e/lab-04/ticket-resolution.spec.ts` | PARTIAL: status half PASS (#92); Action half follows in #91 |
+| E2E-03 | E2E | AC-19, AC-36 | Two browser sessions change the same Action and the same Ticket status | Conflict message; entered values kept; save succeeds after review | `e2e/lab-04/ticket-resolution.spec.ts` | PASS (#92, #91) |
 | E2E-04 | E2E | AC-26–AC-29, AC-32 | Both dashboards: values equal the API and SQL at run time; drill-downs show matching rows; zero states; landing after sign-in | Equal values; positive matches; captured in both dashboard folders | `e2e/lab-04/dashboards.spec.ts` | NOT RUN |
 | E2E-05 | E2E | AC-30, AC-31 | Cross-role dashboard routes; load failure by interception (*fixture*) and retry | Forbidden state; failure then recovery | `e2e/lab-04/dashboards.spec.ts` | NOT RUN |
-| RESP-01 | Responsive | AC-34 | Dashboards and Ticket Detail with Actions at 1280, 834 and 390 px; widths 767/768/991/992; 2000-character content | No clipping or overlap; no horizontal page scroll | `e2e/lab-04/dashboards.spec.ts`, `e2e/lab-04/actions-taken-flow.spec.ts` | NOT RUN |
-| A11Y-01 | Accessibility | AC-35 | Keyboard-only: Action form, cancel dialog, status control, dashboard drill-downs | Every control reachable; focus visible; dialog focus trap and return | `e2e/lab-04/actions-taken-flow.spec.ts` | NOT RUN |
+| RESP-01 | Responsive | AC-34 | Dashboards and Ticket Detail with Actions at 1280, 834 and 390 px; widths 767/768/991/992; 2000-character content | No clipping or overlap; no horizontal page scroll | `e2e/lab-04/dashboards.spec.ts`, `e2e/lab-04/actions-taken-flow.spec.ts` | PARTIAL: Ticket Detail with Actions PASS (#91); dashboards follow in #93 |
+| A11Y-01 | Accessibility | AC-35 | Keyboard-only: Action form, cancel dialog, status control, dashboard drill-downs | Every control reachable; focus visible; dialog focus trap and return | `e2e/lab-04/actions-taken-flow.spec.ts` | PASS (#91) |
 | E2E-06 | E2E | AC-41, FR-26 | Console errors, failed requests and broken links collected across every Lab 4 journey | None | All `e2e/lab-04` specs (shared helper) | NOT RUN |
+| E2E-07 | E2E | AC-14, AC-36 | The server commits a create and its answer is lost (real response aborted); the Description is changed; Try again | One Action, with the changed text, created once and updated once | `e2e/lab-04/actions-taken-recovery.spec.ts` | PASS (#91) |
+| E2E-08 | E2E | AC-13, BR-23 | The Ticket is resolved from the same page while Add Action is open | The form keeps its text, is disabled, has no Save, and nothing is stored | `e2e/lab-04/actions-taken-recovery.spec.ts` | PASS (#91) |
+| E2E-09 | E2E | api-spec §1 | A device set to America/Los_Angeles opens a Ticket with an Action | Every time in the list and the History equals the Asia/Bangkok rendering of the API's value | `e2e/lab-04/actions-taken-recovery.spec.ts` | PASS (#91) |
+| E2E-10 | E2E | AC-34, AC-35, AC-10, AC-12 | One Ticket with a Planned, an In progress, a Completed and a Cancelled Action, at 1280, 834 and 390 px: the list (button and badge stay on one line in the table), the Add form, an empty save, the edit panel, and the Requester's read-only view | No horizontal page scroll; the error beside Description with the focus on it; no control for the Requester; captured in `actions-taken/` | `e2e/lab-04/actions-taken-flow.spec.ts` | PASS (#91) |
+| A11Y-02 | Accessibility | AC-35, ui-spec §9 | Real Chromium: invalid follow-up note; close the details; Tab inside a busy cancel dialog | The note has the focus; View has it back; Tab and Shift+Tab never leave the dialog; the heading has the focus after the cancellation | `e2e/lab-04/actions-taken-recovery.spec.ts` | PASS (#91) |
 
 ### Regression
 
@@ -209,18 +220,18 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 
 | AC | Planned tests | Planned visible evidence |
 |---|---|---|
-| AC-01 | API-01, E2E-01 | `actions-taken/create-form`, `list-multiple-desktop` |
+| AC-01 | API-01, E2E-01, E2E-10 | `actions-taken/create-form-{desktop,tablet,mobile}`, `list-{desktop,tablet,mobile}` |
 | AC-02 | SEC-05, DASH-07, UI-16 | `requester-dashboard/desktop` |
-| AC-03 | API-02, API-16, UI-01, E2E-01 | `actions-taken/list-multiple-desktop`, `requester-read-only` |
+| AC-03 | API-02, API-16, UI-01, E2E-01 | `actions-taken/list-{desktop,tablet,mobile}`, `requester-read-only-{desktop,tablet,mobile}` |
 | AC-04 | API-03, E2E-01 | `actions-taken/inactive-assignee-refused` |
-| AC-05 | API-04, E2E-01 | `actions-taken/edit-reassign` |
+| AC-05 | API-04, E2E-01 | `actions-taken/edit-reassign-{desktop,tablet,mobile}` |
 | AC-06 | API-05, E2E-01 | `actions-taken/started`, `completed` |
 | AC-07 | API-06, UNIT-03, UI-04 | `actions-taken/complete-result-required` |
 | AC-08 | API-07, UI-05, E2E-01 | `actions-taken/cancel-dialog`, `cancelled` |
 | AC-09 | API-08, UI-06 | `actions-taken/completed` (no controls) |
-| AC-10 | API-09, UNIT-02, UI-02, E2E-01 | `actions-taken/follow-up-required` |
+| AC-10 | API-09, UNIT-02, UI-02, E2E-01, E2E-10 | `actions-taken/follow-up-required`, `description-required-{desktop,tablet,mobile}` |
 | AC-11 | API-10 | API test output |
-| AC-12 | SEC-01, SEC-02, UI-08, E2E-01 | `actions-taken/requester-read-only`; API test output |
+| AC-12 | SEC-01, SEC-02, UI-08, E2E-01 | `actions-taken/requester-read-only-{desktop,tablet,mobile}`; API test output |
 | AC-13 | API-11, UI-07, E2E-02 | `actions-taken/ticket-not-workable` |
 | AC-14 | API-12, UI-09 | API test output |
 | AC-15 | WF-01, WF-02, E2E-02 | `ticket-workflow/resolve-blocked` |
@@ -261,11 +272,12 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 | `server/tests/lab-04/staff-dashboard.api.test.ts` | DASH-01–DASH-06, SEC-04 |
 | `client/tests/lab-04/StaffDashboard.test.tsx` | UI-14, UI-15 |
 | `client/tests/lab-04/RequesterDashboard.test.tsx` | UI-16, UI-17 |
-| `client/tests/lab-04/ActionsTaken.test.tsx` | UI-01–UI-10, STYLE-02–STYLE-05 |
+| `client/tests/lab-04/ActionsTaken.test.tsx` | UI-01–UI-10, UI-19–UI-25, STYLE-02–STYLE-05 |
 | `client/tests/lab-04/TicketWorkflow.test.tsx` | UI-11–UI-13, UI-19 |
 | `client/tests/lab-04/dateTime.test.ts` | UI-19 |
 | `client/tests/lab-04/BangkokTime.test.tsx` | UI-26 |
 | `e2e/lab-04/actions-taken-flow.spec.ts` | E2E-01, RESP-01, A11Y-01 |
+| `e2e/lab-04/actions-taken-flow.spec.ts` | E2E-01, RESP-01 (Ticket Detail with Actions), A11Y-01 |
 | `e2e/lab-04/ticket-resolution.spec.ts` | E2E-02, E2E-03 |
 | `e2e/lab-04/dashboards.spec.ts` | E2E-04, E2E-05, RESP-01 |
 
@@ -273,6 +285,7 @@ Supporting files beyond the minimum:
 
 - `server/tests/lab-04/transition-oracle.ts` (the status table of §5.2, shared by UNIT-04 and WF-06);
 - `server/tests/lab-04/lock-helpers.api.test.ts` (LOCK-01, the lock-wait helper behind API-17, WF-08 and WF-17);
+- `e2e/lab-04/actions-taken-recovery.spec.ts` (E2E-07–E2E-09, A11Y-02);
 - `server/tests/lab-04/action-rules.unit.test.ts`, `workflow-rules.unit.test.ts`, `transition-spec.unit.test.ts`, `dashboard-metrics.unit.test.ts` and `migration-seed.api.test.ts` (MIG-03–MIG-05);
 - `server/tests/lab-04/test-transport.unit.test.ts` (#96, the loopback guard behind the suite-stability fix);
 - `client/tests/lab-04/AppNavigation.test.tsx`;
@@ -306,6 +319,26 @@ TEST_DATABASE_URL=… npm test          # from server/; a fresh database whose n
 - A default `npm run test:e2e` writes nothing tracked: 40 passed with and without `CAPTURE_EVIDENCE=1`, and `git status -- artifacts` stayed clean both times. Lab 2 and Lab 3 captures are frozen.
 - Runner output moved to the ignored `artifacts/lab-04/playwright-results/`.
 
+Cross-browser run (Chromium is the only project in `playwright.config.ts`; browsers installed once with `npx playwright install firefox webkit`). A throwaway config, not committed, next to it:
+
+```ts
+// playwright.cross-browser.config.ts
+import { devices } from '@playwright/test'
+import base from './playwright.config'
+export default {
+  ...base,
+  projects: [
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    { name: 'msedge', use: { ...devices['Desktop Edge'], channel: 'msedge' } }, // the installed Microsoft Edge, with Playwright's own temporary profile
+  ],
+}
+```
+
+```bash
+npx playwright test -c playwright.cross-browser.config.ts e2e/lab-04   # under the E2E lock
+```
+
 Still planned: `server/scripts/verify-migration.mjs` (#90) and `server/scripts/perf-smoke.mjs` (#93).
 
 Suites always run sequentially. `toktickit_dev` is never a target.
@@ -321,6 +354,8 @@ Each will record the commit, environment, commands, full runner output location,
 
 ## 7. Known Limitations
 
+- **Cross-browser coverage is ad hoc.** The suite runs on Chromium. A run of `e2e/lab-04` on the #91 head also passed on Firefox (12 of 12), on the student's everyday browser Microsoft Edge 154 (12 of 12, run twice, the second time by an independent audit), and on WebKit except A11Y-01's Tab walk: WebKit's default Tab order skips checkboxes and buttons (Safari's "Press Tab to highlight each item" setting), so that walk is Chromium and Firefox only. The dialog and focus tests of A11Y-02 pass on WebKit. No screen reader has been used: the labsheet does not ask for one, and ui-spec §11 row 21 rests on the accessibility-tree assertions named there.
+- **A very long name in the page header is not covered.** A person whose own display name is 120 characters with no break widens the shell header (Lab 3's shell, found while testing RESP-01); the Actions area wraps such a name. Recorded, not changed.
 - The performance smoke result is a local measurement on one Mac, not production capacity (specification §11.14).
 - Dashboard and Action failure, loading and empty captures that need a broken server are produced by API interception and labelled *fixture*. The API tests prove the backend behaviour.
 - History begins with Lab 4. Seeded and legacy Tickets have no events for earlier changes (specification §7).
