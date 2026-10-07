@@ -194,6 +194,8 @@
 
 Every criterion maps to at least one planned test and, where the rubric asks for visible proof, to a planned capture (`artifacts/lab-04/screenshots/…`).
 
+Checked on 8 October 2026 for the dashboard criteria (AC-02, AC-26 to AC-33, AC-40): every test listed has a row in §2, its file exists, and the file contains the test ID (SEC-04 and SEC-05 are inside the `SEC-03/04` and `SEC-03/05/07` blocks).
+
 Twelve tests prove a business or style rule rather than a criterion, and are traced through their Requirement column instead:
 
 - business rules: UNIT-01 (BR-09/10), UNIT-06 (BR-30), UNIT-07 (BR-36/37), API-14 (BR-01), API-15 (BR-35), DASH-05 (BR-38), WF-13 (BR-32), UI-03 (BR-06/07);
@@ -230,7 +232,7 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 | AC-26 | DASH-01, DASH-07, E2E-04 | Dashboard capture beside the SQL count output |
 | AC-27 | DASH-02, DASH-08, UI-14, E2E-04 | `staff-dashboard/drilldown-unassigned`, `requester-dashboard/drilldown-open` |
 | AC-28 | DASH-03, UI-14, E2E-04 | `staff-dashboard/desktop` |
-| AC-29 | DASH-04, DASH-09, UI-15, UI-16, E2E-04 | `staff-dashboard/admin-no-open-actions`, `requester-dashboard/first-use-empty` |
+| AC-29 | DASH-04, DASH-09, UI-15, UI-16, E2E-04 | `staff-dashboard/admin-no-open-actions`, `requester-dashboard/first-use-empty-fixture` |
 | AC-30 | SEC-04, E2E-05 | `staff-dashboard/forbidden-requester` |
 | AC-31 | UI-15, UI-17, E2E-05 | `staff-dashboard/failure-fixture`, `requester-dashboard/failure-fixture` |
 | AC-32 | UI-18, E2E-04 | Dashboard captures show the active navigation item |
