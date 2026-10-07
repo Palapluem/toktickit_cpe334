@@ -5,9 +5,11 @@ import { API_BASE_URL, captureLab4Screenshot, expectNoPageOverflow, signOut } fr
 import { PEOPLE, addAction, changeStatus, login, userIdByName, workedTicket } from './support'
 
 type Page = import('@playwright/test').Page
-const SHOT = 'actions-taken'
-
 const section = (page: Page) => page.locator('#actions-taken')
+const SHOT = 'actions-taken'
+/** The Actions Taken card, cropped from the page so the capture stays readable at its own width. */
+const shot = (page: Page, name: string) => captureLab4Screenshot(page, SHOT, name, section(page))
+
 const rows = (page: Page) => section(page).locator('tbody tr')
 const form = (page: Page) => page.locator('.actions__form')
 const panel = (page: Page) => page.getByRole('region', { name: 'Action details' })
@@ -35,14 +37,14 @@ test('E2E-01 · AC-01 to AC-10, AC-12 · Olivia works a Ticket Daniel owns, and 
   await expect(form(page).getByLabel('Description')).toBeFocused()
   await expect(form(page).getByLabel('Assignee').locator('option:checked')).toHaveText('Olivia Reed')
   await expect(form(page).getByText('Recorded automatically when you save')).toBeVisible()
-  await captureLab4Screenshot(page, SHOT, 'create-form.png')
+  await shot(page, 'create-form-desktop.png')
   await form(page).getByLabel('Description').fill('Collect the relay error from the mail gateway log.')
   await form(page).getByRole('checkbox', { name: 'Follow-Up Required?' }).check()
   await form(page).getByRole('button', { name: 'Save Action' }).click()
   await expect(form(page).getByText('Enter the follow-up note.')).toBeVisible()
   await form(page).getByLabel('Follow-up Note').fill('Confirm with the vendor whether the allow-list was truncated.')
   await form(page).getByLabel('Attachment Notes').fill('relay-error.png')
-  await captureLab4Screenshot(page, SHOT, 'follow-up-required.png')
+  await shot(page, 'follow-up-required.png')
   await form(page).getByRole('button', { name: 'Save Action' }).click()
   await expect(section(page).getByRole('heading', { name: 'Actions Taken (1)' })).toBeVisible()
 
@@ -67,7 +69,7 @@ test('E2E-01 · AC-01 to AC-10, AC-12 · Olivia works a Ticket Daniel owns, and 
     await form(page).getByRole('button', { name: 'Save Action' }).click()
     await expect(form(page).getByText('Choose an active IT Staff member or Administrator.')).toBeVisible()
     await expect(form(page).getByLabel('Description')).toHaveValue('Check the mail queue.')
-    await captureLab4Screenshot(page, SHOT, 'inactive-assignee-refused.png')
+    await shot(page, 'inactive-assignee-refused.png')
   } finally {
     const on = await request.patch(`${API_BASE_URL}/api/admin/users/${daniel}`, { data: { isActive: true } })
     expect(on.ok(), 'reactivating Daniel').toBeTruthy()
@@ -81,7 +83,7 @@ test('E2E-01 · AC-01 to AC-10, AC-12 · Olivia works a Ticket Daniel owns, and 
   await panel(page).getByRole('button', { name: 'Edit' }).click()
   await panel(page).getByLabel('Description').fill('Collect the relay error and the gateway log.')
   await panel(page).getByLabel('Assignee').selectOption({ label: 'Patricia Evans' })
-  await captureLab4Screenshot(page, SHOT, 'edit-reassign.png')
+  await shot(page, 'edit-reassign-desktop.png')
   await panel(page).getByRole('button', { name: 'Save changes' }).click()
   await expect(panel(page)).toContainText('Collect the relay error and the gateway log.')
   await expect(rows(page).nth(0)).toContainText('Patricia Evans')
@@ -90,23 +92,23 @@ test('E2E-01 · AC-01 to AC-10, AC-12 · Olivia works a Ticket Daniel owns, and 
   await view(page, 1).click()
   await panel(page).getByRole('button', { name: 'Start' }).click()
   await expect(rows(page).nth(1).getByText('In progress')).toBeVisible()
-  await captureLab4Screenshot(page, SHOT, 'started.png')
+  await shot(page, 'started.png')
   await panel(page).getByRole('button', { name: 'Complete' }).click()
   await expect(panel(page).getByText('Enter the result before completing this Action.')).toBeVisible()
   await expect(panel(page).getByLabel('Result')).toBeFocused()
-  await captureLab4Screenshot(page, SHOT, 'complete-result-required.png')
+  await shot(page, 'complete-result-required.png')
   await panel(page).getByLabel('Result').fill('Allow-list restored; external mail delivered.')
   await panel(page).getByRole('button', { name: 'Complete' }).click()
   await expect(rows(page).nth(1).getByText('Completed')).toBeVisible()
   await expect(panel(page).getByRole('button', { name: 'Edit' })).toHaveCount(0)
-  await captureLab4Screenshot(page, SHOT, 'completed.png')
+  await shot(page, 'completed.png')
 
   // Cancel through the dialog; a finished Action is read-only (AC-08, AC-09).
   await view(page, 2).click()
   await panel(page).getByRole('button', { name: 'Cancel Action' }).click()
   const dialog = page.getByRole('dialog')
   await expect(dialog.getByLabel('Reason')).toBeFocused()
-  await captureLab4Screenshot(page, SHOT, 'cancel-dialog.png')
+  await captureLab4Screenshot(page, SHOT, 'cancel-dialog.png', 'viewport')
   await dialog.getByRole('button', { name: 'Cancel Action' }).click()
   await expect(dialog.getByText('Enter the reason for cancelling.')).toBeVisible()
   await dialog.getByLabel('Reason').fill('The vendor was reached by email instead.')
@@ -115,7 +117,7 @@ test('E2E-01 · AC-01 to AC-10, AC-12 · Olivia works a Ticket Daniel owns, and 
   await expect(rows(page).nth(2).getByText('Cancelled')).toBeVisible()
   await expect(panel(page)).toContainText('The vendor was reached by email instead.')
   await expect(panel(page).getByRole('button', { name: 'Cancel Action' })).toHaveCount(0)
-  await captureLab4Screenshot(page, SHOT, 'cancelled.png')
+  await shot(page, 'cancelled.png')
 
   // Persisted: the list survives a reload, in the same order (AC-03).
   await page.reload()
@@ -135,7 +137,7 @@ test('E2E-01 · AC-01 to AC-10, AC-12 · Olivia works a Ticket Daniel owns, and 
   for (const name of ['Edit', 'Start', 'Complete', 'Cancel Action']) {
     await expect(panel(page).getByRole('button', { name })).toHaveCount(0)
   }
-  await captureLab4Screenshot(page, SHOT, 'requester-read-only.png')
+  await shot(page, 'requester-read-only-desktop.png')
   const api = await page.request.get(`${API_BASE_URL}/api/tickets/${ticketId}/actions`)
   const body = JSON.stringify(await api.json())
   expect(body).not.toMatch(/"id":"[0-9a-f-]{36}","displayName"|isActive|"email"/)
@@ -149,7 +151,7 @@ test('E2E-01 · AC-13 · a Ticket that is not workable shows the banner instead 
 
   await expect(section(page).getByText('This Ticket is Resolved. Actions are read-only — reopen the Ticket to record more work.')).toBeVisible()
   await expect(section(page).getByRole('button', { name: 'Add Action' })).toHaveCount(0)
-  await captureLab4Screenshot(page, SHOT, 'ticket-not-workable.png')
+  await shot(page, 'ticket-not-workable.png')
 })
 
 test('E2E-03 · AC-14 · AC-19 · AC-36 · a conflict and a save failure keep what was typed', async ({ page, browser, e2eSummaries }) => {
@@ -181,13 +183,13 @@ test('E2E-03 · AC-14 · AC-19 · AC-36 · a conflict and a save failure keep wh
   await expect(page.getByText('Someone else changed this Action. The latest version is shown; your unsaved entries are kept in the form.')).toBeVisible()
   await expect(panel(page).getByLabel('Description')).toHaveValue('My wording, written while Patricia edited too.')
   await expect(rows(page).first()).toContainText("Patricia's wording.")
-  await captureLab4Screenshot(page, SHOT, 'conflict.png')
+  await shot(page, 'conflict.png')
 
   // A failed save (fixture: the request is answered with a 500) keeps the entries and offers Try again.
   await page.route('**/api/tickets/*/actions/*', (route) => (route.request().method() === 'PATCH' ? route.fulfill({ status: 500, body: '{}' }) : route.continue()))
   await panel(page).getByRole('button', { name: 'Save changes' }).click()
   await expect(page.getByText('The Action could not be saved. Your entries are kept.')).toBeVisible()
-  await captureLab4Screenshot(page, SHOT, 'save-failure-fixture.png')
+  await shot(page, 'save-failure-fixture.png')
   await page.unroute('**/api/tickets/*/actions/*')
   await panel(page).getByRole('button', { name: 'Try again' }).click()
   await expect(rows(page).first()).toContainText('My wording, written while Patricia edited too.')
@@ -224,9 +226,9 @@ test('RESP-01 · AC-34 · Ticket Detail with Actions fits every width, with 2000
 
   async function checkEveryWidth() {
   const widths = [
-    { width: 1280, height: 900, name: 'list-multiple-desktop.png' },
-    { width: 834, height: 1112, name: 'list-tablet.png' },
-    { width: 390, height: 844, name: 'list-mobile.png' },
+    { width: 1280, height: 900, name: 'list-long-content-desktop.png' },
+    { width: 834, height: 1112, name: 'list-long-content-tablet.png' },
+    { width: 390, height: 844, name: 'list-long-content-mobile.png' },
     { width: 767, height: 900 },
     { width: 768, height: 900 },
     { width: 991, height: 900 },
@@ -254,9 +256,98 @@ test('RESP-01 · AC-34 · Ticket Detail with Actions fits every width, with 2000
     }
     if (name) {
       await section(page).scrollIntoViewIfNeeded()
-      await captureLab4Screenshot(page, SHOT, name)
+      await shot(page, name)
     }
   }
+  }
+})
+
+const THREE_WIDTHS = [
+  { name: 'desktop', width: 1280, height: 900 },
+  { name: 'tablet', width: 834, height: 1112 },
+  { name: 'mobile', width: 390, height: 844 },
+] as const
+
+test('E2E-10 · AC-34 · AC-35 · the Add form, its validation, the edit panel and the Requester view fit desktop, tablet and phone', async ({
+  page,
+  e2eSummaries,
+}) => {
+  const { ticketId } = await workedTicket(page, e2eSummaries, 'actions widths')
+  const olivia = await userIdByName(page.request, ticketId, 'Olivia Reed')
+  await addAction(page.request, ticketId, olivia, 'Collect the relay error from the mail gateway log.')
+  const started = await addAction(page.request, ticketId, olivia, 'Restore the allow-list.')
+  const finished = await addAction(page.request, ticketId, olivia, 'Confirm the vendor fix.')
+  const dropped = await addAction(page.request, ticketId, olivia, 'Call the vendor.')
+  const move = async (action: { id: string; version: number }, data: Record<string, unknown>) => {
+    const response = await page.request.patch(`${API_BASE_URL}/api/tickets/${ticketId}/actions/${action.id}/status`, { data })
+    expect(response.ok(), `moving an Action to ${String(data.status)}`).toBeTruthy()
+  }
+  await move(started, { expectedVersion: 1, status: 'IN_PROGRESS' })
+  await move(finished, { expectedVersion: 1, status: 'IN_PROGRESS' })
+  await move(finished, { expectedVersion: 2, status: 'COMPLETED', result: 'Fix confirmed; mail delivered.' })
+  await move(dropped, { expectedVersion: 1, status: 'CANCELLED', cancellationReason: 'The vendor was reached by email instead.' })
+  await login(page.request, PEOPLE.olivia)
+
+  for (const { name, width, height } of THREE_WIDTHS) {
+    await page.setViewportSize({ width, height })
+    await page.goto(`/staff/tickets/${ticketId}`)
+    await expect(rows(page)).toHaveCount(4)
+    // Planned, In progress, Completed and Cancelled Actions on one Ticket (labsheet Part 6).
+    for (const status of ['Planned', 'In progress', 'Completed', 'Cancelled']) await expect(section(page).getByText(status, { exact: true }).first()).toBeVisible()
+    await expectNoPageOverflow(page)
+    // In the table the button and the status badge keep to one line, whatever the other columns hold (AC-34, AC-35).
+    if (width >= 992) {
+      const wrapped = await section(page).locator('tbody tr').evaluateAll((trs) =>
+        trs.flatMap((tr) =>
+          [...tr.querySelectorAll('button, .zen-badge')].map((el) => {
+            const range = document.createRange()
+            range.selectNodeContents(el)
+            return { text: el.textContent, lines: range.getClientRects().length }
+          }),
+        ).filter((item) => item.lines > 1),
+      )
+      expect(wrapped, 'a button or badge broken over lines').toEqual([])
+    }
+    await shot(page, `list-${name}.png`)
+
+    await section(page).getByRole('button', { name: 'Add Action' }).click()
+    await expect(form(page).getByLabel('Description')).toBeFocused()
+    await expectNoPageOverflow(page)
+    // The desktop create form is captured by E2E-01, which fills the rest of the flow in.
+    if (name !== 'desktop') await shot(page, `create-form-${name}.png`)
+
+    // Validation sits beside its field and takes the focus (AC-10, AC-35).
+    await form(page).getByRole('button', { name: 'Save Action' }).click()
+    await expect(form(page).getByText('Enter a description.')).toBeVisible()
+    await expect(form(page).getByLabel('Description')).toBeFocused()
+    await expect(rows(page)).toHaveCount(4)
+    await expectNoPageOverflow(page)
+    await shot(page, `description-required-${name}.png`)
+    await form(page).getByRole('button', { name: 'Cancel' }).click()
+
+    await view(page, 0).click()
+    await panel(page).getByRole('button', { name: 'Edit' }).click()
+    await panel(page).getByLabel('Description').fill('Collect the relay error and the gateway log.')
+    await expectNoPageOverflow(page)
+    if (name !== 'desktop') await shot(page, `edit-reassign-${name}.png`)
+    await panel(page).getByRole('button', { name: 'Close' }).click()
+  }
+
+  // The Requester reads the same Actions and has no control on any of them (AC-12).
+  await signOut(page)
+  await login(page.request, PEOPLE.jennifer)
+  for (const { name, width, height } of THREE_WIDTHS) {
+    await page.setViewportSize({ width, height })
+    await page.goto(`/tickets/${ticketId}`)
+    await expect(rows(page)).toHaveCount(4)
+    await view(page, 0).click()
+    await expect(panel(page)).toContainText('Collect the relay error from the mail gateway log.')
+    await expect(section(page).getByRole('button', { name: 'Add Action' })).toHaveCount(0)
+    for (const control of ['Edit', 'Start', 'Complete', 'Cancel Action']) {
+      await expect(panel(page).getByRole('button', { name: control })).toHaveCount(0)
+    }
+    await expectNoPageOverflow(page)
+    if (name !== 'desktop') await shot(page, `requester-read-only-${name}.png`)
   }
 })
 
