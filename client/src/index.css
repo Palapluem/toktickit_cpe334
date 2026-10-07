@@ -1504,6 +1504,16 @@ body {
   overflow-wrap: anywhere;
 }
 
+@media (min-width: 992px) {
+  /* The long columns give way; the date, the follow-up flag, the badge and the button stay whole (lab-04 AC-34). */
+  .actions__table td:first-child,
+  .actions__table td[data-label='Follow-up'],
+  .actions__table .zen-badge,
+  .actions__table .zen-button {
+    white-space: nowrap;
+  }
+}
+
 @media (max-width: 991.98px) {
   .actions__table,
   .actions__table tbody,
