@@ -25,7 +25,9 @@ async function walk(page: Page, start: string[]): Promise<string[]> {
     seen.add(path + '#' + hash)
     const first = !opened.includes(path)
     const response = await page.goto(path)
-    expect(response?.ok(), `${path} loads`).toBeTruthy()
+    // A navigation that only adds or drops the #hash is a same-document one and answers null (seen in WebKit); the heading below proves the page.
+    // 304 is a revalidated copy of the same page, which Firefox and WebKit ask for on a second visit; only 4xx and 5xx are failures.
+    if (response) expect(response.status(), `${path} loads`).toBeLessThan(400)
     await expect(page.getByRole('heading').first(), `${path} shows a heading`).toBeVisible()
     await page.waitForLoadState('networkidle')
     if (hash) expect(await page.locator(`[id="${hash}"]`).count(), `${path}: the anchor #${hash} points at an element`).toBeGreaterThan(0)

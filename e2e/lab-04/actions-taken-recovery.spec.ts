@@ -20,7 +20,7 @@ const storedActions = async (page: Page, ticketId: string) => {
 }
 
 test('E2E-07 · AC-14 · AC-36 · a retry after a lost response keeps what was changed meanwhile', async ({ page, audit, e2eSummaries }) => {
-  audit.allow('the response of the first save is aborted on purpose, so the browser reports a failed request (AC-14)', /request failed: POST .*\/actions net::ERR_FAILED/, /net::ERR_FAILED/)
+  audit.allow('the response of the first save is aborted on purpose, so the browser reports a failed request (AC-14)', /request failed: POST .*\/actions (net::ERR_FAILED|NS_ERROR_FAILURE|Blocked by Web Inspector)/, /net::ERR_FAILED/, /Cross-Origin Request Blocked/)
   const { ticketId } = await workedTicket(page, e2eSummaries, 'lost response')
   await login(page.request, PEOPLE.olivia)
 

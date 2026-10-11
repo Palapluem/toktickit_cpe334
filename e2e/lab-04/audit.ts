@@ -15,7 +15,12 @@ export const test = base.extend<{ audit: Audit }>({
         if (message.type() === 'error') findings.push(`console error: ${message.text()}`)
       })
       page.on('pageerror', (error) => findings.push(`page error: ${error.message}`))
-      page.on('requestfailed', (request) => findings.push(`request failed: ${request.method()} ${request.url()} ${request.failure()?.errorText ?? ''}`))
+      // A fetch the browser itself cancels (the page navigates away, a component goes away) is not a failure; each engine words it differently.
+      const cancelledByBrowser = /ERR_ABORTED|NS_BINDING_ABORTED|^cancelled$/i
+      page.on('requestfailed', (request) => {
+        const reason = request.failure()?.errorText ?? ''
+        if (!cancelledByBrowser.test(reason)) findings.push(`request failed: ${request.method()} ${request.url()} ${reason}`)
+      })
       page.on('response', (response) => {
         if (response.status() >= 400) findings.push(`HTTP ${response.status()}: ${response.request().method()} ${response.url()}`)
       })
