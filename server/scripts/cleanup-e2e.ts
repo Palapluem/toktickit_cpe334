@@ -59,6 +59,9 @@ async function main(): Promise<void> {
   // runs only against a disposable _test database (guarded above), so it is emptied with TRUNCATE.
   await prisma.$executeRawUnsafe('TRUNCATE "TicketEvent"')
   await prisma.actionTaken.deleteMany({ where: { ticketId: { in: ticketIds } } })
+  // REG-04 posts a Public Comment and an Internal Note on its Ticket; neither table may keep a row that points at it.
+  await prisma.publicComment.deleteMany({ where: { ticketId: { in: ticketIds } } })
+  await prisma.internalNote.deleteMany({ where: { ticketId: { in: ticketIds } } })
   await prisma.ticket.deleteMany({ where: { id: { in: ticketIds } } })
   console.log(`Cleaned ${ticketIds.length} E2E ticket(s).`)
 }
