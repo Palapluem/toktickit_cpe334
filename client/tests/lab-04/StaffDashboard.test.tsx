@@ -65,7 +65,7 @@ describe('UI-14 · AC-27/28 · staff metrics and work items', () => {
     expect(screen.getByText('Tickets by status')).toBeInTheDocument()
     expect(screen.getByRole('list', { name: 'Tickets by status' }).querySelectorAll('li')).toHaveLength(8)
     expect(screen.getByText('Showing the 10 oldest of 12 open Actions.')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /TKT-2026-000001/ })).toHaveAttribute('href', '/staff/tickets/ticket-0#actions')
+    expect(screen.getByRole('link', { name: /TKT-2026-000001/ })).toHaveAttribute('href', '/staff/tickets/ticket-0#action-action-0')
   })
 })
 

@@ -903,3 +903,29 @@ describe('UI-25 · AC-12 · BR-17 · the Requester has no control on an Action t
     expect(within(panel).queryAllByRole('textbox')).toHaveLength(0)
   })
 })
+
+describe('UI-27 · AC-28 · AC-41 · an address that names an Action takes the reader to it once the list has loaded', () => {
+  const scrollIntoView = vi.fn()
+  beforeEach(() => {
+    scrollIntoView.mockClear()
+    Element.prototype.scrollIntoView = scrollIntoView
+  })
+  afterEach(() => window.history.replaceState(null, '', '/'))
+
+  it('scrolls to the named row, and to nothing when no row has that name', async () => {
+    fetchActionsMock.mockResolvedValue([PLANNED, STARTED])
+    window.history.replaceState(null, '', '/staff/tickets/t-1#action-a-2')
+    const { unmount } = render(<ActionsTakenSection ticketId="t-1" ticketStatus="IN_PROGRESS" audience="staff" assignableOwners={OWNERS} currentUserId="s-1" />)
+
+    await screen.findAllByRole('button', { name: /^View / })
+    await waitFor(() => expect(scrollIntoView).toHaveBeenCalledTimes(1))
+    expect(scrollIntoView.mock.contexts[0]).toHaveProperty('id', 'action-a-2')
+    unmount()
+
+    scrollIntoView.mockClear()
+    window.history.replaceState(null, '', '/staff/tickets/t-1#action-nothing-here')
+    render(<ActionsTakenSection ticketId="t-1" ticketStatus="IN_PROGRESS" audience="staff" assignableOwners={OWNERS} currentUserId="s-1" />)
+    await screen.findAllByRole('button', { name: /^View / })
+    expect(scrollIntoView).not.toHaveBeenCalled()
+  })
+})
