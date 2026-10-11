@@ -19,6 +19,7 @@ import {
 import { PriorityBadge, StatusBadge } from '../components/Badge.js'
 import { Button } from '../components/Button.js'
 import { FormField } from '../components/FormField.js'
+import { formatBangkokTime } from '../dateTime.js'
 import {
   EmptyState,
   ErrorState,
@@ -68,13 +69,6 @@ const DEFAULT_FILTERS: Filters = {
 }
 
 type Phase = 'loading' | 'ready' | 'forbidden' | 'failed'
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value))
-}
 
 function ariaSortFor(field: SortField, sort: Filters['sort']) {
   if (sort.field !== field) return 'none' as const
@@ -359,7 +353,7 @@ export function StaffTicketQueue() {
                   <td data-label="Owner">
                     <OwnerCell owner={row.owner} />
                   </td>
-                  <td data-label="Updated">{formatDate(row.updatedAt)}</td>
+                  <td data-label="Updated">{formatBangkokTime(row.updatedAt)}</td>
                 </tr>
               ))}
             </tbody>

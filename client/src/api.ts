@@ -150,17 +150,21 @@ export class ApiRequestError extends Error {
   readonly fieldErrors: Array<{ field: string; message: string }>
   readonly status?: number
   readonly code?: string
+  /** Safe-to-display facts about a refused state, such as the open-Action count (lab-04 api-spec §1). */
+  readonly details?: Record<string, unknown>
 
   constructor(
     message: string,
     fieldErrors: Array<{ field: string; message: string }> = [],
     status?: number,
     code?: string,
+    details?: Record<string, unknown>,
   ) {
     super(message)
     this.fieldErrors = fieldErrors
     this.status = status
     this.code = code
+    this.details = details
     this.name = 'ApiRequestError'
   }
 }
@@ -178,21 +182,24 @@ async function throwApiRequestError(
   let message = fallbackMessage
   let fieldErrors: Array<{ field: string; message: string }> = []
   let code: string | undefined
+  let details: Record<string, unknown> | undefined
   try {
     const body = (await response.json()) as {
       error?: {
         code?: string
         message?: string
         fieldErrors?: Array<{ field: string; message: string }>
+        details?: Record<string, unknown>
       }
     }
     message = body.error?.message ?? message
     fieldErrors = body.error?.fieldErrors ?? []
     code = body.error?.code
+    details = body.error?.details
   } catch {
     // Keep the screen-level message safe when a failed service returns no JSON.
   }
-  throw new ApiRequestError(message, fieldErrors, response.status, code)
+  throw new ApiRequestError(message, fieldErrors, response.status, code, details)
 }
 
 async function get<T>(path: string, label: string): Promise<T> {
@@ -373,13 +380,24 @@ export async function fetchStaffQueue(
   return (await response.json()) as StaffQueueResponse
 }
 
+/** A move held back while work is open, with the reason the interface explains (lab-04 AC-18). */
+export interface BlockedTransition {
+  status: 'RESOLVED' | 'CLOSED'
+  reason: 'OPEN_ACTIONS'
+  openActionCount: number
+}
+
 export interface StaffTicket extends Omit<StaffQueueRow, 'category'> {
   description: string
   category: Category
   relatedSystem: RelatedSystem
+  /** The version a status change must state (lab-04 BR-31). */
+  version: number
+  openActionCount: number
   attachments: TicketAttachment[]
   assignableOwners: AssignableOwner[]
   permittedTransitions: TicketStatus[]
+  blockedTransitions: BlockedTransition[]
 }
 
 async function patchJson<T>(path: string, body: unknown, label: string): Promise<T> {
@@ -424,15 +442,50 @@ export function setItPriority(
   )
 }
 
+/** What a successful status change returns; the screen reloads the Ticket for the rest (lab-04 api-spec §4). */
+export interface StatusChange {
+  id: string
+  status: TicketStatus
+  version: number
+  updatedAt: string
+  permittedTransitions: TicketStatus[]
+  cancelledActionCount: number
+}
+
 export function setTicketStatus(
   ticketId: string,
   status: TicketStatus,
-): Promise<StaffTicket> {
-  return patchJson<StaffTicket>(
+  expectedVersion: number,
+): Promise<StatusChange> {
+  return patchJson<StatusChange>(
     `/api/staff/tickets/${ticketId}/status`,
-    { status },
+    { status, expectedVersion },
     'Could not change the status.',
   )
+}
+
+export type TicketEventType =
+  | 'STATUS_CHANGED'
+  | 'OWNER_CHANGED'
+  | 'IT_PRIORITY_CHANGED'
+  | 'ACTION_CREATED'
+  | 'ACTION_UPDATED'
+  | 'ACTION_ASSIGNED'
+  | 'ACTION_STARTED'
+  | 'ACTION_COMPLETED'
+  | 'ACTION_CANCELLED'
+
+/** One line of history. `details` holds statuses, priorities, field names and display names only (BR-30). */
+export interface TicketEvent {
+  id: string
+  type: TicketEventType
+  actor: { displayName: string }
+  createdAt: string
+  details: Record<string, unknown>
+}
+
+export function fetchTicketHistory(ticketId: string): Promise<TicketEvent[]> {
+  return get<TicketEvent[]>(`/api/tickets/${ticketId}/history`, 'History')
 }
 
 /** The Requester's signal. A timestamp, never a status (§11.7). */

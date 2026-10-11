@@ -16,6 +16,7 @@ vi.mock('../../src/api.js', async () => {
     setTicketOwner: vi.fn(),
     setItPriority: vi.fn(),
     setTicketStatus: vi.fn(),
+    fetchTicketHistory: vi.fn(),
     uploadAttachment: vi.fn(),
     removeAttachment: vi.fn(),
     downloadAttachment: vi.fn(),
@@ -29,6 +30,7 @@ const setTicketStatusMock = vi.mocked(api.setTicketStatus)
 const uploadAttachmentMock = vi.mocked(api.uploadAttachment)
 const removeAttachmentMock = vi.mocked(api.removeAttachment)
 const downloadAttachmentMock = vi.mocked(api.downloadAttachment)
+const fetchHistoryMock = vi.mocked(api.fetchTicketHistory)
 
 const ATTACHMENT: api.TicketAttachment = {
   id: 'attachment-1',
@@ -60,9 +62,13 @@ const TICKET: api.StaffTicket = {
   requesterResolvedAt: null,
   createdAt: '2026-09-01T04:00:00.000Z',
   updatedAt: '2026-09-08T06:00:00.000Z',
+  // Added by lab-04 (api-spec §4): what a status change must state, and the work still open.
+  version: 1,
+  openActionCount: 0,
   attachments: [ATTACHMENT],
   assignableOwners: ASSIGNABLE_OWNERS,
   permittedTransitions: ['IN_PROGRESS', 'WAITING_FOR_REQUESTER', 'RESOLVED', 'CANCELLED'],
+  blockedTransitions: [],
 }
 
 const OWNED: api.StaffTicket = {
@@ -85,6 +91,7 @@ function renderDetail() {
 beforeEach(() => {
   vi.clearAllMocks()
   fetchStaffTicketMock.mockResolvedValue(TICKET)
+  fetchHistoryMock.mockResolvedValue([])
   uploadAttachmentMock.mockResolvedValue({ data: ATTACHMENT })
   removeAttachmentMock.mockResolvedValue({
     data: {
@@ -231,7 +238,14 @@ describe('UI-12 · AC-23 · the status control offers only permitted transitions
   })
 
   it('sends the chosen transition', async () => {
-    setTicketStatusMock.mockResolvedValue({ ...TICKET, status: 'IN_PROGRESS' })
+    setTicketStatusMock.mockResolvedValue({
+      id: 't-1',
+      status: 'IN_PROGRESS',
+      version: 2,
+      updatedAt: '2026-09-08T07:00:00.000Z',
+      permittedTransitions: ['WAITING_FOR_REQUESTER', 'RESOLVED', 'CANCELLED'],
+      cancelledActionCount: 0,
+    })
     renderDetail()
 
     await userEvent.selectOptions(
@@ -240,7 +254,7 @@ describe('UI-12 · AC-23 · the status control offers only permitted transitions
     )
 
     await waitFor(() => {
-      expect(setTicketStatusMock).toHaveBeenCalledWith('t-1', 'IN_PROGRESS')
+      expect(setTicketStatusMock).toHaveBeenCalledWith('t-1', 'IN_PROGRESS', 1)
     })
   })
 

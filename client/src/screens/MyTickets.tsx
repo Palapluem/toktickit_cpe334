@@ -15,6 +15,7 @@ import { PriorityBadge, StatusBadge } from '../components/Badge.js'
 import { FormField } from '../components/FormField.js'
 import { EmptyState, ErrorState, LoadingState } from '../components/States.js'
 import { useSession } from '../context/SessionContext.js'
+import { formatBangkokDate } from '../dateTime.js'
 
 const PRIORITIES: Priority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
 const STATUSES: TicketStatus[] = [
@@ -92,14 +93,6 @@ function hasAppliedFilters(response: TicketListResponse): boolean {
   )
 }
 
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(value))
-}
-
 function CreateTicketLink() {
   return (
     <Link className="zen-button zen-button--secondary my-tickets__link-button" to="/tickets/new">
@@ -159,7 +152,7 @@ function TicketRow({ ticket }: { ticket: TicketListItem }) {
       <td data-label="Ticket No.">
         <Link to={`/tickets/${ticket.id}`}>{ticket.ticketNo}</Link>
       </td>
-      <td data-label="Created Date">{formatDate(ticket.createdAt)}</td>
+      <td data-label="Created Date">{formatBangkokDate(ticket.createdAt)}</td>
       <td data-label="Summary">
         <span className="my-tickets__summary">
           {ticket.summary}
@@ -176,7 +169,7 @@ function TicketRow({ ticket }: { ticket: TicketListItem }) {
       <td data-label="Current Status">
         <StatusBadge value={ticket.status} />
       </td>
-      <td data-label="Last Updated">{formatDate(ticket.updatedAt)}</td>
+      <td data-label="Last Updated">{formatBangkokDate(ticket.updatedAt)}</td>
     </tr>
   )
 }

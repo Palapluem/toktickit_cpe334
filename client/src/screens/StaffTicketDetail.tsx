@@ -3,7 +3,7 @@
 // The operational strip is grouped and separated from the read-only body, so
 // what can be changed is obvious at a glance. Read-only means no control at
 // all — a disabled one implies someone, somewhere, may change it.
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   ApiRequestError,
@@ -23,6 +23,7 @@ import { PriorityBadge, StatusBadge } from '../components/Badge.js'
 import { Button } from '../components/Button.js'
 import { AttachmentSection } from '../components/AttachmentSection.js'
 import { FormField } from '../components/FormField.js'
+import { HistorySection } from '../components/HistorySection.js'
 import {
   EmptyState,
   ErrorState,
@@ -33,17 +34,15 @@ import {
   InternalNotesSection,
   PublicCommentsSection,
 } from '../components/ThreadSection.js'
+import { joinLabels, pluralActions, statusLabel } from '../ticketLabels.js'
+import { formatBangkokTime } from '../dateTime.js'
+
+const STALE_MESSAGE =
+  'This Ticket changed since you opened it. The latest status is shown — review and try again.'
 
 const PRIORITIES: Priority[] = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
 
 type Phase = 'loading' | 'ready' | 'forbidden' | 'notFound' | 'failed'
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(value))
-}
 
 function ReadOnly({ id, label, value }: { id: string; label: string; value: string }) {
   return (
@@ -60,6 +59,10 @@ export function StaffTicketDetail() {
   const [actionError, setActionError] = useState('')
   const [busy, setBusy] = useState(false)
   const [reloadToken, setReloadToken] = useState(0)
+  const [notice, setNotice] = useState('')
+  const [confirmingCancel, setConfirmingCancel] = useState(false)
+  const statusControl = useRef<HTMLSelectElement>(null)
+  const cancelQuestion = useRef<HTMLParagraphElement>(null)
 
   useEffect(() => {
     if (!routeTicketId) {
@@ -114,6 +117,76 @@ export function StaffTicketDetail() {
     },
     [busy],
   )
+
+  // Opening the question moves the focus to it; closing gives the focus back to the control (ui-spec §9).
+  useEffect(() => {
+    if (!confirmingCancel) return
+    cancelQuestion.current?.focus()
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setConfirmingCancel(false)
+      statusControl.current?.focus()
+    }
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [confirmingCancel])
+
+  /** The server decides; the screen shows what it decided and falls back to the truth after a refusal (AC-21). */
+  async function changeStatus(to: TicketStatus) {
+    if (busy || !ticket) return
+    setBusy(true)
+    setActionError('')
+    setNotice('')
+    try {
+      const change = await setTicketStatus(ticket.id, to, ticket.version)
+      try {
+        setTicket(await fetchStaffTicket(ticket.id))
+        setNotice(`Status changed to ${statusLabel(change.status)}.`)
+      } catch {
+        setActionError('The status was changed, but the Ticket could not be reloaded. Reload the page.')
+      }
+    } catch (error) {
+      const code = error instanceof ApiRequestError ? error.code : undefined
+      if (code === 'OPEN_ACTIONS_BLOCK_RESOLUTION' || code === 'STALE_VERSION') {
+        const open = error instanceof ApiRequestError ? error.details?.openActionCount : undefined
+        const count = typeof open === 'number' ? open : 0
+        setActionError(
+          code === 'STALE_VERSION'
+            ? STALE_MESSAGE
+            : `This Ticket cannot be resolved or closed while ${pluralActions(count)} ${count === 1 ? 'is' : 'are'} unfinished. Complete or cancel ${count === 1 ? 'it' : 'them'} first.`,
+        )
+        try {
+          setTicket(await fetchStaffTicket(ticket.id))
+        } catch {
+          // The message stands; the next load shows the truth.
+        }
+      } else {
+        setActionError(
+          error instanceof ApiRequestError ? error.message : 'The change could not be saved. Try again.',
+        )
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function chooseStatus(to: TicketStatus) {
+    if (to === 'CANCELLED') {
+      setConfirmingCancel(true)
+      return
+    }
+    void changeStatus(to)
+  }
+
+  function keepTicket() {
+    setConfirmingCancel(false)
+    statusControl.current?.focus()
+  }
+
+  async function confirmCancel() {
+    setConfirmingCancel(false)
+    await changeStatus('CANCELLED')
+  }
 
   async function addAttachment(file: File): Promise<TicketAttachment> {
     if (!ticket) throw new Error('Ticket is not loaded.')
@@ -292,11 +365,10 @@ export function StaffTicketDetail() {
 
           <FormField id="status" label="Status">
             <select
+              ref={statusControl}
               value=""
               disabled={busy || ticket.permittedTransitions.length === 0}
-              onChange={(event) =>
-                run(() => setTicketStatus(ticket.id, event.target.value as TicketStatus))
-              }
+              onChange={(event) => chooseStatus(event.target.value as TicketStatus)}
             >
               {/* Only what the server permits for this status and role. */}
               <option value="">Move to…</option>
@@ -308,13 +380,46 @@ export function StaffTicketDetail() {
             </select>
           </FormField>
         </div>
+
+        {ticket.blockedTransitions.length > 0 ? (
+          <p className="staff-ticket__gate">
+            {joinLabels(ticket.blockedTransitions.map(({ status }) => statusLabel(status)))}{' '}
+            {ticket.blockedTransitions.length === 1 ? 'becomes' : 'become'} available when the{' '}
+            {pluralActions(ticket.openActionCount)}{' '}
+            {ticket.openActionCount === 1 ? 'is' : 'are'} completed or cancelled.{' '}
+            <a href="#actions-taken">Go to Actions Taken</a>
+          </p>
+        ) : null}
+
+        {confirmingCancel ? (
+          <div className="staff-ticket__confirm" role="group" aria-labelledby="cancel-question">
+            <p id="cancel-question" ref={cancelQuestion} tabIndex={-1}>
+              {ticket.openActionCount > 0
+                ? `Cancel this Ticket? ${pluralActions(ticket.openActionCount)} will also be cancelled.`
+                : 'Cancel this Ticket?'}
+            </p>
+            <div className="staff-ticket__confirm-actions">
+              <Button variant="destructive" busy={busy} onClick={confirmCancel}>
+                Cancel Ticket
+              </Button>
+              <Button variant="tertiary" onClick={keepTicket}>
+                Keep Ticket
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Polite, so a screen reader hears the outcome without losing its place (ui-spec §9). */}
+        <p className="staff-ticket__notice" role="status" aria-live="polite">
+          {notice}
+        </p>
       </section>
 
       <section className="zen-card" aria-labelledby="ticket-information-heading">
         <h2 id="ticket-information-heading">Ticket Information</h2>
         <div className="ticket-detail-card__grid">
           <ReadOnly id="ticketNo" label="Ticket No." value={ticket.ticketNo} />
-          <ReadOnly id="ticketDate" label="Ticket Date" value={formatDate(ticket.createdAt)} />
+          <ReadOnly id="ticketDate" label="Ticket Date" value={formatBangkokTime(ticket.createdAt)} />
           <ReadOnly id="requester" label="Requester" value={ticket.requester.displayName} />
           <ReadOnly id="category" label="Category" value={ticket.category.name} />
           <ReadOnly
@@ -349,6 +454,7 @@ export function StaffTicketDetail() {
 
       <PublicCommentsSection ticketId={ticket.id} />
       <InternalNotesSection ticketId={ticket.id} />
+      <HistorySection ticketId={ticket.id} refreshKey={ticket.updatedAt} />
     </div>
   )
 }

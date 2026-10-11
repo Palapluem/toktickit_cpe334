@@ -33,12 +33,14 @@ const EXPECTED: Record<Operation, Record<Role, Grant>> = {
   // Added by Lab 4 (lab-04 specification §8.1): a Requester reads, never writes, Actions Taken.
   'action:read': { REQUESTER: 'own', IT_STAFF: 'any', ADMINISTRATOR: 'any' },
   'action:write': { REQUESTER: null, IT_STAFF: 'any', ADMINISTRATOR: 'any' },
+  // Ticket history (lab-04 §8.1): a Requester reads their own Ticket's status events, staff read every event.
+  'history:read': { REQUESTER: 'own', IT_STAFF: 'any', ADMINISTRATOR: 'any' },
 }
 
 const EXPECTED_OPERATIONS = Object.keys(EXPECTED) as Operation[]
 
 describe('UNIT-04 · the matrix lists every operation §8.1 names', () => {
-  it('exposes all eighteen operations: sixteen from Lab 3 and two from Lab 4', () => {
+  it('exposes all nineteen operations: sixteen from Lab 3 and three from Lab 4', () => {
     expect([...OPERATIONS].sort()).toEqual([...EXPECTED_OPERATIONS].sort())
   })
 })
