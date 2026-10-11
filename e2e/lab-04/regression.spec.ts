@@ -45,7 +45,8 @@ test('REG-04 · FR-22 · sign-in, My Tickets, Ticket Detail with an attachment a
   await expect(page.getByRole('heading', { name: 'My Tickets', exact: true })).toBeVisible()
   await expect(page.getByText(summary).first()).toBeVisible()
   await page.getByPlaceholder('Search by ticket number or summary…').fill(summary)
-  await expect(page.getByText(summary).first()).toBeVisible()
+  // The list follows the search after a short delay; the capture waits for it, so the filter and the list agree.
+  await expect(page.getByText(/Showing 1 to 1 of 1 ticket/)).toBeVisible()
   await atEveryWidth(page, 'my-tickets')
 
   // Ticket Detail: an attachment added through the screen, and a Public Comment (Lab 2 and Lab 3).
