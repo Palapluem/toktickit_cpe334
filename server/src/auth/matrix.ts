@@ -20,6 +20,8 @@ export type Operation =
   | 'note:create'
   | 'action:read'
   | 'action:write'
+  | 'staffDashboard:read'
+  | 'requesterDashboard:read'
   | 'history:read'
   | 'staffQueue:read'
   | 'user:list'
@@ -58,6 +60,8 @@ const MATRIX: Record<Operation, Partial<Record<Role, Scope>>> = {
   // A Requester reads the Actions on their own Tickets and never writes them (lab-04 BR-03, BR-17).
   'action:read': { [R]: 'own', [S]: 'any', [A]: 'any' },
   'action:write': { [S]: 'any', [A]: 'any' },
+  'staffDashboard:read': { [S]: 'any', [A]: 'any' },
+  'requesterDashboard:read': { [R]: 'own' },
   // Staff read every event of a Ticket; a Requester reads the status changes of their own (lab-04 BR-28).
   'history:read': { [R]: 'own', [S]: 'any', [A]: 'any' },
   'staffQueue:read': { [S]: 'any', [A]: 'any' },

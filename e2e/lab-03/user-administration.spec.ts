@@ -228,7 +228,7 @@ test('ADMIN-04 edits a user, resets its password, and proves the next-login gate
   await page.locator('#newPassword').fill(finalPassword)
   await page.locator('#confirmPassword').fill(finalPassword)
   await page.getByRole('button', { name: 'Save and continue' }).click()
-  await expect(page.getByRole('heading', { name: 'Ticket Queue' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
 })
 
 test('ADMIN-05 captures self-deactivation disabled with its reason', async ({ page }) => {

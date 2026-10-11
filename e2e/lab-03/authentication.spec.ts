@@ -57,11 +57,11 @@ test('AUTH-02 refuses wrong, unknown, and inactive accounts with one safe messag
   await expect(page.getByRole('alert')).toHaveText('Invalid email or password.')
 })
 
-test('AUTH-03 signs in and reaches My Tickets', async ({ page }) => {
+test('AUTH-03 signs in and reaches Dashboard', async ({ page }) => {
   await page.setViewportSize(DESKTOP)
   await signInThroughTheScreen(page, 'jennifer.anderson@example.ac.th')
 
-  await expect(page.getByRole('heading', { name: 'My Tickets', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible()
   await expect(page.getByText('Jennifer Anderson')).toBeVisible()
   // exact: the status filter offers WAITING_FOR_REQUESTER, which contains it.
   await expect(page.getByText('REQUESTER', { exact: true })).toBeVisible()

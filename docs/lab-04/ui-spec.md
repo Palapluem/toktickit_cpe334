@@ -220,7 +220,7 @@ Captures are written only when `CAPTURE_EVIDENCE=1` is set (specification §11.1
 ```
 staff-dashboard/      desktop · tablet · mobile · loading-fixture · failure-fixture ·
                       admin-no-open-actions · forbidden-requester · drilldown-unassigned
-requester-dashboard/  desktop · tablet · mobile · first-use-empty · failure-fixture ·
+requester-dashboard/  desktop · tablet · mobile · first-use-empty-fixture · failure-fixture ·
                       drilldown-open · drilldown-needs-attention
 actions-taken/        list-{desktop,tablet,mobile} · list-long-content-{desktop,tablet,mobile} ·
                       create-form-{desktop,tablet,mobile} · description-required-{desktop,tablet,mobile} ·

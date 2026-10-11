@@ -8,6 +8,7 @@ import {
   type QueueQuery,
   type QueueSortField,
 } from './queueQuery.js'
+import { activeTicketWhere } from '../dashboard/metrics.js'
 
 const QUEUE_SELECT = {
   id: true,
@@ -118,6 +119,7 @@ export async function listStaffQueue(
         }
       : {}),
     ...(query.status ? { status: query.status } : {}),
+    ...(query.statusGroup ? activeTicketWhere() : {}),
     ...(query.itPriority ? { itPriority: query.itPriority } : {}),
     ...(query.categoryId ? { categoryId: query.categoryId } : {}),
     ...ownerWhere(query, callerId),
@@ -149,6 +151,7 @@ export async function listStaffQueue(
     appliedFilters: {
       search: query.search,
       status: query.status,
+      statusGroup: query.statusGroup,
       itPriority: query.itPriority,
       categoryId: query.categoryId,
       ownerId: appliedOwnerId(query),
