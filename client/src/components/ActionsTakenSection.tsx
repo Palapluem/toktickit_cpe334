@@ -610,6 +610,15 @@ export function ActionsTakenSection({
 
   const reload = useCallback(() => setAttempt((value) => value + 1), [])
 
+  // An address that names an Action (the dashboard, the history) takes the reader to its row once the list is there, once (AC-28, AC-41).
+  const scrolledTo = useRef('')
+  useEffect(() => {
+    const id = window.location.hash.slice(1)
+    if (!actions || !id.startsWith('action-') || scrolledTo.current === id) return
+    scrolledTo.current = id
+    document.getElementById(id)?.scrollIntoView({ block: 'center' })
+  }, [actions])
+
   // A status change can cancel Actions (BR-22): the rows are loaded again.
   useEffect(() => {
     if (seenStatus.current === ticketStatus) return

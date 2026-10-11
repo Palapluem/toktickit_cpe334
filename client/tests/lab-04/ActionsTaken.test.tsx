@@ -913,18 +913,26 @@ describe('UI-27 · AC-28 · AC-41 · an address that names an Action takes the r
   afterEach(() => window.history.replaceState(null, '', '/'))
 
   it('scrolls to the named row, and to nothing when no row has that name', async () => {
-    fetchActionsMock.mockResolvedValue([PLANNED, STARTED])
+    fetchActionsMock.mockResolvedValueOnce([PLANNED, STARTED])
     window.history.replaceState(null, '', '/staff/tickets/t-1#action-a-2')
-    const { unmount } = render(<ActionsTakenSection ticketId="t-1" ticketStatus="IN_PROGRESS" audience="staff" assignableOwners={OWNERS} currentUserId="s-1" />)
+    const props = { ticketId: 't-1', audience: 'staff', assignableOwners: OWNERS, currentUserId: 's-1' } as const
+    const { rerender, unmount } = render(<ActionsTakenSection ticketStatus="IN_PROGRESS" {...props} />)
 
     await screen.findAllByRole('button', { name: /^View / })
     await waitFor(() => expect(scrollIntoView).toHaveBeenCalledTimes(1))
     expect(scrollIntoView.mock.contexts[0]).toHaveProperty('id', 'action-a-2')
+
+    // The list is loaded again after a change; the reader is not taken back to the row each time.
+    fetchActionsMock.mockResolvedValueOnce([PLANNED, STARTED, DONE])
+    rerender(<ActionsTakenSection ticketStatus="RESOLVED" {...props} />)
+    expect(await screen.findByRole('heading', { name: 'Actions Taken (3)' })).toBeInTheDocument()
+    expect(scrollIntoView).toHaveBeenCalledTimes(1)
     unmount()
 
     scrollIntoView.mockClear()
+    fetchActionsMock.mockResolvedValueOnce([PLANNED, STARTED])
     window.history.replaceState(null, '', '/staff/tickets/t-1#action-nothing-here')
-    render(<ActionsTakenSection ticketId="t-1" ticketStatus="IN_PROGRESS" audience="staff" assignableOwners={OWNERS} currentUserId="s-1" />)
+    render(<ActionsTakenSection ticketStatus="IN_PROGRESS" {...props} />)
     await screen.findAllByRole('button', { name: /^View / })
     expect(scrollIntoView).not.toHaveBeenCalled()
   })
