@@ -27,33 +27,3 @@ export const REQUESTER_METRIC_QUERIES: Record<RequesterMetricName, Record<string
 export function activeTicketWhere(): Prisma.TicketWhereInput {
   return { status: { in: [...ACTIVE_STATUSES] } }
 }
-
-export function staffMetricWhere(name: MetricName, staffId: string): Prisma.TicketWhereInput {
-  switch (name) {
-    case 'unassigned':
-      return { ownerId: null, ...activeTicketWhere() }
-    case 'assignedToMe':
-      return { ownerId: staffId, ...activeTicketWhere() }
-    case 'urgent':
-      return { itPriority: 'URGENT', ...activeTicketWhere() }
-    case 'waitingForRequester':
-      return { status: 'WAITING_FOR_REQUESTER' }
-  }
-}
-
-export function requesterMetricWhere(
-  name: RequesterMetricName,
-  requesterId: string,
-): Prisma.TicketWhereInput {
-  const scope = { requesterId }
-  switch (name) {
-    case 'open':
-      return { ...scope, ...activeTicketWhere() }
-    case 'needsAttention':
-      return { ...scope, status: 'WAITING_FOR_REQUESTER' }
-    case 'resolved':
-      return { ...scope, status: 'RESOLVED' }
-    case 'closed':
-      return { ...scope, status: 'CLOSED' }
-  }
-}

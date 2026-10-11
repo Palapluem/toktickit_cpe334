@@ -1,8 +1,7 @@
 import { Prisma, type PrismaClient } from '../generated/prisma/client.js'
 import { TICKET_STATUSES } from '../tickets/validation.js'
+import { OPEN_ACTION_STATUSES } from '../tickets/workflowRules.js'
 import { ACTIVE_STATUSES, REQUESTER_METRIC_QUERIES, STAFF_METRIC_QUERIES } from './metrics.js'
-
-const OPEN_ACTION_STATUSES = ['PLANNED', 'IN_PROGRESS'] as const
 
 type StaffAggregate = {
   unassigned: bigint
