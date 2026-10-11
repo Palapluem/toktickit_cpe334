@@ -1,4 +1,4 @@
-# TokTickIT — CPE334 Labs 1–3
+# TokTickIT — CPE334 Labs 1–4
 
 ## Purpose
 
@@ -29,6 +29,23 @@ workflows, against [`docs/lab-03/`](docs/lab-03/):
 - **Administrator User Management** — create, edit, activate/deactivate, set a
   new initial password, with the two safety rules that stop the system locking
   everyone out.
+
+**Lab 4** adds the work an IT Staff member records on a Ticket, the rules that
+govern it, and a dashboard for each role, against [`docs/lab-04/`](docs/lab-04/):
+
+- **Actions Taken** — a list on both Ticket Details; IT Staff add, edit, assign,
+  start, complete and cancel Actions (with validation and an inactive-assignee
+  refusal); a Requester reads them and can change nothing.
+- **Resolution gate and history** — a Ticket cannot be resolved or closed while an
+  Action is open; cancelling a Ticket cancels its open Actions; every material
+  change is written once to an append-only history, ordered the same way each time.
+- **Concurrency** — a status change states the version it read (`expectedVersion`);
+  a stale one is refused with 409 and nothing is lost.
+- **Dashboards** — IT Staff and Administrators see unassigned, assigned, urgent and
+  waiting counts, their open Actions and recent Tickets; a Requester sees their own
+  counts. Every count links to a list showing exactly the Tickets counted. The
+  Dashboard is the first screen after sign-in for every role.
+- Times and dates are shown in Asia/Bangkok on every screen.
 
 Start with [`AGENTS.md`](AGENTS.md), which names each contract document and the
 order to read them in.
@@ -139,8 +156,8 @@ reproducible from a clean clone rather than depending on a database somebody
 prepared by hand. Use `npm run test:only` to skip that step when the test
 database is already current.
 
-Server tests live in `server/tests/lab-01/`, `lab-02/` and `lab-03/`; client
-tests under `client/tests/`. Every test cites the
+Server tests live in `server/tests/lab-01/` to `lab-04/`; client tests under
+`client/tests/`. Every test cites the
 `FR`/`BR`/`AC`/`TC`/`STY`/`SEC-T` identifier it proves
 (`docs/lab-02/testing-contract.md` TCS-01).
 
@@ -149,6 +166,18 @@ never through the UI — a test that drives the interface proves the button is
 hidden, not that the boundary holds. Before requesting review on anything
 touching auth, roles or user data, run the audit in
 `docs/lab-02/testing-contract.md` §7.
+
+Lab 4 adds two scripts, both of which refuse any database whose name does not end
+in `_test`:
+
+```bash
+cd server
+node scripts/verify-migration.mjs                 # MIG-01, MIG-02: the Lab 4 migration on a populated Lab 3 database, and a restore
+TEST_DATABASE_URL=… npx tsx scripts/perf-smoke.mjs  # PERF-01, PERF-02: dashboard timing and query count; needs its own disposable database, not toktickit_test
+```
+
+Server tests that wait on a database lock use `holdTicketLock` and
+`waitUntilBlocked` (`server/tests/lab-04/lab4-fixtures.ts`) instead of sleeping.
 
 ## E2E and responsive evidence
 
@@ -171,10 +200,36 @@ evidence. Set `E2E_DATABASE_URL` to override the
 is a PostgreSQL URI, so percent-encode reserved credential characters such as
 `@`, `:`, `/`, and `%`.
 
+### Lab 4 evidence and demonstration
+
+Lab 4's journeys are in `e2e/lab-04/`. Every one of them runs under an audit
+(`e2e/lab-04/audit.ts`): it fails on a console error, a failed request or an error
+response that the journey did not declare, and `audit.spec.ts` follows every link
+on every screen each role can reach. Run one at a time; the runner needs the
+API port 3002 and the client port 5174:
+
+```bash
+mkdir /tmp/toktickit-e2e.lock          # a simple lock when several agents share one machine; rmdir it afterwards
+npm run test:e2e                       # all labs; writes nothing that git tracks
+CAPTURE_EVIDENCE=1 npm run test:e2e    # also writes Lab 4 screenshots under artifacts/lab-04/screenshots/
+```
+
+Captures are written only when `CAPTURE_EVIDENCE=1` is set, and only for Lab 4;
+Lab 2 and Lab 3 captures are frozen. For evidence, point `E2E_DATABASE_URL` at a
+freshly created database ending in `_test`, so that the screens show the seed and
+nothing left over from earlier runs.
+
+To see Lab 4 by hand: start the API and the client, then sign in as the seeded
+accounts above. As IT Staff (`patricia.evans@…`) open the Dashboard, follow
+"My open Actions" to a Ticket, add and complete an Action, try to resolve a Ticket
+that still has an open Action (it is not offered, and says why) and read its
+History. As the Requester (`jennifer.anderson@…`) open the same Ticket: the
+Actions and History are there, read-only.
+
 ## Branch and Pull Request Rules
 
 - `main` — stable release branch. Never develop directly on it.
-- `lab2-staging`, `lab3-staging` — per-sprint integration branches. Never
+- `lab2-staging`, `lab3-staging`, `lab4-staging` — per-sprint integration branches. Never
   develop directly on them.
 - Each Issue is implemented on its own branch from the latest staging branch,
   including follow-up branches when peer review finds a release-candidate gap.
