@@ -17,7 +17,8 @@ const TICKET_NO = 'TKT-2026-900003'
 // Keep the append-only THREAD-02 mutation away from the ticket used by the
 // screenshot evidence and requester-visibility checks.
 const POST_TICKET_NO = 'TKT-2026-900001'
-const NOTE_FRAGMENT = 'Relay allow-list'
+// The whole opening of the note: a seeded Action now says "relay allow-list" too, and the Requester may read that (lab-04 BR-17).
+const NOTE_FRAGMENT = 'Relay allow-list looks truncated'
 
 async function signIn(
   page: import('@playwright/test').Page,

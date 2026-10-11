@@ -13,7 +13,6 @@ export type TicketStatus =
   | 'CANCELLED'
 
 export type Role = 'REQUESTER' | 'IT_STAFF' | 'ADMINISTRATOR'
-export type ActionStatus = 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
 
 const PRIORITY_CLASS: Record<Priority, string> = {
   LOW: 'zen-badge--priority-low',
@@ -48,28 +47,6 @@ export function StatusBadge({ value }: { value: TicketStatus }) {
   )
 }
 
-const ACTION_STATUS_CLASS: Record<ActionStatus, string> = {
-  PLANNED: 'zen-badge--status-open',
-  IN_PROGRESS: 'zen-badge--status-active',
-  COMPLETED: 'zen-badge--status-resolved',
-  CANCELLED: 'zen-badge--status-quiet',
-}
-
-const ACTION_STATUS_LABEL: Record<ActionStatus, string> = {
-  PLANNED: 'Planned',
-  IN_PROGRESS: 'In progress',
-  COMPLETED: 'Completed',
-  CANCELLED: 'Cancelled',
-}
-
-export function ActionStatusBadge({ value }: { value: ActionStatus }) {
-  return (
-    <span className={`zen-badge zen-badge--status ${ACTION_STATUS_CLASS[value]}`}>
-      {ACTION_STATUS_LABEL[value]}
-    </span>
-  )
-}
-
 const ROLE_CLASS: Record<Role, string> = {
   REQUESTER: 'zen-badge--role-requester',
   IT_STAFF: 'zen-badge--role-staff',
@@ -81,4 +58,19 @@ export function RoleBadge({ value }: { value: Role }) {
   return (
     <span className={`zen-badge ${ROLE_CLASS[value]}`}>{value.replace('_', ' ')}</span>
   )
+}
+
+// Action statuses carry their text too (lab-04 STY-018, STY-019). The palette is the Ticket one, reused.
+export type ActionStatus = 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+
+const ACTION_STATUS: Record<ActionStatus, { label: string; className: string }> = {
+  PLANNED: { label: 'Planned', className: 'zen-badge--status-open' },
+  IN_PROGRESS: { label: 'In progress', className: 'zen-badge--status-active' },
+  COMPLETED: { label: 'Completed', className: 'zen-badge--status-resolved' },
+  CANCELLED: { label: 'Cancelled', className: 'zen-badge--status-quiet' },
+}
+
+export function ActionStatusBadge({ value }: { value: ActionStatus }) {
+  const { label, className } = ACTION_STATUS[value]
+  return <span className={`zen-badge zen-badge--status ${className}`}>{label}</span>
 }

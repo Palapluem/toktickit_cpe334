@@ -2,6 +2,7 @@ import { Prisma, type PrismaClient } from '../generated/prisma/client.js'
 import { ApiError } from '../http/errors.js'
 import { MAX_ATTACHMENTS, validateAttachment } from './attachmentRules.js'
 import prisma from '../prisma.js'
+import { OPEN_ACTION_STATUSES } from './workflowRules.js'
 import {
   localAttachmentStorage,
   type AttachmentFile,
@@ -96,6 +97,7 @@ function mapTicket(ticket: TicketDetailRecord) {
     ticketNo: ticket.ticketNo,
     createdAt: ticket.createdAt,
     updatedAt: ticket.updatedAt,
+    version: ticket.version,
     summary: ticket.summary,
     description: ticket.description,
     requestedPriority: ticket.requestedPriority,
@@ -133,7 +135,10 @@ export async function getTicketDetail(
     include: TICKET_DETAIL_INCLUDE,
   })
   if (!ticket) throw ticketNotFound()
-  return mapTicket(ticket)
+  const openActionCount = await db.actionTaken.count({
+    where: { ticketId, status: { in: [...OPEN_ACTION_STATUSES] } },
+  })
+  return { ...mapTicket(ticket), openActionCount }
 }
 
 export async function listTicketAttachments(

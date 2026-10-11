@@ -71,6 +71,7 @@ export async function removeTickets(band: string): Promise<void> {
   await clearHistory()
   await prisma.actionTaken.deleteMany({ where: { ticketId: { in: ids } } })
   await prisma.publicComment.deleteMany({ where: { ticketId: { in: ids } } })
+  await prisma.internalNote.deleteMany({ where: { ticketId: { in: ids } } })
   await prisma.ticket.deleteMany({ where: { id: { in: ids } } })
 }
 
@@ -95,14 +96,15 @@ export function holdTicketLock(ticketId: string, whileHeld?: (tx: Parameters<Par
   return { acquired, release, done }
 }
 
-/** Settles once a backend of this database is waiting for a lock, so a request is known to be blocked, not just slow. */
+/** Settles once another backend is waiting for a lock on the Ticket table, so a request is known to be blocked, not just slow. */
 export async function waitUntilBlocked(timeoutMs = 5_000): Promise<void> {
   const deadline = Date.now() + timeoutMs
   for (;;) {
     const [row] = await prisma.$queryRaw<{ waiting: bigint }[]>`
-      SELECT count(*) AS "waiting" FROM pg_stat_activity WHERE datname = current_database() AND wait_event_type = 'Lock'`
+      SELECT count(*) AS "waiting" FROM pg_stat_activity
+      WHERE datname = current_database() AND pid <> pg_backend_pid() AND wait_event_type = 'Lock' AND query LIKE '%"Ticket"%'`
     if (Number(row.waiting) > 0) return
-    if (Date.now() > deadline) throw new Error('No request is waiting for a lock.')
+    if (Date.now() > deadline) throw new Error('No request is waiting for a lock on the Ticket.')
     await new Promise((resolve) => setTimeout(resolve, 20))
   }
 }
