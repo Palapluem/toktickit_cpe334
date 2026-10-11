@@ -88,3 +88,19 @@ describe('UI-15 · AC-29/31 · staff dashboard states and recovery', () => {
     await waitFor(() => expect(screen.getByText('Tickets by status')).toBeInTheDocument())
   })
 })
+
+describe('UI-28 · AC-31 · ui-spec §11 row 10 · a refresh is announced in a polite live region', () => {
+  it('says that it is refreshing while the request runs, and says nothing afterwards', async () => {
+    renderDashboard()
+    await screen.findByRole('heading', { name: 'Dashboard' })
+    let finish!: (value: typeof DASHBOARD) => void
+    fetchStaffDashboardMock.mockReturnValueOnce(new Promise((resolve) => { finish = resolve }))
+
+    await userEvent.click(screen.getByRole('button', { name: 'Refresh' }))
+    const live = document.querySelector('[aria-live="polite"]')
+    expect(live).toHaveTextContent('Refreshing dashboard.')
+
+    finish(DASHBOARD)
+    await waitFor(() => expect(live).toBeEmptyDOMElement())
+  })
+})
