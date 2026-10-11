@@ -1,6 +1,6 @@
 // E2E-07, E2E-08, E2E-09, A11Y-02 · lab-04 AC-13, AC-14, AC-35, AC-36, BR-23; api-spec §1; ui-spec §9 — what the Actions screen
 // does when things go wrong: a lost response, a Ticket that stops taking Actions, a busy dialog, and a device in another zone.
-import { test, expect } from '../lab-02/fixtures'
+import { test, expect } from './audit'
 import { API_BASE_URL } from '../lab-02/helpers'
 import { PEOPLE, addAction, login, userIdByName, workedTicket } from './support'
 
@@ -19,7 +19,8 @@ const storedActions = async (page: Page, ticketId: string) => {
   return ((await response.json()) as { data: { description: string; version: number; actionAt: string }[] }).data
 }
 
-test('E2E-07 · AC-14 · AC-36 · a retry after a lost response keeps what was changed meanwhile', async ({ page, e2eSummaries }) => {
+test('E2E-07 · AC-14 · AC-36 · a retry after a lost response keeps what was changed meanwhile', async ({ page, audit, e2eSummaries }) => {
+  audit.allow('the response of the first save is aborted on purpose, so the browser reports a failed request (AC-14)', /request failed: POST .*\/actions net::ERR_FAILED/, /net::ERR_FAILED/)
   const { ticketId } = await workedTicket(page, e2eSummaries, 'lost response')
   await login(page.request, PEOPLE.olivia)
 

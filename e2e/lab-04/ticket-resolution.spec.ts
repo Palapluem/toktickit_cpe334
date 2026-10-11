@@ -1,6 +1,6 @@
 // E2E-02, E2E-03 (status half) · lab-04 AC-15 to AC-23: the resolution gate, the cancellation cascade, the history and
 // a stale status change. Actions are set up through the API here; the Actions screen has its own journey.
-import { test, expect } from '../lab-02/fixtures'
+import { test, expect } from './audit'
 import { API_BASE_URL, captureLab4Screenshot, signOut } from '../lab-02/helpers'
 import { PEOPLE, addAction, changeStatus, login, userIdByName, workedTicket } from './support'
 
@@ -95,8 +95,10 @@ test('E2E-02 · AC-17 · cancelling a Ticket asks first and cancels its open Act
 test('E2E-03 · AC-19 · AC-21 · a stale status change is refused, the latest status is shown, and a retry succeeds', async ({
   page,
   browser,
+  audit,
   e2eSummaries,
 }) => {
+  audit.allow('the stale status change is refused with 409 on purpose (AC-19)', /HTTP 409: PATCH .*\/status$/, /status of 409/)
   const { ticketId } = await workedTicket(page, e2eSummaries, 'stale status')
   await login(page.request, PEOPLE.patricia)
   await page.goto(`/staff/tickets/${ticketId}`)

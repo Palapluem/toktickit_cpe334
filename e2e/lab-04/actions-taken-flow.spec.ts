@@ -1,6 +1,6 @@
 // E2E-01, E2E-03 (Action half), RESP-01 and A11Y-01 for Ticket Detail · lab-04 AC-01 to AC-14, AC-34 to AC-36.
 // Captures go to artifacts/lab-04/screenshots/actions-taken only with CAPTURE_EVIDENCE=1; fixture states say so in their name.
-import { test, expect } from '../lab-02/fixtures'
+import { test, expect } from './audit'
 import { API_BASE_URL, captureLab4Screenshot, expectNoPageOverflow, signOut } from '../lab-02/helpers'
 import { PEOPLE, addAction, changeStatus, login, userIdByName, workedTicket } from './support'
 
@@ -25,8 +25,10 @@ async function addThroughForm(page: Page, description: string, assignee?: string
 test('E2E-01 · AC-01 to AC-10, AC-12 · Olivia works a Ticket Daniel owns, and the Requester reads it all', async ({
   page,
   request,
+  audit,
   e2eSummaries,
 }) => {
+  audit.allow('the save with a deactivated assignee is refused with 400 on purpose (AC-04)', /HTTP 400: POST .*\/actions$/, /status of 400/)
   const { ticketId } = await workedTicket(page, e2eSummaries, 'actions flow')
   await login(page.request, PEOPLE.olivia)
   await page.goto(`/staff/tickets/${ticketId}`)
@@ -154,7 +156,8 @@ test('E2E-01 · AC-13 · a Ticket that is not workable shows the banner instead 
   await shot(page, 'ticket-not-workable.png')
 })
 
-test('E2E-03 · AC-14 · AC-19 · AC-36 · a conflict and a save failure keep what was typed', async ({ page, browser, e2eSummaries }) => {
+test('E2E-03 · AC-14 · AC-19 · AC-36 · a conflict and a save failure keep what was typed', async ({ page, browser, audit, e2eSummaries }) => {
+  audit.allow('a stale edit is refused with 409, and a save failure is injected as 500, on purpose (AC-19, AC-36)', /HTTP (409|500): PATCH/, /status of (409|500)/)
   const { ticketId } = await workedTicket(page, e2eSummaries, 'action conflict')
   const olivia = await userIdByName(page.request, ticketId, 'Olivia Reed')
   await addAction(page.request, ticketId, olivia, 'Collect the relay error.')
