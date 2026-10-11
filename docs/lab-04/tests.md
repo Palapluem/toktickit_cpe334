@@ -135,7 +135,7 @@
 | MIG-04 | Seed | AC-39, BR-42 | Seed run twice | No duplicates, every Action column unchanged by the second run; Tickets with 0, 1 and several Actions exist | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
 | MIG-05 | Migration | BR-27 | Direct SQL `UPDATE` and `DELETE` on an event row; then `TRUNCATE` | Both rejected by the trigger and the row is unchanged; the reset by `TRUNCATE` still works | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
 | LOCK-01 | Test helper | BR-33 | The helper the lock tests wait on, with a waiter on the Ticket and with a waiter on another table | Settles for the first, and refuses the second with a clear message, so a lock test cannot pass because of an unrelated wait | `server/tests/lab-04/lock-helpers.api.test.ts` | PASS (#92) |
-| PERF-01 | Performance | AC-40 | 2,000 Tickets / 6,000 Actions; each dashboard endpoint called 20 times | p95 ≤ 300 ms; machine, dataset and command recorded | `server/scripts/perf-smoke.mjs` | PASS — Darwin 27.0.0, Apple M5, Node v26.7.0; 2,000 synthetic Tickets / 6,000 Actions + seeded baseline; p95 staff 4.50 ms, requester 1.86 ms (`server`: `./node_modules/.bin/tsx scripts/perf-smoke.mjs`; disposable `toktickit_codex93_test`) |
+| PERF-01 | Performance | AC-40 | 2,000 Tickets / 6,000 Actions; each dashboard endpoint called 20 times | p95 ≤ 300 ms; machine, dataset and command recorded | `server/scripts/perf-smoke.mjs` | PASS — Darwin 27.0.0, Apple M5, Node v26.7.0; 2,000 synthetic Tickets / 6,000 Actions + seeded baseline; p95 staff 4.50 ms, requester 1.86 ms on 5 Oct; 3.8 ms and 1.59 ms on 12 Oct (§6) (`server`: `./node_modules/.bin/tsx scripts/perf-smoke.mjs`; disposable `toktickit_codex93_test`) |
 | PERF-02 | Performance | AC-40, BR-40 | Query count at 200 vs 2,000 Tickets | Equal | `server/scripts/perf-smoke.mjs` | PASS — staff 7→7, requester 2→2 queries/request (`./node_modules/.bin/tsx scripts/perf-smoke.mjs`; disposable `toktickit_codex93_test`) |
 
 ### UI component
@@ -351,12 +351,37 @@ Suites always run sequentially. `toktickit_dev` is never a target.
 
 ## 6. Final Results
 
-**PENDING.** This section will hold separately:
+Both runs were made on the student's Mac (macOS Darwin 27.0.0, Apple M5, Node v26.7.0, PostgreSQL 18.6), on freshly created databases whose names end in `_test`, one run at a time, with `/tmp/toktickit-e2e.lock` held for every E2E run. The runner output is kept in the private working record (`_private/lab-04/WORK-RECORD.md`), which is not part of the repository.
 
-1. the integrated staging-candidate run;
-2. the run on the exact final `main` commit after the release merge.
+**1. The integrated staging candidate, `lab4-staging` `b5d75ed` (the five feature Pull Requests merged), 12 October 2026.**
 
-Each will record the commit, environment, commands, full runner output location, and warnings. Neither exists yet.
+| Check | Result |
+|---|---|
+| Server suite, default order and `--sequence.shuffle --sequence.seed=33` | 758/758 both times |
+| Client suite | 34 files, 325/325 |
+| Server and client production builds | both pass |
+| Client lint | 3 known warnings (an unused `REQUESTER_B` in a Lab 2 test; two react-refresh warnings in `SessionContext.tsx`), 0 errors |
+| `node scripts/verify-migration.mjs` | all 11 checks (MIG-01, MIG-02) |
+| Chromium E2E, whole repository | 59/59; `git status -- artifacts` clean |
+| `e2e/lab-04` on Firefox, WebKit and Microsoft Edge 154 | 55 of 57 (as it then stood); the two failures are A11Y-01 on WebKit (§7) |
+
+**2. The release candidate: this branch after Issue #94, `feature/94-final-hardening-and-release` at `2fa4b97`, 12 October 2026.** Its tree is the tree `lab4-staging` will have after the merge (a merge commit adds no file); the commits after it change documentation only.
+
+| Check | Command | Result |
+|---|---|---|
+| Server suite, default order | recreate `toktickit_test`, then `cd server && npm test` | 758/758 |
+| Server suite, shuffled | the same with `--sequence.shuffle --sequence.seed=33` | 758/758 |
+| Client suite | `cd client && npm test` | 34 files, 328/328 |
+| Builds | `cd server && npm run build`, `cd client && npm run build` | both pass |
+| Lint | `cd client && npm run lint` | the same 3 known warnings, 0 errors |
+| Migration and recovery | `cd server && node scripts/verify-migration.mjs` | all 11 checks |
+| E2E, Lab 2 to Lab 4, Chromium | `E2E_DATABASE_URL` → a fresh database, `npx playwright test` | 64/64 in 2.1 min; `git status -- artifacts` clean |
+| `e2e/lab-04` on Firefox, WebKit and Microsoft Edge | the throwaway config of §5, a fresh database | 70 of 72; the two failures are A11Y-01's Tab walks on WebKit (§7) |
+| Performance smoke | `cd server && ./node_modules/.bin/tsx scripts/perf-smoke.mjs`, its own database | 2,000 Tickets and 6,000 Actions: p95 3.8 ms (staff) and 1.59 ms (Requester). The query counts of PERF-02 (7 and 2 per request, the same at 200 and at 2,000 Tickets) are those measured on 5 October. A local measurement (specification §11.14) |
+
+Nothing was skipped, focused or disabled. Not run: a screen reader (§7).
+
+**3. The exact final `main` commit.** The release merge makes the tree of `main` equal to the tree above. The run on that commit is made after the merge and is recorded in the report, not in a Pull Request opened only to record a merge (Issue #94).
 
 ## 7. Known Limitations
 
