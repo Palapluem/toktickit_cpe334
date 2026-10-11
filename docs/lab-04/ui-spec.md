@@ -228,38 +228,41 @@ actions-taken/        list-{desktop,tablet,mobile} · list-long-content-{desktop
                       follow-up-required · inactive-assignee-refused · started · complete-result-required ·
                       completed · cancel-dialog · cancelled · ticket-not-workable · conflict ·
                       save-failure-fixture
-ticket-workflow/      resolve-blocked · resolved-after-work-complete · cancel-cascade ·
-                      stale-status · history-staff · history-requester
-regression/           login · my-tickets · requester-detail-attachments-comments ·
-                      staff-queue · staff-detail-internal-notes · user-management
+ticket-workflow/      {resolve-blocked, resolved-after-work-complete, cancel-cascade, stale-status,
+                      history-staff, history-requester}-{desktop,tablet,mobile}
+regression/           {login, my-tickets, requester-detail-attachments-comments, staff-queue,
+                      staff-detail-internal-notes, staff-ticket-not-found,
+                      requester-ticket-unavailable, user-management}-{desktop,tablet,mobile}
 ```
+
+Capture dates and runs: `staff-dashboard/` and `requester-dashboard/` on 5 October 2026 (Issue #93), `actions-taken/` on 8 October 2026 (Issue #91), `ticket-workflow/` and `regression/` on 12 October 2026 on a freshly created E2E database (Issue #94). The 12 October run also regenerated the dashboards and Actions Taken; its staff dashboard (desktop) was compared with the 5 October capture and differs only in the dates the seed writes, so the earlier, reviewed captures were kept. The Ticket workflow captures are cropped to the Operations card, the History section, or the top of the page, and each states its viewport in its name.
 
 Lab 2 and Lab 3 capture folders are never written by a Lab 4 run.
 
 ## 11. Visual and accessibility checklist
 
-Run against the integrated staging candidate before the release, and again on final `main` for evidence. Lab 2's and Lab 3's checklists still apply. **Every row starts NOT RUN.** A row is marked only with the date, viewport or width, role and evidence that prove it.
+Run against the integrated staging candidate before the release, and again on final `main` for evidence. Lab 2's and Lab 3's checklists still apply. Every row was NOT RUN until the evidence run of 12 October 2026. A row is marked only with the date, viewport or width, role and evidence that prove it.
 
 | # | Check | Evidence required | Status |
 |---|---|---|---|
-| 1 | New screens use only `--zen-*` tokens; no Bootstrap colour utilities | Style-contract test output; grep audit | NOT RUN |
-| 2 | Action and Ticket status badges always show text | Component test; screenshot | NOT RUN |
-| 3 | Metric cards show label + value + descriptive link name | Component test; accessibility tree snippet | NOT RUN |
-| 4 | Every drill-down opens a list whose total equals the card | E2E assertion; paired screenshots | NOT RUN |
-| 5 | Editable vs read-only fields are distinct; system fields never inputs | Screenshot of create and view modes | NOT RUN |
-| 6 | Validation messages sit below their fields; input text does not turn red | Screenshot (follow-up, result, reason) | NOT RUN |
-| 7 | Follow-up Note appears, is required, and clears when unticked | Component test; screenshot | NOT RUN |
-| 8 | Focus is visible on every new control; tab order matches the visual order | Keyboard walk notes; screenshot with focus ring | NOT RUN |
-| 9 | Cancel dialog traps focus, closes on Escape, returns focus | Component test; E2E | NOT RUN |
-| 10 | Status change and refresh are announced (live region) | Component test | NOT RUN |
-| 11 | No clipping or overlap at 1280, 834 and 390 px | Screenshots | NOT RUN |
-| 12 | No horizontal page scroll at 767, 768, 991 and 992 px | E2E width assertions | NOT RUN |
-| 13 | 2000-character text and long names wrap without widening the page | E2E fixture; screenshot | NOT RUN |
-| 14 | Actions list becomes cards below 992 px | Tablet and mobile screenshots | NOT RUN |
-| 15 | Touch targets ≥ 44 px on mobile | E2E measurement | NOT RUN |
-| 16 | Forbidden, not-found and failure stay visually distinct | Screenshots | NOT RUN |
-| 17 | Conflict and save failure keep entered values | E2E; screenshot | NOT RUN |
-| 18 | Dashboard is first and active in navigation; it is the landing page for each role | E2E; screenshots | NOT RUN |
-| 19 | No console error, broken link, placeholder text or no-op control in the journeys | E2E console and link audit output | NOT RUN |
-| 20 | The Lab 4 journeys also pass on Microsoft Edge, Firefox and WebKit, not only Chromium | Run output of the cross-browser command in `tests.md` §5, on the staging candidate | NOT RUN |
-| 21 | Names, roles and states are exposed to assistive technology: every input has a label; a validation message is linked to its field and the field is marked invalid; the cancel dialog is a named modal dialog; a refusal is an `alert` and a status change is announced in a polite live region | Component assertions in STYLE-03, STYLE-04, UI-05 and UI-12 (accessible name, `aria-modal`, `aria-invalid`, `aria-describedby`, `role=alert`, `aria-live`), and Playwright finding the controls by role and name in A11Y-01 and A11Y-02. No screen reader was used (`tests.md` §7) | NOT RUN |
+| 1 | New screens use only `--zen-*` tokens; no Bootstrap colour utilities | Style-contract test output; grep audit | PASS 12 Oct 2026 — `client/tests/lab-03/StyleContract.test.tsx` (STYLE-01) scans every file of `client/src` for colour literals outside the `:root` token block and for Bootstrap colour utilities; it passes in the client suite on the release candidate (`tests.md` §6). The reviewer also read the CSS diff of #101 for literals (7 Oct review) |
+| 2 | Action and Ticket status badges always show text | Component test; screenshot | PASS 12 Oct 2026 — STYLE-02 (one badge mapping, a text label for each of the four Action statuses); badges carry text in every capture of `actions-taken/` and both dashboards |
+| 3 | Metric cards show label + value + descriptive link name | Component test; accessibility tree snippet | PASS 12 Oct 2026 — UI-14 and UI-16 query each card's link by its accessible name ("View 2 unassigned tickets") beside its value; `staff-dashboard/desktop` and `requester-dashboard/mobile` show label, value and link |
+| 4 | Every drill-down opens a list whose total equals the card | E2E assertion; paired screenshots | PASS 12 Oct 2026 — DASH-02 and DASH-08 call each metric's returned query and compare the Tickets with SQL (API, every metric); E2E-04 follows the unassigned (staff) and both Requester links; `drilldown-unassigned`, `drilldown-open` and `drilldown-needs-attention` are the paired captures |
+| 5 | Editable vs read-only fields are distinct; system fields never inputs | Screenshot of create and view modes | PASS 12 Oct 2026 — STYLE-05 (system fields are text, never inputs); `create-form-{desktop,tablet,mobile}` and `requester-read-only-{desktop,tablet,mobile}` |
+| 6 | Validation messages sit below their fields; input text does not turn red | Screenshot (follow-up, result, reason) | PASS 12 Oct 2026, Chromium, 1280 / 834 / 390 px — STYLE-04 (message below its field, error token, input text not red); captured for the Description (`description-required-*`), the follow-up note (`follow-up-required`) and the result (`complete-result-required`). The cancellation reason's message is asserted (UI-05, E2E-01) but not captured |
+| 7 | Follow-up Note appears, is required, and clears when unticked | Component test; screenshot | PASS 12 Oct 2026 — UI-02 and E2E-01; `follow-up-required` |
+| 8 | Focus is visible on every new control; tab order matches the visual order | Keyboard walk notes; screenshot with focus ring | PASS on Chromium, Firefox and Microsoft Edge, 12 Oct 2026 — A11Y-01 keyboard walks (Action form, cancel dialog, status control, dashboard drill-down) and A11Y-02 focus rules, with the focus ring visible in `create-form-*`. **WebKit: not passed** — its default Tab order skips buttons and checkboxes (`tests.md` §7) |
+| 9 | Cancel dialog traps focus, closes on Escape, returns focus | Component test; E2E | PASS 12 Oct 2026 — UI-05, A11Y-01 and A11Y-02 (the dialog keeps the focus, closes on Escape, returns the focus; Tab and Shift+Tab never leave it while it is busy) |
+| 10 | Status change and refresh are announced (live region) | Component test | PASS 12 Oct 2026 — UI-12 ("Status changed to Resolved." in a polite live region) and UI-28 (the dashboard refresh is announced and cleared), each failing for four injected faults |
+| 11 | No clipping or overlap at 1280, 834 and 390 px | Screenshots | PASS for what was inspected, 12 Oct 2026 — E2E-10, RESP-01 and the Ticket workflow and regression specs assert no horizontal page scroll at 1280, 834 and 390 px. Claude Code opened an image of every kind of screen at phone width (Actions list, Add form, validation, edit panel, Requester view, cancel dialog; Ticket workflow states and both Histories; sign-in, My Tickets, Queue, Ticket Detail with attachments, comments and an Internal Note, User Management, the not-found and unavailable states; both dashboards) and found no clipping or overlap after the fix of the View button (`01c58de`). It did not open every one of the 86 images; the assertions cover the rest |
+| 12 | No horizontal page scroll at 767, 768, 991 and 992 px | E2E width assertions | PASS 12 Oct 2026 — RESP-01 at 767, 768, 991 and 992 px (Ticket Detail with Actions) and the dashboards' viewport and boundary checks (E2E-04) |
+| 13 | 2000-character text and long names wrap without widening the page | E2E fixture; screenshot | PASS 12 Oct 2026 — RESP-01 (2000-character Description, Follow-up Note and Result, 500-character Attachment Notes, a 120-character name); `list-long-content-*`. The header of a person whose own name is 120 characters long is a known limit (`tests.md` §7) |
+| 14 | Actions list becomes cards below 992 px | Tablet and mobile screenshots | PASS 12 Oct 2026 — RESP-01 asserts a table from 992 px and cards below it; `list-tablet` and `list-mobile` |
+| 15 | Touch targets ≥ 44 px on mobile | E2E measurement | PASS for the Actions Taken screen, 12 Oct 2026, 390 px — E2E-10 measures every button and link of the list, the Add form and the edit panel (all at least 44 px); RESP-01 measures the View button. The dashboards' links were not measured |
+| 16 | Forbidden, not-found and failure stay visually distinct | Screenshots | PASS 12 Oct 2026 — forbidden (`staff-dashboard/forbidden-requester`), not found (`regression/staff-ticket-not-found-*`), unavailable (`regression/requester-ticket-unavailable-*`) and failure (`failure-fixture`, `save-failure-fixture`) are four different messages and styles. A "not found" message has no heading of its own (specification §11.19, item 4) |
+| 17 | Conflict and save failure keep entered values | E2E; screenshot | PASS 12 Oct 2026 — E2E-03 and UI-10; `conflict`, `save-failure-fixture` |
+| 18 | Dashboard is first and active in navigation; it is the landing page for each role | E2E; screenshots | PASS 12 Oct 2026 — UI-18 and E2E-04 (each role lands on its first Dashboard item, marked current); the captures of both dashboards show the active item |
+| 19 | No console error, broken link, placeholder text or no-op control in the journeys | E2E console and link audit output | PASS 12 Oct 2026 — E2E-06: every Lab 4 journey runs under the audit, and `audit.spec.ts` follows every link on every screen of each role (the audit found one broken anchor, fixed under UI-27); no placeholder text and no empty link. One declared line: the session check of a signed-out visit is answered 401 and Chromium logs it (specification §11.19, item 2) |
+| 20 | The Lab 4 journeys also pass on Microsoft Edge, Firefox and WebKit, not only Chromium | Run output of the cross-browser command in `tests.md` §5, on the staging candidate | PASS with one limit, 12 Oct 2026 — `e2e/lab-04` on Firefox, WebKit and Microsoft Edge 154 with the throwaway cross-browser config: every test passes except A11Y-01's Tab walks on WebKit (two of them); run output in `tests.md` §6 |
+| 21 | Names, roles and states are exposed to assistive technology: every input has a label; a validation message is linked to its field and the field is marked invalid; the cancel dialog is a named modal dialog; a refusal is an `alert` and a status change is announced in a polite live region | Component assertions in STYLE-03, STYLE-04, UI-05 and UI-12 (accessible name, `aria-modal`, `aria-invalid`, `aria-describedby`, `role=alert`, `aria-live`), and Playwright finding the controls by role and name in A11Y-01 and A11Y-02. No screen reader was used (`tests.md` §7) | PASS for the assertions, 12 Oct 2026, Chromium (A11Y-01 and A11Y-02 also on Firefox and Edge). **Not run:** a screen reader; a pass on these assertions says the names, roles and states are exposed, not that the speech is understandable |
