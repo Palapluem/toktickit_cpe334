@@ -12,7 +12,7 @@ vi.mock('../../src/api.js', async () => {
   const actual = await vi.importActual<typeof import('../../src/api.js')>(
     '../../src/api.js',
   )
-  return { ...actual, indicateRequesterResolution: vi.fn(), fetchTicketHistory: vi.fn().mockResolvedValue([]) }
+  return { ...actual, indicateRequesterResolution: vi.fn(), fetchTicketHistory: vi.fn().mockResolvedValue([]), fetchActions: vi.fn().mockResolvedValue([]) }
 })
 
 const indicateMock = vi.mocked(api.indicateRequesterResolution)

@@ -17,6 +17,7 @@ vi.mock('../../src/api.js', async () => {
     setItPriority: vi.fn(),
     setTicketStatus: vi.fn(),
     fetchTicketHistory: vi.fn(),
+    fetchActions: vi.fn(),
     uploadAttachment: vi.fn(),
     removeAttachment: vi.fn(),
     downloadAttachment: vi.fn(),
@@ -92,6 +93,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   fetchStaffTicketMock.mockResolvedValue(TICKET)
   fetchHistoryMock.mockResolvedValue([])
+  vi.mocked(api.fetchActions).mockResolvedValue([])
   uploadAttachmentMock.mockResolvedValue({ data: ATTACHMENT })
   removeAttachmentMock.mockResolvedValue({
     data: {
