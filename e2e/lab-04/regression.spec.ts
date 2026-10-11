@@ -1,17 +1,18 @@
 // REG-04 · lab-04 FR-22, AC-37 — the Lab 1 to 3 journeys the labsheet names for Part 8 still work on the Lab 4 code, and are captured at three widths.
 // Captures go to artifacts/lab-04/screenshots/regression only with CAPTURE_EVIDENCE=1. Everything created here starts with "E2E " and is cleaned up.
 import { test, expect } from './audit'
-import { VIEWPORTS, DEVELOPMENT_PASSWORD, captureLab4Screenshot, createTicket, expectNoPageOverflow, pngFile, signOut } from '../lab-02/helpers'
+import { API_BASE_URL, VIEWPORTS, DEVELOPMENT_PASSWORD, captureLab4Screenshot, createTicket, expectNoPageOverflow, pngFile, signOut } from '../lab-02/helpers'
 import { PEOPLE, login } from './support'
 
 type Page = import('@playwright/test').Page
 const SHOT = 'regression'
 
 /** Captures the same state at desktop, tablet and phone width; none of them may scroll sideways. */
-async function atEveryWidth(page: Page, name: string): Promise<void> {
+async function atEveryWidth(page: Page, name: string, { heading = true } = {}): Promise<void> {
   for (const { name: width, width: w, height } of VIEWPORTS) {
     await page.setViewportSize({ width: w, height })
-    await expect(page.getByRole('heading').first()).toBeVisible()
+    // A "not found" state is a message in the shell, not a page of its own, so it has no heading of its own.
+    if (heading) await expect(page.getByRole('heading').first()).toBeVisible()
     await expectNoPageOverflow(page)
     await captureLab4Screenshot(page, SHOT, `${name}-${width}.png`)
   }
@@ -25,6 +26,7 @@ test('REG-04 · FR-22 · sign-in, My Tickets, Ticket Detail with an attachment a
 }) => {
   // The session check of a signed-out visit answers 401 by the Lab 3 contract (api-spec §2); Chromium logs every non-2xx fetch.
   audit.allow('the session check of the signed-out sign-in screen answers 401 (lab-03 api-spec)', /\/api\/auth\/me/, /status of 401/)
+  audit.allow('a Ticket that does not exist, or is not the Requester\'s, answers 404 on purpose (lab-03 BR-14)', /HTTP 404: GET .*\/api\/(staff\/)?tickets\//, /status of 404/)
 
   // Sign in through the screen, as a Requester (Lab 3).
   await page.goto('/login')
@@ -71,6 +73,14 @@ test('REG-04 · FR-22 · sign-in, My Tickets, Ticket Detail with an attachment a
   await expect(page.getByText('Check the spooler on the print server before calling the vendor.')).toBeVisible()
   await atEveryWidth(page, 'staff-detail-internal-notes')
 
+  // A Ticket that does not exist is "not found" for staff, a state of its own beside forbidden and failure (ui-spec §11 row 16).
+  await page.goto('/staff/tickets/00000000-0000-4000-8000-000000000000')
+  await expect(page.getByText('Ticket not found')).toBeVisible()
+  await atEveryWidth(page, 'staff-ticket-not-found', { heading: false })
+  const others = await page.request.get(`${API_BASE_URL}/api/staff/tickets?search=TKT-2026-900003`)
+  const othersTicketId = ((await others.json()) as { data: { id: string }[] }).data[0]?.id
+  expect(othersTicketId, 'the seeded Ticket of another Requester').toBeDefined()
+
   // The Requester still sees the comment and never the note (Lab 3, BR-17).
   await signOut(page)
   await login(page.request, PEOPLE.jennifer)
@@ -78,6 +88,11 @@ test('REG-04 · FR-22 · sign-in, My Tickets, Ticket Detail with an attachment a
   await expect(page.getByText('The printer still stops after the second page.')).toBeVisible()
   await expect(page.getByRole('region', { name: 'Internal Notes' })).toHaveCount(0)
   await expect(page.getByText('Check the spooler on the print server')).toHaveCount(0)
+
+  // Another Requester's Ticket looks exactly like one that does not exist (lab-03 BR-14).
+  await page.goto(`/tickets/${othersTicketId}`)
+  await expect(page.getByText('This Ticket is not available to you.')).toBeVisible()
+  await atEveryWidth(page, 'requester-ticket-unavailable')
 
   // The Administrator manages users (Lab 3).
   await signOut(page)

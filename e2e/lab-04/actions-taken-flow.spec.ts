@@ -10,6 +10,12 @@ const SHOT = 'actions-taken'
 /** The Actions Taken card, cropped from the page so the capture stays readable at its own width. */
 const shot = (page: Page, name: string) => captureLab4Screenshot(page, SHOT, name, section(page))
 
+/** Every button and link in `scope` is at least 44 px tall (ui-spec §11 row 15); returns the ones that are not. */
+const tooSmall = (scope: import('@playwright/test').Locator) =>
+  scope.locator('button:visible, a:visible').evaluateAll((items) =>
+    items.map((item) => ({ name: (item.getAttribute('aria-label') ?? item.textContent ?? '').trim(), height: Math.round(item.getBoundingClientRect().height) })).filter((item) => item.height < 44),
+  )
+
 const rows = (page: Page) => section(page).locator('tbody tr')
 const form = (page: Page) => page.locator('.actions__form')
 const panel = (page: Page) => page.getByRole('region', { name: 'Action details' })
@@ -311,6 +317,7 @@ test('E2E-10 · AC-34 · AC-35 · the Add form, its validation, the edit panel a
       )
       expect(wrapped, 'a button or badge broken over lines').toEqual([])
     }
+    if (name === 'mobile') expect(await tooSmall(section(page)), 'touch targets under 44 px in the list').toEqual([])
     await shot(page, `list-${name}.png`)
 
     await section(page).getByRole('button', { name: 'Add Action' }).click()
@@ -320,6 +327,7 @@ test('E2E-10 · AC-34 · AC-35 · the Add form, its validation, the edit panel a
     if (name !== 'desktop') await shot(page, `create-form-${name}.png`)
 
     // Validation sits beside its field and takes the focus (AC-10, AC-35).
+    if (name === 'mobile') expect(await tooSmall(form(page)), 'touch targets under 44 px in the Add form').toEqual([])
     await form(page).getByRole('button', { name: 'Save Action' }).click()
     await expect(form(page).getByText('Enter a description.')).toBeVisible()
     await expect(form(page).getByLabel('Description')).toBeFocused()
@@ -331,6 +339,7 @@ test('E2E-10 · AC-34 · AC-35 · the Add form, its validation, the edit panel a
     await view(page, 0).click()
     await panel(page).getByRole('button', { name: 'Edit' }).click()
     await panel(page).getByLabel('Description').fill('Collect the relay error and the gateway log.')
+    if (name === 'mobile') expect(await tooSmall(panel(page)), 'touch targets under 44 px in the edit panel').toEqual([])
     await expectNoPageOverflow(page)
     if (name !== 'desktop') await shot(page, `edit-reassign-${name}.png`)
     await panel(page).getByRole('button', { name: 'Close' }).click()
