@@ -936,4 +936,24 @@ describe('UI-27 · AC-28 · AC-41 · an address that names an Action takes the r
     await screen.findAllByRole('button', { name: /^View / })
     expect(scrollIntoView).not.toHaveBeenCalled()
   })
+
+  it('scrolls to the section itself, and leaves an address that names something else to the browser', async () => {
+    const elsewhere = document.createElement('div')
+    elsewhere.id = 'elsewhere'
+    document.body.append(elsewhere)
+    fetchActionsMock.mockResolvedValue([PLANNED])
+    const props = { ticketId: 't-1', audience: 'staff', assignableOwners: OWNERS, currentUserId: 's-1' } as const
+
+    window.history.replaceState(null, '', '/staff/tickets/t-1#elsewhere')
+    const first = render(<ActionsTakenSection ticketStatus="IN_PROGRESS" {...props} />)
+    await screen.findAllByRole('button', { name: /^View / })
+    expect(scrollIntoView).not.toHaveBeenCalled()
+    first.unmount()
+
+    window.history.replaceState(null, '', '/staff/tickets/t-1#actions-taken')
+    render(<ActionsTakenSection ticketStatus="IN_PROGRESS" {...props} />)
+    await waitFor(() => expect(scrollIntoView).toHaveBeenCalledTimes(1))
+    expect(scrollIntoView.mock.contexts[0]).toHaveProperty('id', 'actions-taken')
+    elsewhere.remove()
+  })
 })

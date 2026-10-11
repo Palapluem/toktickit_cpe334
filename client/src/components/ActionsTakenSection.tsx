@@ -610,11 +610,11 @@ export function ActionsTakenSection({
 
   const reload = useCallback(() => setAttempt((value) => value + 1), [])
 
-  // An address that names an Action (the dashboard, the history) takes the reader to its row once the list is there, once (AC-28, AC-41).
+  // An address that names this section or one of its Actions (the dashboard, the history) takes the reader there once the list is there, once (AC-28, AC-41).
   const scrolledTo = useRef('')
   useEffect(() => {
     const id = window.location.hash.slice(1)
-    if (!actions || !id.startsWith('action-') || scrolledTo.current === id) return
+    if (!actions || !(id === 'actions-taken' || id.startsWith('action-')) || scrolledTo.current === id) return
     scrolledTo.current = id
     document.getElementById(id)?.scrollIntoView({ block: 'center' })
   }, [actions])
