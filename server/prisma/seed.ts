@@ -8,6 +8,7 @@ import prisma from '../src/prisma.js'
 import { hashPassword } from '../src/auth/password.js'
 import { DEVELOPMENT_PASSWORD, SEED_USERS } from '../src/seed/roster.js'
 import { SEED_TICKETS } from '../src/seed/demoTickets.js'
+import { SEED_ACTIONS } from '../src/seed/demoActions.js'
 
 const CATEGORY_NAMES = [
   'Account and Access',
@@ -160,12 +161,60 @@ async function seedTickets(userIds: Map<string, string>): Promise<void> {
   }
 }
 
+async function seedActions(userIds: Map<string, string>): Promise<void> {
+  const userId = (email: string): string => {
+    const id = userIds.get(email)
+    if (id === undefined) throw new Error(`Seed references a user that does not exist: ${email}`)
+    return id
+  }
+
+  for (const action of SEED_ACTIONS) {
+    const ticketIndex = SEED_TICKETS.findIndex((ticket) => ticket.ticketNo === action.ticketNo)
+    if (ticketIndex < 0) throw new Error(`Seed Action references an unknown Ticket: ${action.ticketNo}`)
+    const ticket = await prisma.ticket.findUniqueOrThrow({
+      where: { ticketNo: action.ticketNo },
+      select: { id: true },
+    })
+    const createdAt = at(ticketIndex * 5 + action.offsetHours)
+    const closedAt = new Date(createdAt.getTime() + HOUR)
+    const closedBy = action.closedByEmail === null ? null : userId(action.closedByEmail)
+    const completed = action.status === 'COMPLETED'
+    const cancelled = action.status === 'CANCELLED'
+
+    // Restated on every run, like Tickets, so a row edited by hand returns to spec. `updatedAt` is stated too:
+    // left to Prisma it would move on every run, and a re-run would not leave the Action as it was (BR-42).
+    const fields = {
+      updatedAt: completed || cancelled ? closedAt : createdAt,
+      description: action.description,
+      result: action.result,
+      followUpRequired: action.followUpRequired,
+      followUpNote: action.followUpNote,
+      attachmentNotes: action.attachmentNotes,
+      status: action.status,
+      assigneeId: userId(action.assigneeEmail),
+      performedById: userId(action.performedByEmail),
+      completedById: completed ? closedBy : null,
+      completedAt: completed ? closedAt : null,
+      cancelledById: cancelled ? closedBy : null,
+      cancelledAt: cancelled ? closedAt : null,
+      cancellationReason: action.cancellationReason,
+      version: 1,
+    }
+    await prisma.actionTaken.upsert({
+      where: { id: action.id },
+      update: fields,
+      create: { id: action.id, ticketId: ticket.id, requestId: action.requestId, createdAt, ...fields },
+    })
+  }
+}
+
 async function main(): Promise<void> {
   await seedReferenceData()
   const userIds = await seedUsers()
   await seedTickets(userIds)
+  await seedActions(userIds)
 
-  const [categories, relatedSystems, users, admins, tickets, comments, notes] =
+  const [categories, relatedSystems, users, admins, tickets, comments, notes, actions] =
     await Promise.all([
       prisma.category.count(),
       prisma.relatedSystem.count(),
@@ -174,12 +223,13 @@ async function main(): Promise<void> {
       prisma.ticket.count(),
       prisma.publicComment.count(),
       prisma.internalNote.count(),
+      prisma.actionTaken.count(),
     ])
 
   console.log(
     `Seeded ${categories} categories, ${relatedSystems} related systems, ` +
       `${users} users (${admins} active administrator), ${tickets} tickets, ` +
-      `${comments} public comments, ${notes} internal notes.`,
+      `${comments} public comments, ${notes} internal notes, ${actions} actions.`,
   )
 }
 

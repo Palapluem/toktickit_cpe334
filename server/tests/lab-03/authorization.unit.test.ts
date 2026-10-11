@@ -30,12 +30,15 @@ const EXPECTED: Record<Operation, Record<Role, Grant>> = {
   'user:list': { REQUESTER: null, IT_STAFF: null, ADMINISTRATOR: 'any' },
   'user:write': { REQUESTER: null, IT_STAFF: null, ADMINISTRATOR: 'any' },
   'user:setInitialPassword': { REQUESTER: null, IT_STAFF: null, ADMINISTRATOR: 'any' },
+  // Added by Lab 4 (lab-04 specification §8.1): a Requester reads, never writes, Actions Taken.
+  'action:read': { REQUESTER: 'own', IT_STAFF: 'any', ADMINISTRATOR: 'any' },
+  'action:write': { REQUESTER: null, IT_STAFF: 'any', ADMINISTRATOR: 'any' },
 }
 
 const EXPECTED_OPERATIONS = Object.keys(EXPECTED) as Operation[]
 
 describe('UNIT-04 · the matrix lists every operation §8.1 names', () => {
-  it('exposes all sixteen operations', () => {
+  it('exposes all eighteen operations: sixteen from Lab 3 and two from Lab 4', () => {
     expect([...OPERATIONS].sort()).toEqual([...EXPECTED_OPERATIONS].sort())
   })
 })

@@ -11,6 +11,8 @@ export class ApiError extends Error {
     public readonly code: string,
     message: string,
     public readonly fieldErrors: FieldError[] = [],
+    /** Extra, safe-to-display facts about a refused state (lab-04 api-spec §1). */
+    public readonly details?: Record<string, unknown>,
   ) {
     super(message)
     this.name = 'ApiError'
@@ -24,6 +26,7 @@ export function sendError(
   message: string,
   fieldErrors: FieldError[] = [],
   correlationId = randomUUID(),
+  details?: Record<string, unknown>,
 ): void {
   // Logged with the correlation id so a support request can be traced back
   // without the response carrying anything internal.
@@ -32,7 +35,7 @@ export function sendError(
   }
 
   res.status(status).json({
-    error: { code, message, fieldErrors, correlationId },
+    error: { code, message, fieldErrors, correlationId, ...(details ? { details } : {}) },
   })
 }
 
@@ -75,6 +78,8 @@ export const errorHandler: ErrorRequestHandler = (
       error.code,
       error.message,
       error.fieldErrors,
+      undefined,
+      error.details,
     )
     return
   }

@@ -310,7 +310,7 @@ Every foreign key is `ON DELETE RESTRICT`.
 
 ### Database-design decisions
 
-1. **Append-only history is enforced by the database, not only by the absence of an API.** A `BEFORE UPDATE OR DELETE` trigger on `TicketEvent` raises an error. A future endpoint, script or agent mistake therefore cannot rewrite history, and the rule can be proved by a direct SQL test (BR-27).
+1. **Append-only history is enforced by the database, not only by the absence of an API.** A `BEFORE UPDATE OR DELETE` trigger on `TicketEvent` raises an error. A future endpoint, script or agent mistake therefore cannot rewrite history, and the rule can be proved by a direct SQL test (BR-27). `TRUNCATE` is not blocked, on purpose (11.16): the trigger fires per row, and the test and E2E cleanups reset disposable `_test` databases by truncating the table. The application itself has no code path that truncates it.
 2. **A version column plus a Ticket row lock, rather than either alone.**
    - The version detects a user acting on a screen that is out of date (BR-31).
    - The `SELECT … FOR UPDATE` on the Ticket serialises "create Action" against "resolve/close/cancel", which a version on the Ticket alone would not, because creating an Action does not change the Ticket's version (BR-33).
@@ -494,3 +494,12 @@ The performance smoke test (AC-40) runs on the student's Mac against a disposabl
 - Reopening goes to `REOPENED` (Lab 3), not to In Progress or New.
 - The API prefix `/api` and validation status 400 follow `lab-02 §11.3–§11.4`.
 - Attachments remain on the local filesystem (`lab-02 §11.5`).
+
+**11.16 Gaps in this contract found while building the Action API (#90), recorded in the Pull Request that closes them.**
+Each is covered by a test; the test IDs are in `tests.md`.
+
+1. **An edit that changes nothing is a success, not an error.** When every supplied field equals the stored value and the assignee is unchanged, `PATCH /api/tickets/:id/actions/:actionId` answers 200 with the unchanged Action: no new version and no event (BR-31 counts changes). A request that supplies no editable field at all stays 400 `VALIDATION_FAILED`. Test API-04, API-10.
+2. **Event payloads are stored as identifiers.** BR-30 already limits a payload to identifiers, statuses, priorities and field names. The `details` examples in `api-spec.md` §2 show display names because the history endpoint (#92) resolves identifiers to current display names when it reads, so a renamed person shows the current name. Test API-18.
+3. **An Action addressed under the wrong Ticket is not found.** Any Action write or status change whose `:actionId` does not belong to `:id`, does not exist, or is not a UUID answers 404 `ACTION_NOT_FOUND`, the same in every case, and changes nothing (BR-01). The code is new in `api-spec.md` §1. Test API-14.
+4. **The seed has eight Actions, not nine.** The list in §7 always summed to eight (1 + 3 + 2 + 1 + 1) and the seed and its test agree; the word "Nine" was a drafting error, corrected in #95. A second seed run now also leaves every Action column as it was, including `updatedAt`. Test MIG-04.
+5. **`TRUNCATE` of the history table is allowed.** The append-only trigger rejects row `UPDATE` and `DELETE` (BR-27) but not `TRUNCATE`, so that disposable test databases can be reset (§7, decision 1). Test MIG-05 proves the trigger rejects `UPDATE` and `DELETE`, leaves the row alone, and still allows the reset.
