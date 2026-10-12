@@ -25,8 +25,9 @@ test('REG-04 · FR-22 · sign-in, My Tickets, Ticket Detail with an attachment a
   e2eSummaries,
 }) => {
   // The session check of a signed-out visit answers 401 by the Lab 3 contract (api-spec §2); Chromium logs every non-2xx fetch.
-  audit.allow('the session check of the signed-out sign-in screen answers 401 (lab-03 api-spec)', /\/api\/auth\/me/, /status of 401/)
-  audit.allow('a Ticket that does not exist, or is not the Requester\'s, answers 404 on purpose (lab-03 BR-14)', /HTTP 404: GET .*\/api\/(staff\/)?tickets\//, /status of 404/)
+  audit.allowResponse('a signed-out visit asks who is signed in and is answered 401 (lab-03 api-spec §2)', 401, 'GET', /^\/api\/auth\/me$/)
+  audit.allowResponse('a Ticket that does not exist answers 404 to IT Staff (lab-03 BR-14)', 404, 'GET', /^\/api\/staff\/tickets\/[0-9a-f-]+$/)
+  audit.allowResponse('another Requester\'s Ticket answers 404, exactly like a missing one (lab-03 BR-14)', 404, 'GET', /^\/api\/tickets\/[0-9a-f-]+$/)
 
   // Sign in through the screen, as a Requester (Lab 3).
   await page.goto('/login')

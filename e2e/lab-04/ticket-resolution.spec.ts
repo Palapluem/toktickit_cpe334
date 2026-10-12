@@ -110,7 +110,7 @@ test('E2E-03 · AC-19 · AC-21 · a stale status change is refused, the latest s
   audit,
   e2eSummaries,
 }) => {
-  audit.allow('the stale status change is refused with 409 on purpose (AC-19)', /HTTP 409: PATCH .*\/status$/, /status of 409/)
+  audit.allowResponse('the stale status change is refused with 409 on purpose (AC-19)', 409, 'PATCH', /^\/api\/staff\/tickets\/[0-9a-f-]+\/status$/)
   const { ticketId } = await workedTicket(page, e2eSummaries, 'stale status')
   await login(page.request, PEOPLE.patricia)
   await page.goto(`/staff/tickets/${ticketId}`)

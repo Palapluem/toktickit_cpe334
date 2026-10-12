@@ -34,7 +34,7 @@ test('E2E-01 · AC-01 to AC-10, AC-12 · Olivia works a Ticket Daniel owns, and 
   audit,
   e2eSummaries,
 }) => {
-  audit.allow('the save with a deactivated assignee is refused with 400 on purpose (AC-04)', /HTTP 400: POST .*\/actions$/, /status of 400/)
+  audit.allowResponse('the save with a deactivated assignee is refused with 400 on purpose (AC-04)', 400, 'POST', /^\/api\/tickets\/[0-9a-f-]+\/actions$/)
   const { ticketId } = await workedTicket(page, e2eSummaries, 'actions flow')
   await login(page.request, PEOPLE.olivia)
   await page.goto(`/staff/tickets/${ticketId}`)
@@ -163,7 +163,8 @@ test('E2E-01 · AC-13 · a Ticket that is not workable shows the banner instead 
 })
 
 test('E2E-03 · AC-14 · AC-19 · AC-36 · a conflict and a save failure keep what was typed', async ({ page, browser, audit, e2eSummaries }) => {
-  audit.allow('a stale edit is refused with 409, and a save failure is injected as 500, on purpose (AC-19, AC-36)', /HTTP (409|500): PATCH/, /status of (409|500)/)
+  audit.allowResponse('a stale edit is refused with 409 on purpose (AC-19)', 409, 'PATCH', /^\/api\/tickets\/[0-9a-f-]+\/actions\/[0-9a-f-]+$/)
+  audit.allowResponse('a save failure is injected as 500 on purpose (AC-36)', 500, 'PATCH', /^\/api\/tickets\/[0-9a-f-]+\/actions\/[0-9a-f-]+$/)
   const { ticketId } = await workedTicket(page, e2eSummaries, 'action conflict')
   const olivia = await userIdByName(page.request, ticketId, 'Olivia Reed')
   await addAction(page.request, ticketId, olivia, 'Collect the relay error.')

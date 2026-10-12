@@ -50,7 +50,7 @@ async function walk(page: Page, start: string[]): Promise<string[]> {
 
 test('E2E-06 · AC-41 · FR-26 · a signed-out visitor reaches the sign-in and the two public pages without an error', async ({ page, audit }) => {
   // Asking who is signed in answers 401 by the Lab 3 contract (api-spec §2); Chromium logs every non-2xx fetch.
-  audit.allow('the session check of a signed-out visit answers 401 (lab-03 api-spec)', /\/api\/auth\/me/, /status of 401/)
+  audit.allowResponse('a signed-out visit asks who is signed in and is answered 401 (lab-03 api-spec §2)', 401, 'GET', /^\/api\/auth\/me$/)
   const opened = await walk(page, ['/login', '/system-check', '/style-guide'])
   expect(opened).toEqual(expect.arrayContaining(['/login', '/system-check', '/style-guide']))
 })

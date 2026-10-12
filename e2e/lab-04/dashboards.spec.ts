@@ -96,7 +96,7 @@ async function expectMetricColumns(page: import('@playwright/test').Page, width:
 }
 
 test('E2E-04 · AC-32 · all roles land on their first Dashboard navigation item after sign-in', async ({ page, audit }) => {
-  audit.allow('the session check of the signed-out sign-in screen answers 401 (lab-03 api-spec)', /\/api\/auth\/me/, /status of 401/)
+  audit.allowResponse('a signed-out visit asks who is signed in and is answered 401 (lab-03 api-spec §2)', 401, 'GET', /^\/api\/auth\/me$/)
   for (const [email, route] of [
     [REQUESTER_EMAIL, '/dashboard'],
     [STAFF_EMAIL, '/staff/dashboard'],
@@ -178,7 +178,8 @@ test('E2E-04 · AC-02, AC-26–AC-29 · Requester dashboard matches SQL and both
 })
 
 test('E2E-04/05 · AC-29–AC-31 · zero, forbidden and recoverable failure states', async ({ page, audit }) => {
-  audit.allow('a Requester asking for the staff dashboard is refused with 403, and the Requester dashboard is made to answer 503, on purpose (AC-30, AC-31)', /HTTP (403): GET .*\/api\/staff\/dashboard/, /HTTP 503: GET .*\/api\/requester\/dashboard/, /status of (403|503)/)
+  audit.allowResponse('a Requester asking for the staff dashboard is refused with 403 on purpose (AC-30)', 403, 'GET', /^\/api\/staff\/dashboard$/)
+  audit.allowResponse('the Requester dashboard is made to answer 503 on purpose (AC-31)', 503, 'GET', /^\/api\/requester\/dashboard$/)
   await signIn(page, ADMIN_EMAIL)
   await page.goto('/staff/dashboard')
   await expect(page.getByRole('heading', { name: 'My open Actions (0)' })).toBeVisible()
@@ -221,7 +222,7 @@ test('E2E-04/05 · AC-29–AC-31 · zero, forbidden and recoverable failure stat
 })
 
 test('E2E-05 · AC-31 · staff dashboard loading and failure fixtures recover safely', async ({ page, audit }) => {
-  audit.allow('the staff dashboard is made to answer 503 once, on purpose (AC-31)', /HTTP 503: GET .*\/api\/staff\/dashboard/, /status of 503/)
+  audit.allowResponse('the staff dashboard is made to answer 503 once, on purpose (AC-31)', 503, 'GET', /^\/api\/staff\/dashboard$/)
   await signIn(page, STAFF_EMAIL)
   let release!: () => void
   const held = new Promise<void>((resolve) => { release = resolve })
