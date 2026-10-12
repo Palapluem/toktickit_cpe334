@@ -57,6 +57,7 @@ describe('UNIT-09 · AC-41 · a declared failed request, a declared console line
 
   it('reports a failed request elsewhere, and a second console line', () => {
     expect(unexpected([failed('http://127.0.0.1:3002/api/categories', 'GET')], [abort])).toHaveLength(1)
+    expect(unexpected([failed('http://127.0.0.1:3002/api/tickets/9fdd83d2-e376/comments')], [abort])).toHaveLength(1)
     const url = 'http://127.0.0.1:3002/api/tickets/9fdd83d2-e376/actions'
     expect(unexpected([failed(url), console_('Failed to load resource: net::ERR_FAILED'), console_('Failed to load resource: net::ERR_FAILED')], [abort])).toHaveLength(1)
   })
