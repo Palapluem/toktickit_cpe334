@@ -52,6 +52,7 @@
 | UNIT-06 | Unit | BR-30 | Event payload builder for each event type | Only identifiers, statuses, priorities and field names; no free text | `server/tests/lab-04/workflow-rules.unit.test.ts` | PASS (#92) |
 | UNIT-07 | Unit | BR-36, BR-37 | `ACTIVE` group and each metric's query object | Exactly five statuses; each query reproduces its predicate | `server/tests/lab-04/dashboard-metrics.unit.test.ts` | PASS (9/9; mutation check failed as expected when `REOPENED` was removed) |
 | UNIT-08 | Unit | BR-19–BR-22, AC-18 | The §5.2 table, read as text from `specification.md`, against `transitions.ts`, the gate in `workflowRules.ts` and `transition-oracle.ts`, for each of the eight statuses and three roles; the † and ‡ marks and the own-Ticket marker | Every cell equal in all four places; † is exactly what the gate holds back while work is open; ‡ marks every move into `CANCELLED`; the Administrator column is the IT Staff column | `server/tests/lab-04/transition-spec.unit.test.ts` | PASS (#92) |
+| UNIT-09 | Unit | AC-41, FR-26 | The audit's allowance rules: a declared response, a declared failed request, a declared console line, each with a near miss (another status, method, address, a second console line, another page error) | A declared event passes with the one browser console line it causes and nothing else; every near miss is reported | `server/tests/lab-04/audit-rules.unit.test.ts` (it tests `e2e/lab-04/audit-rules.ts`) | PASS (server suite, §6; eight injected faults each fail it) |
 
 ### API — Actions Taken
 
@@ -192,7 +193,7 @@
 | E2E-05 | E2E | AC-30, AC-31 | Cross-role dashboard routes; load failure by interception (*fixture*) and retry | Forbidden state; failure then recovery | `e2e/lab-04/dashboards.spec.ts` | PASS (2 tests; failure/empty captures explicitly named `fixture`) |
 | RESP-01 | Responsive | AC-34 | Dashboards and Ticket Detail with Actions at 1280, 834 and 390 px; widths 767/768/991/992; 2000-character content | No clipping or overlap; no horizontal page scroll | `e2e/lab-04/dashboards.spec.ts`, `e2e/lab-04/actions-taken-flow.spec.ts` | PASS: Ticket Detail with Actions (#91, including 2,000-character content and a 120-character name) and both dashboards (#93) at every listed width |
 | A11Y-01 | Accessibility | AC-35 | Keyboard-only: Action form, cancel dialog, status control, dashboard drill-downs | Every control reachable; focus visible; dialog focus trap and return | `e2e/lab-04/actions-taken-flow.spec.ts` | PASS (#91: Action form and cancel dialog; #93: dashboard drill-down reachable by Tab with visible `:focus-visible`); WebKit Tab order is a known limit (§7); no screen reader used |
-| E2E-06 | E2E | AC-41, FR-26 | Console errors, failed requests and broken links collected across every Lab 4 journey, plus a walk that follows every link on every screen a signed-out visitor, a Requester, an IT Staff member and an Administrator can reach | No console error, page error, failed request or undeclared error response; no link that leads nowhere; no anchor without its element; no placeholder text | `e2e/lab-04/audit.ts` (the fixture every Lab 4 spec runs under), `e2e/lab-04/audit.spec.ts` | PASS (all 24 tests of the six `e2e/lab-04` specs run under the audit, four of them are the link walks of `audit.spec.ts`; the audit found a broken anchor, fixed under UI-27; a console error, placeholder text and an empty link each fail it) |
+| E2E-06 | E2E | AC-41, FR-26 | Console errors, failed requests and broken links collected across every Lab 4 journey, plus a walk that follows every link on every screen a signed-out visitor, a Requester, an IT Staff member and an Administrator can reach | No console error, page error, failed request or undeclared error response; no link that leads nowhere; no anchor without its element; no placeholder text | `e2e/lab-04/audit.ts` (the fixture every Lab 4 spec runs under), `e2e/lab-04/audit.spec.ts` | PASS (all 24 tests of the six `e2e/lab-04` specs run under the audit, four of them are the link walks of `audit.spec.ts`; the audit found a broken anchor, fixed under UI-27; a console error, placeholder text and an empty link each fail it; a control that does nothing is not detected, §7) |
 | E2E-07 | E2E | AC-14, AC-36 | The server commits a create and its answer is lost (real response aborted); the Description is changed; Try again | One Action, with the changed text, created once and updated once | `e2e/lab-04/actions-taken-recovery.spec.ts` | PASS (#91) |
 | E2E-08 | E2E | AC-13, BR-23 | The Ticket is resolved from the same page while Add Action is open | The form keeps its text, is disabled, has no Save, and nothing is stored | `e2e/lab-04/actions-taken-recovery.spec.ts` | PASS (#91) |
 | E2E-09 | E2E | api-spec §1 | A device set to America/Los_Angeles opens a Ticket with an Action | Every time in the list and the History equals the Asia/Bangkok rendering of the API's value | `e2e/lab-04/actions-taken-recovery.spec.ts` | PASS (#91) |
@@ -264,7 +265,7 @@ Twelve tests prove a business or style rule rather than a criterion, and are tra
 | AC-38 | MIG-01, MIG-02, MIG-03 | Script output: counts before, after and restored |
 | AC-39 | MIG-04 | Seed-twice test output |
 | AC-40 | PERF-01, PERF-02, DASH-06 | Performance-smoke output with machine and dataset |
-| AC-41 | E2E-06 | Console and link audit output (§6) |
+| AC-41 | E2E-06, UNIT-09 | Console and link audit output (§6); a no-op control is covered only where a journey uses the control (§7) |
 
 ## 4. Coverage of the labsheet's named files
 
@@ -289,10 +290,10 @@ Supporting files beyond the minimum:
 - `server/tests/lab-04/transition-oracle.ts` (the status table of §5.2, shared by UNIT-04 and WF-06);
 - `server/tests/lab-04/lock-helpers.api.test.ts` (LOCK-01, the lock-wait helper behind API-17, WF-08 and WF-17);
 - `e2e/lab-04/actions-taken-recovery.spec.ts` (E2E-07–E2E-09, A11Y-02);
-- `server/tests/lab-04/action-rules.unit.test.ts`, `workflow-rules.unit.test.ts`, `transition-spec.unit.test.ts`, `dashboard-metrics.unit.test.ts` and `migration-seed.api.test.ts` (MIG-03–MIG-05);
+- `server/tests/lab-04/action-rules.unit.test.ts`, `workflow-rules.unit.test.ts`, `transition-spec.unit.test.ts`, `audit-rules.unit.test.ts`, `dashboard-metrics.unit.test.ts` and `migration-seed.api.test.ts` (MIG-03–MIG-05);
 - `server/tests/lab-04/test-transport.unit.test.ts` (#96, the loopback guard behind the suite-stability fix);
 - `client/tests/lab-04/AppNavigation.test.tsx`;
-- `e2e/lab-04/audit.ts`, `e2e/lab-04/audit.spec.ts` (E2E-06) and `e2e/lab-04/regression.spec.ts` (REG-04);
+- `e2e/lab-04/audit.ts`, `e2e/lab-04/audit-rules.ts` (UNIT-09) and `e2e/lab-04/audit.spec.ts` (E2E-06), and `e2e/lab-04/regression.spec.ts` (REG-04);
 - `server/scripts/verify-migration.mjs` (MIG-01, MIG-02) and `server/scripts/perf-smoke.mjs` (PERF-01, PERF-02);
 - `client/tests/lab-03/StyleContract.test.tsx` (STYLE-01, existing).
 
@@ -399,3 +400,4 @@ Nothing was skipped, focused or disabled. Not run: a screen reader (§7).
 - **A "not found" state has no heading of its own** (specification §11.19, item 4).
 - **No screen reader was used.** The accessibility evidence is keyboard operation, visible focus and assertions on names, roles and states (ui-spec §11, rows 8 to 10 and 21). An automated check does not say whether the speech is understandable.
 - **Evidence images were opened, not all read.** 86 captures exist; an image of every kind of screen was opened at phone width, and the width and overflow assertions cover the rest (ui-spec §11, row 11).
+- **The audit does not detect a no-op control** (reviewer's note on #102, 12 October). E2E-06 finds console and network errors, empty links, missing anchors and placeholder text; it does not click every button. A control that does nothing is caught only where a journey uses it and asserts what it does (the Actions Taken, workflow, dashboard and regression journeys do so for their own controls). AC-41's "no-op control" is therefore proved in part.
