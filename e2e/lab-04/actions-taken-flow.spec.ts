@@ -1,6 +1,6 @@
 // E2E-01, E2E-03 (Action half), RESP-01 and A11Y-01 for Ticket Detail · lab-04 AC-01 to AC-14, AC-34 to AC-36.
 // Captures go to artifacts/lab-04/screenshots/actions-taken only with CAPTURE_EVIDENCE=1; fixture states say so in their name.
-import { test, expect } from '../lab-02/fixtures'
+import { test, expect } from './audit'
 import { API_BASE_URL, captureLab4Screenshot, expectNoPageOverflow, signOut } from '../lab-02/helpers'
 import { PEOPLE, addAction, changeStatus, login, userIdByName, workedTicket } from './support'
 
@@ -9,6 +9,12 @@ const section = (page: Page) => page.locator('#actions-taken')
 const SHOT = 'actions-taken'
 /** The Actions Taken card, cropped from the page so the capture stays readable at its own width. */
 const shot = (page: Page, name: string) => captureLab4Screenshot(page, SHOT, name, section(page))
+
+/** Every button and link in `scope` is at least 44 px tall (ui-spec §11 row 15); returns the ones that are not. */
+const tooSmall = (scope: import('@playwright/test').Locator) =>
+  scope.locator('button:visible, a:visible').evaluateAll((items) =>
+    items.map((item) => ({ name: (item.getAttribute('aria-label') ?? item.textContent ?? '').trim(), height: Math.round(item.getBoundingClientRect().height) })).filter((item) => item.height < 44),
+  )
 
 const rows = (page: Page) => section(page).locator('tbody tr')
 const form = (page: Page) => page.locator('.actions__form')
@@ -25,8 +31,10 @@ async function addThroughForm(page: Page, description: string, assignee?: string
 test('E2E-01 · AC-01 to AC-10, AC-12 · Olivia works a Ticket Daniel owns, and the Requester reads it all', async ({
   page,
   request,
+  audit,
   e2eSummaries,
 }) => {
+  audit.allowResponse('the save with a deactivated assignee is refused with 400 on purpose (AC-04)', 400, 'POST', /^\/api\/tickets\/[0-9a-f-]+\/actions$/)
   const { ticketId } = await workedTicket(page, e2eSummaries, 'actions flow')
   await login(page.request, PEOPLE.olivia)
   await page.goto(`/staff/tickets/${ticketId}`)
@@ -154,7 +162,9 @@ test('E2E-01 · AC-13 · a Ticket that is not workable shows the banner instead 
   await shot(page, 'ticket-not-workable.png')
 })
 
-test('E2E-03 · AC-14 · AC-19 · AC-36 · a conflict and a save failure keep what was typed', async ({ page, browser, e2eSummaries }) => {
+test('E2E-03 · AC-14 · AC-19 · AC-36 · a conflict and a save failure keep what was typed', async ({ page, browser, audit, e2eSummaries }) => {
+  audit.allowResponse('a stale edit is refused with 409 on purpose (AC-19)', 409, 'PATCH', /^\/api\/tickets\/[0-9a-f-]+\/actions\/[0-9a-f-]+$/)
+  audit.allowResponse('a save failure is injected as 500 on purpose (AC-36)', 500, 'PATCH', /^\/api\/tickets\/[0-9a-f-]+\/actions\/[0-9a-f-]+$/)
   const { ticketId } = await workedTicket(page, e2eSummaries, 'action conflict')
   const olivia = await userIdByName(page.request, ticketId, 'Olivia Reed')
   await addAction(page.request, ticketId, olivia, 'Collect the relay error.')
@@ -308,6 +318,7 @@ test('E2E-10 · AC-34 · AC-35 · the Add form, its validation, the edit panel a
       )
       expect(wrapped, 'a button or badge broken over lines').toEqual([])
     }
+    if (name === 'mobile') expect(await tooSmall(section(page)), 'touch targets under 44 px in the list').toEqual([])
     await shot(page, `list-${name}.png`)
 
     await section(page).getByRole('button', { name: 'Add Action' }).click()
@@ -317,6 +328,7 @@ test('E2E-10 · AC-34 · AC-35 · the Add form, its validation, the edit panel a
     if (name !== 'desktop') await shot(page, `create-form-${name}.png`)
 
     // Validation sits beside its field and takes the focus (AC-10, AC-35).
+    if (name === 'mobile') expect(await tooSmall(form(page)), 'touch targets under 44 px in the Add form').toEqual([])
     await form(page).getByRole('button', { name: 'Save Action' }).click()
     await expect(form(page).getByText('Enter a description.')).toBeVisible()
     await expect(form(page).getByLabel('Description')).toBeFocused()
@@ -328,6 +340,7 @@ test('E2E-10 · AC-34 · AC-35 · the Add form, its validation, the edit panel a
     await view(page, 0).click()
     await panel(page).getByRole('button', { name: 'Edit' }).click()
     await panel(page).getByLabel('Description').fill('Collect the relay error and the gateway log.')
+    if (name === 'mobile') expect(await tooSmall(panel(page)), 'touch targets under 44 px in the edit panel').toEqual([])
     await expectNoPageOverflow(page)
     if (name !== 'desktop') await shot(page, `edit-reassign-${name}.png`)
     await panel(page).getByRole('button', { name: 'Close' }).click()

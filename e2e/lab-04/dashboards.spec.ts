@@ -1,6 +1,6 @@
 // E2E-04/05 · RESP-01 · AC-26–AC-34 · independently compare dashboard metrics and follow their drill-downs.
 import { execFileSync } from 'node:child_process'
-import { expect, test } from '../lab-02/fixtures'
+import { expect, test } from './audit'
 import {
   API_BASE_URL,
   captureLab4Screenshot,
@@ -95,7 +95,8 @@ async function expectMetricColumns(page: import('@playwright/test').Page, width:
   expect(actual, `metric grid at ${width}px`).toBe(columns)
 }
 
-test('E2E-04 · AC-32 · all roles land on their first Dashboard navigation item after sign-in', async ({ page }) => {
+test('E2E-04 · AC-32 · all roles land on their first Dashboard navigation item after sign-in', async ({ page, audit }) => {
+  audit.allowResponse('a signed-out visit asks who is signed in and is answered 401 (lab-03 api-spec §2)', 401, 'GET', /^\/api\/auth\/me$/)
   for (const [email, route] of [
     [REQUESTER_EMAIL, '/dashboard'],
     [STAFF_EMAIL, '/staff/dashboard'],
@@ -176,7 +177,9 @@ test('E2E-04 · AC-02, AC-26–AC-29 · Requester dashboard matches SQL and both
   await expect(page.getByRole('button', { name: 'Sort by Last Updated' })).toHaveAttribute('aria-pressed', 'true')
 })
 
-test('E2E-04/05 · AC-29–AC-31 · zero, forbidden and recoverable failure states', async ({ page }) => {
+test('E2E-04/05 · AC-29–AC-31 · zero, forbidden and recoverable failure states', async ({ page, audit }) => {
+  audit.allowResponse('a Requester asking for the staff dashboard is refused with 403 on purpose (AC-30)', 403, 'GET', /^\/api\/staff\/dashboard$/)
+  audit.allowResponse('the Requester dashboard is made to answer 503 on purpose (AC-31)', 503, 'GET', /^\/api\/requester\/dashboard$/)
   await signIn(page, ADMIN_EMAIL)
   await page.goto('/staff/dashboard')
   await expect(page.getByRole('heading', { name: 'My open Actions (0)' })).toBeVisible()
@@ -218,7 +221,8 @@ test('E2E-04/05 · AC-29–AC-31 · zero, forbidden and recoverable failure stat
   await captureLab4Screenshot(page, 'requester-dashboard', 'first-use-empty-fixture.png')
 })
 
-test('E2E-05 · AC-31 · staff dashboard loading and failure fixtures recover safely', async ({ page }) => {
+test('E2E-05 · AC-31 · staff dashboard loading and failure fixtures recover safely', async ({ page, audit }) => {
+  audit.allowResponse('the staff dashboard is made to answer 503 once, on purpose (AC-31)', 503, 'GET', /^\/api\/staff\/dashboard$/)
   await signIn(page, STAFF_EMAIL)
   let release!: () => void
   const held = new Promise<void>((resolve) => { release = resolve })

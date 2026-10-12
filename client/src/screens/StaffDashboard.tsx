@@ -121,7 +121,7 @@ export function StaffDashboard() {
             <ul className="zen-dashboard__list">
               {data.myOpenActions.items.map((action) => (
                 <li key={action.actionId}>
-                  <Link className="zen-dashboard__action-link" to={`/staff/tickets/${action.ticket.id}#actions`}>
+                  <Link className="zen-dashboard__action-link" to={`/staff/tickets/${action.ticket.id}#action-${action.actionId}`}>
                     <span className="zen-dashboard__ticket-heading">
                       <strong>{action.ticket.ticketNo}</strong> · {action.ticket.summary}
                     </span>
