@@ -124,6 +124,11 @@ test('E2E-04 · AC-26–AC-29 · staff dashboard matches SQL and drills down to 
 
   for (const [width, columns] of [[1280, 4], [834, 2], [390, 2], [767, 2], [768, 2], [991, 2], [992, 4]] as const) {
     await expectMetricColumns(page, width, columns)
+    if (width === 390) {
+      const footerLink = page.getByRole('link', { name: 'View all recently updated Tickets' })
+      const target = await footerLink.boundingBox()
+      expect(target?.height ?? 0, 'staff dashboard footer link is at least 44 px tall on mobile').toBeGreaterThanOrEqual(44)
+    }
     if (width === 1280) await captureLab4Screenshot(page, 'staff-dashboard', 'desktop.png')
     if (width === 834) await captureLab4Screenshot(page, 'staff-dashboard', 'tablet.png')
     if (width === 390) await captureLab4Screenshot(page, 'staff-dashboard', 'mobile.png')
@@ -149,6 +154,11 @@ test('E2E-04 · AC-02, AC-26–AC-29 · Requester dashboard matches SQL and both
 
   for (const [width, columns] of [[1280, 4], [834, 2], [390, 2], [767, 2], [768, 2], [991, 2], [992, 4]] as const) {
     await expectMetricColumns(page, width, columns)
+    if (width === 390) {
+      const footerLink = page.getByRole('link', { name: 'View all recently updated Tickets' })
+      const target = await footerLink.boundingBox()
+      expect(target?.height ?? 0, 'Requester dashboard footer link is at least 44 px tall on mobile').toBeGreaterThanOrEqual(44)
+    }
     if (width === 1280) await captureLab4Screenshot(page, 'requester-dashboard', 'desktop.png')
     if (width === 834) await captureLab4Screenshot(page, 'requester-dashboard', 'tablet.png')
     if (width === 390) await captureLab4Screenshot(page, 'requester-dashboard', 'mobile.png')
@@ -166,9 +176,14 @@ test('E2E-04 · AC-02, AC-26–AC-29 · Requester dashboard matches SQL and both
   await page.goto('/dashboard')
   await page.getByRole('link', { name: new RegExp(`View ${payload.metrics.needsAttention.count} tickets? waiting for you`) }).click()
   await expect(page).toHaveURL(/\/tickets\?status=WAITING_FOR_REQUESTER/)
+  await expect(page.getByRole('heading', { name: 'My Tickets', exact: true })).toBeVisible()
+  await expect(page.getByLabel('Current Status')).toHaveValue('WAITING_FOR_REQUESTER')
   const attentionList = await page.request.get(`${API_BASE_URL}/api/tickets?status=WAITING_FOR_REQUESTER`)
   expect(attentionList.status()).toBe(200)
-  expect((await attentionList.json()).pagination.totalItems).toBe(payload.metrics.needsAttention.count)
+  const attentionTotal = (await attentionList.json()).pagination.totalItems
+  expect(attentionTotal).toBe(payload.metrics.needsAttention.count)
+  expect(attentionTotal, 'the seeded Requester has a ticket to inspect in the needs-attention drill-down').toBeGreaterThan(0)
+  await expect(page.locator('tbody tr')).toHaveCount(Math.min(attentionTotal, 10))
   await captureLab4Screenshot(page, 'requester-dashboard', 'drilldown-needs-attention.png')
 
   await page.goto('/dashboard')
