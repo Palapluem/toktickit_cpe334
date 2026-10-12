@@ -95,6 +95,18 @@ async function expectMetricColumns(page: import('@playwright/test').Page, width:
   expect(actual, `metric grid at ${width}px`).toBe(columns)
 }
 
+async function expectDashboardLinksMeetMobileTarget(page: import('@playwright/test').Page, role: string) {
+  const links = page.locator('.zen-dashboard a:visible')
+  const targets = await links.evaluateAll((elements) => elements.map((element) => ({
+    label: element.getAttribute('aria-label') ?? element.textContent?.trim().replaceAll(/\s+/g, ' ') ?? '<unlabelled>',
+    height: element.getBoundingClientRect().height,
+  })))
+  expect(targets.length, `${role} dashboard has visible links to measure`).toBeGreaterThan(0)
+  for (const target of targets) {
+    expect(target.height, `${role} dashboard link "${target.label}" is at least 44 px high`).toBeGreaterThanOrEqual(44)
+  }
+}
+
 test('E2E-04 · AC-32 · all roles land on their first Dashboard navigation item after sign-in', async ({ page, audit }) => {
   audit.allowResponse('a signed-out visit asks who is signed in and is answered 401 (lab-03 api-spec §2)', 401, 'GET', /^\/api\/auth\/me$/)
   for (const [email, route] of [
@@ -114,7 +126,7 @@ test('E2E-04 · AC-32 · all roles land on their first Dashboard navigation item
   }
 })
 
-test('E2E-04 · AC-26–AC-29 · staff dashboard matches SQL and drills down to the same unassigned Tickets', async ({ page }) => {
+test('E2E-04 · AC-26–AC-29, AC-34 · staff dashboard matches SQL, drills down, and keeps every mobile link target large enough', async ({ page }) => {
   await signIn(page, STAFF_EMAIL)
   await page.goto('/staff/dashboard')
   await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible()
@@ -125,9 +137,7 @@ test('E2E-04 · AC-26–AC-29 · staff dashboard matches SQL and drills down to 
   for (const [width, columns] of [[1280, 4], [834, 2], [390, 2], [767, 2], [768, 2], [991, 2], [992, 4]] as const) {
     await expectMetricColumns(page, width, columns)
     if (width === 390) {
-      const footerLink = page.getByRole('link', { name: 'View all recently updated Tickets' })
-      const target = await footerLink.boundingBox()
-      expect(target?.height ?? 0, 'staff dashboard footer link is at least 44 px tall on mobile').toBeGreaterThanOrEqual(44)
+      await expectDashboardLinksMeetMobileTarget(page, 'Staff')
     }
     if (width === 1280) await captureLab4Screenshot(page, 'staff-dashboard', 'desktop.png')
     if (width === 834) await captureLab4Screenshot(page, 'staff-dashboard', 'tablet.png')
@@ -145,7 +155,7 @@ test('E2E-04 · AC-26–AC-29 · staff dashboard matches SQL and drills down to 
   await captureLab4Screenshot(page, 'staff-dashboard', 'drilldown-unassigned.png')
 })
 
-test('E2E-04 · AC-02, AC-26–AC-29 · Requester dashboard matches SQL and both metric links filter My Tickets', async ({ page }) => {
+test('E2E-04 · AC-02, AC-26–AC-29, AC-34 · Requester dashboard matches SQL, filters My Tickets, and keeps every mobile link target large enough', async ({ page }) => {
   await signIn(page, REQUESTER_EMAIL)
   await page.goto('/')
   await expect(page).toHaveURL(/\/dashboard$/)
@@ -155,9 +165,7 @@ test('E2E-04 · AC-02, AC-26–AC-29 · Requester dashboard matches SQL and both
   for (const [width, columns] of [[1280, 4], [834, 2], [390, 2], [767, 2], [768, 2], [991, 2], [992, 4]] as const) {
     await expectMetricColumns(page, width, columns)
     if (width === 390) {
-      const footerLink = page.getByRole('link', { name: 'View all recently updated Tickets' })
-      const target = await footerLink.boundingBox()
-      expect(target?.height ?? 0, 'Requester dashboard footer link is at least 44 px tall on mobile').toBeGreaterThanOrEqual(44)
+      await expectDashboardLinksMeetMobileTarget(page, 'Requester')
     }
     if (width === 1280) await captureLab4Screenshot(page, 'requester-dashboard', 'desktop.png')
     if (width === 834) await captureLab4Screenshot(page, 'requester-dashboard', 'tablet.png')
