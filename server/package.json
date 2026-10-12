@@ -24,7 +24,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "multer": "^2.3.0",
+    "multer": "^2.4.0",
     "pg": "^8.22.0"
   },
   "devDependencies": {
@@ -38,6 +38,14 @@
     "supertest": "^7.2.2",
     "tsx": "^4.23.5",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
+  },
+  "overrides": {
+    "@prisma/config": {
+      "deepmerge-ts": "^8.0.2"
+    },
+    "prisma": {
+      "mysql2": "^3.24.5"
+    }
   }
 }
