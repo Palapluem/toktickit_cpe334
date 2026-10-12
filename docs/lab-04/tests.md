@@ -1,7 +1,7 @@
 # Lab 4 Test Plan and Results
 
-**Version:** 1.1 — approved for implementation on 3 October 2026; results recorded on 12 October 2026
-**Status:** Implemented. Every row's Final column holds a real result from a run on a named commit; §6 names the runs, their commands and their output. Anything not run says so.
+**Version:** 1.2 — approved for implementation on 3 October 2026; results updated on 13 October 2026
+**Status:** The implementation is integrated into `lab4-staging`; the 13 October review-readiness follow-up below remains local and unmerged. Every result is tied to the candidate it actually ran against; §6 names the runs, commands and outputs. Anything not run says so.
 **Standard:** `docs/lab-02/testing-contract.md` (TC, TCS, TDT and red-phase rules) applies unchanged. Every test names the identifier it proves (TCS-01).
 
 ---
@@ -33,6 +33,7 @@
 **Isolation.**
 
 - Suites run one at a time on `_test` databases, never `toktickit_dev`.
+- **TC-025 — Test-harness transport:** test-created HTTP servers bind only to `127.0.0.1`, and each Supertest request is answered by the specific app instance passed to it, not another local process sharing a port.
 - E2E runs write evidence only when `CAPTURE_EVIDENCE=1` (ui-spec §10). After every run, `git status -- artifacts` must show only intended Lab 4 captures.
 - A UI failure, loading or empty state produced by API interception is labelled *fixture*. Backend behaviour is proved by the API tests, not by those captures.
 
@@ -53,6 +54,12 @@
 | UNIT-07 | Unit | BR-36, BR-37 | `ACTIVE` group and each metric's query object | Exactly five statuses; each query reproduces its predicate | `server/tests/lab-04/dashboard-metrics.unit.test.ts` | PASS (9/9; mutation check failed as expected when `REOPENED` was removed) |
 | UNIT-08 | Unit | BR-19–BR-22, AC-18 | The §5.2 table, read as text from `specification.md`, against `transitions.ts`, the gate in `workflowRules.ts` and `transition-oracle.ts`, for each of the eight statuses and three roles; the † and ‡ marks and the own-Ticket marker | Every cell equal in all four places; † is exactly what the gate holds back while work is open; ‡ marks every move into `CANCELLED`; the Administrator column is the IT Staff column | `server/tests/lab-04/transition-spec.unit.test.ts` | PASS (#92) |
 | UNIT-09 | Unit | AC-41, FR-26 | The audit's allowance rules: a declared response, a declared failed request, a declared console line, each with a near miss (another status, method, address, a second console line, another page error) | A declared event passes with the one browser console line it causes and nothing else; every near miss is reported | `server/tests/lab-04/audit-rules.unit.test.ts` (it tests `e2e/lab-04/audit-rules.ts`) | PASS (server suite, §6; eight injected faults each fail it) |
+
+### Test-harness transport
+
+| Test ID | Type | Requirement | What it tests | Expected result | Test file | Final |
+|---|---|---|---|---|---|---|
+| TC-025 | Infrastructure | Isolate disposable Supertest servers from other local listeners | The server binds to loopback only; 400 uniquely tagged requests each reach the app instance supplied to Supertest | The observed bind address is `127.0.0.1`; every response carries the nonce of its own app | `server/tests/lab-04/test-transport.unit.test.ts` | PASS (local review-readiness run, §6) |
 
 ### API — Actions Taken
 
@@ -291,7 +298,7 @@ Supporting files beyond the minimum:
 - `server/tests/lab-04/lock-helpers.api.test.ts` (LOCK-01, the lock-wait helper behind API-17, WF-08 and WF-17);
 - `e2e/lab-04/actions-taken-recovery.spec.ts` (E2E-07–E2E-09, A11Y-02);
 - `server/tests/lab-04/action-rules.unit.test.ts`, `workflow-rules.unit.test.ts`, `transition-spec.unit.test.ts`, `audit-rules.unit.test.ts`, `dashboard-metrics.unit.test.ts` and `migration-seed.api.test.ts` (MIG-03–MIG-05);
-- `server/tests/lab-04/test-transport.unit.test.ts` (#96, the loopback guard behind the suite-stability fix);
+- `server/tests/lab-04/test-transport.unit.test.ts` (TC-025; the loopback and request-routing guard behind the #96 suite-stability fix);
 - `client/tests/lab-04/AppNavigation.test.tsx`;
 - `e2e/lab-04/audit.ts`, `e2e/lab-04/audit-rules.ts` (UNIT-09) and `e2e/lab-04/audit.spec.ts` (E2E-06), and `e2e/lab-04/regression.spec.ts` (REG-04);
 - `server/scripts/verify-migration.mjs` (MIG-01, MIG-02) and `server/scripts/perf-smoke.mjs` (PERF-01, PERF-02);
@@ -366,7 +373,7 @@ Both runs were made on the student's Mac (macOS Darwin 27.0.0, Apple M5, Node v2
 | Chromium E2E, whole repository | 59/59; `git status -- artifacts` clean |
 | `e2e/lab-04` on Firefox, WebKit and Microsoft Edge 154 | 55 of 57 (as it then stood); the two failures are A11Y-01 on WebKit (§7) |
 
-**2. The release candidate: this branch after Issue #94, `feature/94-final-hardening-and-release` at `5685095`, 12 October 2026 (re-run after the review of #102 changed the audit; the run at `2fa4b97` gave the same results except 758 server tests).** Its tree is the tree `lab4-staging` will have after the merge (a merge commit adds no file); the commits after it change documentation only.
+**2. The release-candidate code tree: `feature/94-final-hardening-and-release` at `5685095`, 12 October 2026 (re-run after the review of #102 changed the audit; the run at `2fa4b97` gave the same results except 758 server tests).** Its product-code tree is the one now integrated into `lab4-staging` at `876511f`. PR #102's final head `ab53f8a` and merge changed documentation only relative to code head `5685095`.
 
 | Check | Command | Result |
 |---|---|---|
@@ -382,7 +389,26 @@ Both runs were made on the student's Mac (macOS Darwin 27.0.0, Apple M5, Node v2
 
 Nothing was skipped, focused or disabled. Not run: a screen reader (§7).
 
-**3. The exact final `main` commit.** The release merge makes the tree of `main` equal to the tree above. The run on that commit is made after the merge and is recorded in the report, not in a Pull Request opened only to record a merge (Issue #94).
+**3. Local review-readiness candidate, branch `fix/lab4-review-readiness`, product-code/dependency head `0ba3abc`, based on `lab4-staging@876511f` (13 October 2026).** This branch is not merged and is not part of PR #103. Its follow-up changes broaden the dashboard mobile link-size assertions, fix the two dashboard footer links to meet 44 px, refresh audited dependency versions, and correct the stale test-harness identifier. This section's documentation is a later docs-only commit; the tested product tree is `0ba3abc`.
+
+| Check | Command | Result |
+|---|---|---|
+| Server suite, default and shuffled | `cd server && npm test`; then the same with `--sequence.shuffle --sequence.seed=33` | 771/771 on each run; server code was unchanged after these runs |
+| Client suite | `cd client && npm test` | 34 files, 328/328 on Vite 8.3.4 and Vitest 4.1.11 |
+| Builds | `cd server && npm run build`; `cd client && npm run build` | both pass; the client build was repeated on Vite 8.3.4 |
+| Lint | `cd client && npm run lint` | exit 0; the same 3 existing warnings, 0 errors |
+| Migration / recovery | `cd server && node scripts/verify-migration.mjs` | all 11 checks pass |
+| Transport guard | `cd server && npx vitest run tests/lab-04/test-transport.unit.test.ts` | 2/2 pass (TC-025) |
+| Chromium E2E, whole repository | `npm run test:e2e` with `E2E_DATABASE_URL` naming a newly created dedicated `_test` database and `CAPTURE_EVIDENCE=0` | 64/64; tracked artifacts clean; database dropped and verified absent |
+| Cross-browser, Lab 4 | `npm run test:e2e -- -c playwright.cross-browser.config.ts e2e/lab-04` using a throwaway config and a new dedicated `_test` database | Firefox 24/24; Microsoft Edge 154 24/24; WebKit 22/24. The only failures are the two known A11Y-01 Tab walks on WebKit (§7); the database was dropped and verified absent |
+| Dependency audit | `npm audit --audit-level=low` and `npm audit --omit=dev --audit-level=low`, in both `server/` and `client/` | 0 vulnerabilities in all four scans |
+| Prisma toolchain | `npx prisma validate`; `npm run prisma:generate` | schema validation and client generation pass with the scoped `@prisma/config` override |
+
+**Dependency versions in this candidate:** Multer 2.4.0; Vite 8.3.4 (manifest floor `^8.2.4`); Vitest 4.1.11; Prisma 7.9.1's scoped `deepmerge-ts` override 8.0.2 and `mysql2` override 3.24.5. The overrides are limited to Prisma's dependency branches; the app uses PostgreSQL.
+
+**Observed warning, not a test failure:** the PostgreSQL `pg@8.22.0` client emitted a deprecation warning about calling `client.query()` while another query is executing, through the Prisma PostgreSQL adapter. It appeared during server/E2E runs and was not traced to a specific application operation; it was not suppressed or represented as fixed.
+
+**4. The exact final `main` commit.** PENDING-MAIN while PR #103 is open. After it is merged, run the full release gate against that exact `main` SHA and record the results in the report; a local candidate is not a substitute.
 
 ## 7. Known Limitations
 
@@ -391,7 +417,7 @@ Nothing was skipped, focused or disabled. Not run: a screen reader (§7).
 - The performance smoke result is a local measurement on one Mac, not production capacity (specification §11.14).
 - Dashboard and Action failure, loading and empty captures that need a broken server are produced by API interception and labelled *fixture*. The API tests prove the backend behaviour.
 - History begins with Lab 4. Seeded and legacy Tickets have no events for earlier changes (specification §7).
-- **Server-suite instability, found and fixed in #96 (PR #97).** Before that fix, full runs of the unchanged Lab 1–3 server suite on fresh `_test` databases failed intermittently: in default order 4 of 5 runs failed, with 1 to 22 tests each time and a different test every time. The cause was test transport, not shared state. supertest's throwaway servers listened on every interface but were called on `127.0.0.1`, so a local program holding the same loopback port could answer. Statuses 401, 403 and 404 from other programs, and socket errors, were observed. Until PR #97 is merged, a red run of an unmodified suite may be this clash; rerun it and inspect the failing response before suspecting the product.
+- **Server-suite instability, found and fixed in #96 (PR #97).** Before that fix, full runs of the unchanged Lab 1–3 server suite on fresh `_test` databases failed intermittently: in default order 4 of 5 runs failed, with 1 to 22 tests each time and a different test every time. The cause was test transport, not shared state. Supertest's throwaway servers listened on every interface but were called on `127.0.0.1`, so a local program holding the same loopback port could answer. Statuses 401, 403 and 404 from other programs, and socket errors, were observed. The fix is merged in `lab4-staging` (#97); TC-025 guards the loopback binding and verifies that each disposable server answers its own requests.
 - **A11Y-01's Tab walks fail on WebKit, twice.** WebKit's default Tab order skips checkboxes and buttons, so the Action form's walk and the dashboard drill-down walk cannot reach them by Tab (Safari's "Press Tab to highlight each item" changes this). Firefox, Microsoft Edge and Chromium pass both. The dashboard walk was first run on WebKit on 12 October.
 - **A cancellation cascade stamps each Action's own `updatedAt` with the request's instant,** without the never-backwards rule that BR-35 applies to the Ticket (reviewer's note on #100, 11 October). Nothing reads an Action's `updatedAt` for ordering.
 - **The dashboard's counts and lists are separate queries, not one snapshot** (specification §11.19, item 5).
