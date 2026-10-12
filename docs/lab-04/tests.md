@@ -366,17 +366,17 @@ Both runs were made on the student's Mac (macOS Darwin 27.0.0, Apple M5, Node v2
 | Chromium E2E, whole repository | 59/59; `git status -- artifacts` clean |
 | `e2e/lab-04` on Firefox, WebKit and Microsoft Edge 154 | 55 of 57 (as it then stood); the two failures are A11Y-01 on WebKit (§7) |
 
-**2. The release candidate: this branch after Issue #94, `feature/94-final-hardening-and-release` at `2fa4b97`, 12 October 2026.** Its tree is the tree `lab4-staging` will have after the merge (a merge commit adds no file); the commits after it change documentation only.
+**2. The release candidate: this branch after Issue #94, `feature/94-final-hardening-and-release` at `5685095`, 12 October 2026 (re-run after the review of #102 changed the audit; the run at `2fa4b97` gave the same results except 758 server tests).** Its tree is the tree `lab4-staging` will have after the merge (a merge commit adds no file); the commits after it change documentation only.
 
 | Check | Command | Result |
 |---|---|---|
-| Server suite, default order | recreate `toktickit_test`, then `cd server && npm test` | 758/758 |
-| Server suite, shuffled | the same with `--sequence.shuffle --sequence.seed=33` | 758/758 |
+| Server suite, default order | recreate `toktickit_test`, then `cd server && npm test` | 771/771 (758 plus the 13 cases of UNIT-09) |
+| Server suite, shuffled | the same with `--sequence.shuffle --sequence.seed=33` | 771/771 |
 | Client suite | `cd client && npm test` | 34 files, 328/328 |
 | Builds | `cd server && npm run build`, `cd client && npm run build` | both pass |
 | Lint | `cd client && npm run lint` | the same 3 known warnings, 0 errors |
 | Migration and recovery | `cd server && node scripts/verify-migration.mjs` | all 11 checks |
-| E2E, Lab 2 to Lab 4, Chromium | `E2E_DATABASE_URL` → a fresh database, `npx playwright test` | 64/64 in 2.1 min; `git status -- artifacts` clean |
+| E2E, Lab 2 to Lab 4, Chromium | `E2E_DATABASE_URL` → a fresh database, `npx playwright test` | 64/64 in 2.9 min; `git status -- artifacts` clean |
 | `e2e/lab-04` on Firefox, WebKit and Microsoft Edge | the throwaway config of §5, a fresh database | 70 of 72; the two failures are A11Y-01's Tab walks on WebKit (§7) |
 | Performance smoke | `cd server && ./node_modules/.bin/tsx scripts/perf-smoke.mjs`, its own database | 2,000 Tickets and 6,000 Actions: p95 3.8 ms (staff) and 1.59 ms (Requester). The query counts of PERF-02 (7 and 2 per request, the same at 200 and at 2,000 Tickets) are those measured on 5 October. A local measurement (specification §11.14) |
 
