@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { expect, type APIRequestContext, type Page } from '@playwright/test'
+import { expect, type APIRequestContext, type Locator, type Page } from '@playwright/test'
 import { getE2ESeedPassword } from './environment'
 
 export const API_BASE_URL = 'http://127.0.0.1:3002'
@@ -118,13 +118,14 @@ export async function expectNoPageOverflow(page: Page): Promise<void> {
   ).toBeLessThanOrEqual(metrics.viewportWidth)
 }
 
-/**
- * Lab 3 captures live under artifacts/lab-03 (lab-03 ui-spec §12).
- *
- * These specs render the Lab 3 application now, so writing their output over
- * artifacts/lab-02 would overwrite a submitted Lab 2 deliverable with pictures
- * of a different application.
- */
+type EvidenceLab = 'lab-02' | 'lab-03' | 'lab-04'
+
+// The single write policy: only the current lab, only on request (lab-04 spec §11.13).
+export function evidenceCaptureEnabled(lab: EvidenceLab): boolean {
+  return lab === 'lab-04' && process.env.CAPTURE_EVIDENCE === '1'
+}
+
+// Lab 3 evidence is frozen since Lab 4, so these calls no longer write.
 export async function captureLab3Screenshot(
   page: Page,
   screen: string,
@@ -133,12 +134,25 @@ export async function captureLab3Screenshot(
   await captureInto(page, 'lab-03', screen, filename)
 }
 
-async function captureInto(
+// Lab 4 evidence, written under artifacts/lab-04 only with CAPTURE_EVIDENCE=1 (lab-04 ui-spec §10).
+// `target` crops to one element, or to the visible viewport, so a long page stays readable.
+export async function captureLab4Screenshot(
   page: Page,
-  lab: 'lab-02' | 'lab-03',
   screen: string,
   filename: string,
+  target?: Locator | 'viewport',
 ): Promise<void> {
+  await captureInto(page, 'lab-04', screen, filename, target)
+}
+
+async function captureInto(
+  page: Page,
+  lab: EvidenceLab,
+  screen: string,
+  filename: string,
+  target?: Locator | 'viewport',
+): Promise<void> {
+  if (!evidenceCaptureEnabled(lab)) return
   const outputPath = path.resolve(
     process.cwd(),
     'artifacts',
@@ -148,5 +162,7 @@ async function captureInto(
     filename,
   )
   fs.mkdirSync(path.dirname(outputPath), { recursive: true })
-  await page.screenshot({ path: outputPath, fullPage: true })
+  if (target === 'viewport') await page.screenshot({ path: outputPath })
+  else if (target) await target.screenshot({ path: outputPath })
+  else await page.screenshot({ path: outputPath, fullPage: true })
 }

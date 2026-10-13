@@ -5,6 +5,7 @@ import { expect, test } from '../lab-02/fixtures'
 import {
   DEVELOPMENT_PASSWORD,
   captureLab3Screenshot,
+  evidenceCaptureEnabled,
   signOut,
 } from '../lab-02/helpers'
 
@@ -87,7 +88,7 @@ test('ADMIN-01 · AC-34 captures the user list at three viewports', async ({ pag
     await expect(page.getByText('Jennifer Anderson')).toBeVisible()
     await expectEmailValuesNotToBeClipped(page)
     await captureLab3Screenshot(page, 'user-management', `${viewport.name}-list.png`)
-    if (viewport.name === 'mobile') {
+    if (viewport.name === 'mobile' && evidenceCaptureEnabled('lab-03')) {
       await page.screenshot({
         path: 'artifacts/lab-03/screenshots/user-management/mobile-email-wrap.png',
       })
@@ -227,7 +228,7 @@ test('ADMIN-04 edits a user, resets its password, and proves the next-login gate
   await page.locator('#newPassword').fill(finalPassword)
   await page.locator('#confirmPassword').fill(finalPassword)
   await page.getByRole('button', { name: 'Save and continue' }).click()
-  await expect(page.getByRole('heading', { name: 'Ticket Queue' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible()
 })
 
 test('ADMIN-05 captures self-deactivation disabled with its reason', async ({ page }) => {

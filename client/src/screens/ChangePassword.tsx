@@ -56,7 +56,8 @@ export function ChangePassword() {
     try {
       await changePassword(current, next)
       await refresh()
-      navigate(homeFor(user?.role ?? 'REQUESTER'), { replace: true })
+      const role = user?.role ?? 'REQUESTER'
+      navigate(homeFor(role), { replace: true })
     } catch (error) {
       setSubmitting(false)
       if (!(error instanceof ApiRequestError)) {

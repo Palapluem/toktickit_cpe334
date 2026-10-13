@@ -25,7 +25,9 @@ import {
   MAX_ATTACHMENTS,
 } from './tickets/attachmentRules.js'
 import { listTickets } from './tickets/listTickets.js'
+import { listHistory } from './tickets/history.js'
 import { listStaffQueue } from './staff/staffQueue.js'
+import { getRequesterDashboard, getStaffDashboard } from './dashboard/dashboards.js'
 import {
   createUser,
   listUsers,
@@ -45,6 +47,12 @@ import {
   setTicketOwner,
   setTicketStatus,
 } from './staff/ticketOperations.js'
+import {
+  createAction,
+  listActions,
+  transitionAction,
+  updateAction,
+} from './actions/actionsTaken.js'
 import { UUID } from './tickets/validation.js'
 import {
   addTicketAttachment,
@@ -211,6 +219,12 @@ function ticketParameter(value: string | string[] | undefined): string {
   return id
 }
 
+function actionParameter(value: string | string[] | undefined): string {
+  const id = routeParameter(value)
+  if (!UUID.test(id)) throw new ApiError(404, 'ACTION_NOT_FOUND', 'Action not found.')
+  return id
+}
+
 function attachmentParameter(value: string | string[] | undefined): string {
   const id = routeParameter(value)
   if (!UUID.test(id)) {
@@ -330,6 +344,17 @@ export function createApp(options: CreateTicketOptions = {}) {
         options.db ?? prisma,
       )
       res.json(data)
+    },
+  )
+
+  app.get(
+    '/api/staff/dashboard',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('staffDashboard:read'),
+    async (req, res) => {
+      const data = await getStaffDashboard(req.user!.id, options.db ?? prisma)
+      res.json({ data })
     },
   )
 
@@ -464,6 +489,77 @@ export function createApp(options: CreateTicketOptions = {}) {
     },
   )
 
+  // Actions Taken (lab-04 api-spec.md §3). A Requester reads their own Ticket's Actions and never writes
+  // them; the role gate refuses the write before any query runs (BR-03, BR-18).
+  app.get(
+    '/api/tickets/:id/actions',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('action:read'),
+    async (req, res) => {
+      const data = await listActions(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.grant!,
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.post(
+    '/api/tickets/:id/actions',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('action:write'),
+    async (req, res) => {
+      const { created, action } = await createAction(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.body,
+        options.now?.() ?? new Date(),
+        options.db ?? prisma,
+      )
+      res.status(created ? 201 : 200).json({ data: action })
+    },
+  )
+
+  app.patch(
+    '/api/tickets/:id/actions/:actionId',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('action:write'),
+    async (req, res) => {
+      const data = await updateAction(
+        ticketParameter(req.params.id),
+        actionParameter(req.params.actionId),
+        req.user!.id,
+        req.body,
+        options.now?.() ?? new Date(),
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.patch(
+    '/api/tickets/:id/actions/:actionId/status',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('action:write'),
+    async (req, res) => {
+      const data = await transitionAction(
+        ticketParameter(req.params.id),
+        actionParameter(req.params.actionId),
+        req.user!.id,
+        req.body,
+        options.now?.() ?? new Date(),
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
   app.get(
     '/api/staff/tickets/:id',
     requireAuth,
@@ -491,6 +587,7 @@ export function createApp(options: CreateTicketOptions = {}) {
         req.user!.id,
         req.user!.role,
         req.body,
+        options.now?.() ?? new Date(),
         options.db ?? prisma,
       )
       res.json({ data })
@@ -505,8 +602,10 @@ export function createApp(options: CreateTicketOptions = {}) {
     async (req, res) => {
       const data = await setItPriority(
         ticketParameter(req.params.id),
+        req.user!.id,
         req.user!.role,
         req.body,
+        options.now?.() ?? new Date(),
         options.db ?? prisma,
       )
       res.json({ data })
@@ -525,6 +624,23 @@ export function createApp(options: CreateTicketOptions = {}) {
         req.user!.role,
         req.grant!,
         req.body,
+        options.now?.() ?? new Date(),
+        options.db ?? prisma,
+      )
+      res.json({ data })
+    },
+  )
+
+  app.get(
+    '/api/tickets/:id/history',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('history:read'),
+    async (req, res) => {
+      const data = await listHistory(
+        ticketParameter(req.params.id),
+        req.user!.id,
+        req.grant!,
         options.db ?? prisma,
       )
       res.json({ data })
@@ -560,6 +676,17 @@ export function createApp(options: CreateTicketOptions = {}) {
     )
     res.json(data)
   })
+
+  app.get(
+    '/api/requester/dashboard',
+    requireAuth,
+    requirePasswordChanged,
+    requireOperation('requesterDashboard:read'),
+    async (req, res) => {
+      const data = await getRequesterDashboard(req.user!.id, options.db ?? prisma)
+      res.json({ data })
+    },
+  )
 
   app.post(
     '/api/tickets',

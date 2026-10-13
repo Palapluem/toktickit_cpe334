@@ -96,6 +96,7 @@ export type TicketListQuery = {
   requestedPriority?: Priority
   itPriority?: Priority
   status?: TicketStatus
+  statusGroup?: 'active'
   sort?: string
   page?: number
   pageSize?: number
@@ -133,6 +134,7 @@ export interface TicketListResponse {
     requestedPriority: Priority | null
     itPriority: Priority | null
     status: TicketStatus | null
+    statusGroup?: 'active' | null
     sort: string
   }
 }
@@ -150,17 +152,21 @@ export class ApiRequestError extends Error {
   readonly fieldErrors: Array<{ field: string; message: string }>
   readonly status?: number
   readonly code?: string
+  /** Safe-to-display facts about a refused state, such as the open-Action count (lab-04 api-spec §1). */
+  readonly details?: Record<string, unknown>
 
   constructor(
     message: string,
     fieldErrors: Array<{ field: string; message: string }> = [],
     status?: number,
     code?: string,
+    details?: Record<string, unknown>,
   ) {
     super(message)
     this.fieldErrors = fieldErrors
     this.status = status
     this.code = code
+    this.details = details
     this.name = 'ApiRequestError'
   }
 }
@@ -178,21 +184,24 @@ async function throwApiRequestError(
   let message = fallbackMessage
   let fieldErrors: Array<{ field: string; message: string }> = []
   let code: string | undefined
+  let details: Record<string, unknown> | undefined
   try {
     const body = (await response.json()) as {
       error?: {
         code?: string
         message?: string
         fieldErrors?: Array<{ field: string; message: string }>
+        details?: Record<string, unknown>
       }
     }
     message = body.error?.message ?? message
     fieldErrors = body.error?.fieldErrors ?? []
     code = body.error?.code
+    details = body.error?.details
   } catch {
     // Keep the screen-level message safe when a failed service returns no JSON.
   }
-  throw new ApiRequestError(message, fieldErrors, response.status, code)
+  throw new ApiRequestError(message, fieldErrors, response.status, code, details)
 }
 
 async function get<T>(path: string, label: string): Promise<T> {
@@ -329,6 +338,7 @@ export interface StaffQueueRow {
 export interface StaffQueueQuery {
   search?: string
   status?: string
+  statusGroup?: 'active'
   itPriority?: string
   categoryId?: string
   ownerId?: string
@@ -343,6 +353,7 @@ export interface StaffQueueResponse {
   appliedFilters: {
     search: string | null
     status: string | null
+    statusGroup?: 'active' | null
     itPriority: string | null
     categoryId: string | null
     ownerId: string | null
@@ -373,13 +384,81 @@ export async function fetchStaffQueue(
   return (await response.json()) as StaffQueueResponse
 }
 
+export type DashboardMetric = {
+  count: number
+  query: Record<string, string>
+}
+
+export interface StaffDashboardResponse {
+  generatedAt: string
+  metrics: {
+    unassigned: DashboardMetric
+    assignedToMe: DashboardMetric
+    urgent: DashboardMetric
+    waitingForRequester: DashboardMetric
+  }
+  byStatus: Array<{ status: TicketStatus; count: number; query: Record<string, string> }>
+  myOpenActions: {
+    total: number
+    items: Array<{
+      actionId: string
+      status: ActionStatus
+      description: string
+      actionAt: string
+      ticket: Pick<StaffQueueRow, 'id' | 'ticketNo' | 'summary' | 'itPriority' | 'status'>
+    }>
+  }
+  recentlyUpdated: Array<{
+    id: string
+    ticketNo: string
+    summary: string
+    status: TicketStatus
+    itPriority: Priority
+    owner: Pick<Requester, 'displayName'> | null
+    updatedAt: string
+  }>
+  recentlyUpdatedQuery: Record<string, string>
+}
+
+export interface RequesterDashboardResponse {
+  generatedAt: string
+  totalTickets: number
+  metrics: {
+    open: DashboardMetric
+    needsAttention: DashboardMetric
+    resolved: DashboardMetric
+    closed: DashboardMetric
+  }
+  recentlyUpdated: Array<Pick<TicketListItem, 'id' | 'ticketNo' | 'summary' | 'status' | 'updatedAt'>>
+  recentlyUpdatedQuery: Record<string, string>
+}
+
+export function fetchStaffDashboard(): Promise<StaffDashboardResponse> {
+  return get<StaffDashboardResponse>('/api/staff/dashboard', 'Staff dashboard')
+}
+
+export function fetchRequesterDashboard(): Promise<RequesterDashboardResponse> {
+  return get<RequesterDashboardResponse>('/api/requester/dashboard', 'Requester dashboard')
+}
+
+/** A move held back while work is open, with the reason the interface explains (lab-04 AC-18). */
+export interface BlockedTransition {
+  status: 'RESOLVED' | 'CLOSED'
+  reason: 'OPEN_ACTIONS'
+  openActionCount: number
+}
+
 export interface StaffTicket extends Omit<StaffQueueRow, 'category'> {
   description: string
   category: Category
   relatedSystem: RelatedSystem
+  /** The version a status change must state (lab-04 BR-31). */
+  version: number
+  openActionCount: number
   attachments: TicketAttachment[]
   assignableOwners: AssignableOwner[]
   permittedTransitions: TicketStatus[]
+  blockedTransitions: BlockedTransition[]
 }
 
 async function patchJson<T>(path: string, body: unknown, label: string): Promise<T> {
@@ -424,15 +503,50 @@ export function setItPriority(
   )
 }
 
+/** What a successful status change returns; the screen reloads the Ticket for the rest (lab-04 api-spec §4). */
+export interface StatusChange {
+  id: string
+  status: TicketStatus
+  version: number
+  updatedAt: string
+  permittedTransitions: TicketStatus[]
+  cancelledActionCount: number
+}
+
 export function setTicketStatus(
   ticketId: string,
   status: TicketStatus,
-): Promise<StaffTicket> {
-  return patchJson<StaffTicket>(
+  expectedVersion: number,
+): Promise<StatusChange> {
+  return patchJson<StatusChange>(
     `/api/staff/tickets/${ticketId}/status`,
-    { status },
+    { status, expectedVersion },
     'Could not change the status.',
   )
+}
+
+export type TicketEventType =
+  | 'STATUS_CHANGED'
+  | 'OWNER_CHANGED'
+  | 'IT_PRIORITY_CHANGED'
+  | 'ACTION_CREATED'
+  | 'ACTION_UPDATED'
+  | 'ACTION_ASSIGNED'
+  | 'ACTION_STARTED'
+  | 'ACTION_COMPLETED'
+  | 'ACTION_CANCELLED'
+
+/** One line of history. `details` holds statuses, priorities, field names and display names only (BR-30). */
+export interface TicketEvent {
+  id: string
+  type: TicketEventType
+  actor: { displayName: string }
+  createdAt: string
+  details: Record<string, unknown>
+}
+
+export function fetchTicketHistory(ticketId: string): Promise<TicketEvent[]> {
+  return get<TicketEvent[]>(`/api/tickets/${ticketId}/history`, 'History')
 }
 
 /** The Requester's signal. A timestamp, never a status (§11.7). */
@@ -561,6 +675,7 @@ export async function fetchTickets(
   add('requestedPriority', query.requestedPriority)
   add('itPriority', query.itPriority)
   add('status', query.status)
+  add('statusGroup', query.statusGroup)
   add('sort', query.sort)
   add('page', query.page)
   add('pageSize', query.pageSize)
@@ -636,4 +751,77 @@ export async function downloadAttachment(attachmentId: string): Promise<Blob> {
     await throwApiRequestError(response, 'Attachment download failed')
   }
   return response.blob()
+}
+
+// ---- Actions Taken (lab-04 api-spec §2, §3) ----
+
+export type ActionStatus = 'PLANNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+
+/** Staff get identifiers and activity; a Requester gets the display name only (BR-17). */
+export interface ActionPerson {
+  id?: string
+  displayName: string
+  isActive?: boolean
+}
+
+export interface ActionTaken {
+  id: string
+  ticketId: string
+  status: ActionStatus
+  description: string
+  result: string | null
+  followUpRequired: boolean
+  followUpNote: string | null
+  attachmentNotes: string | null
+  assignee: ActionPerson
+  performedBy: ActionPerson | null
+  actionAt: string
+  completedBy: ActionPerson | null
+  completedAt: string | null
+  cancelledBy: ActionPerson | null
+  cancelledAt: string | null
+  cancellationReason: string | null
+  version: number
+  updatedAt: string
+}
+
+export interface NewAction {
+  requestId: string
+  description: string
+  assigneeId: string
+  followUpRequired: boolean
+  followUpNote: string | null
+  attachmentNotes: string | null
+}
+
+export interface ActionEdit {
+  expectedVersion: number
+  description?: string
+  result?: string | null
+  followUpRequired?: boolean
+  followUpNote?: string | null
+  attachmentNotes?: string | null
+  assigneeId?: string
+}
+
+export type ActionMove =
+  | { expectedVersion: number; status: 'IN_PROGRESS' }
+  | { expectedVersion: number; status: 'COMPLETED'; result?: string }
+  | { expectedVersion: number; status: 'CANCELLED'; cancellationReason: string }
+
+export function fetchActions(ticketId: string): Promise<ActionTaken[]> {
+  return get<ActionTaken[]>(`/api/tickets/${ticketId}/actions`, 'Actions')
+}
+
+/** A repeated `requestId` returns the Action already created (BR-34). */
+export function createAction(ticketId: string, body: NewAction): Promise<ActionTaken> {
+  return postJson<ActionTaken>(`/api/tickets/${ticketId}/actions`, body, 'Could not save the Action.')
+}
+
+export function updateAction(ticketId: string, actionId: string, body: ActionEdit): Promise<ActionTaken> {
+  return patchJson<ActionTaken>(`/api/tickets/${ticketId}/actions/${actionId}`, body, 'Could not save the Action.')
+}
+
+export function moveAction(ticketId: string, actionId: string, body: ActionMove): Promise<ActionTaken> {
+  return patchJson<ActionTaken>(`/api/tickets/${ticketId}/actions/${actionId}/status`, body, 'Could not change the Action.')
 }

@@ -31,7 +31,7 @@ function renderScreen() {
       <SessionProvider>
         <Routes>
           <Route path="/change-password" element={<ChangePassword />} />
-          <Route path="/tickets" element={<p>My Tickets screen</p>} />
+          <Route path="/dashboard" element={<p>Dashboard screen</p>} />
         </Routes>
       </SessionProvider>
     </MemoryRouter>,
@@ -159,7 +159,7 @@ describe('UI-04 · AC-02 · success leaves the screen', () => {
     renderScreen()
     await fill('current-password', 'a-long-password')
 
-    expect(await screen.findByText('My Tickets screen')).toBeInTheDocument()
+    expect(await screen.findByText('Dashboard screen')).toBeInTheDocument()
   })
 })
 

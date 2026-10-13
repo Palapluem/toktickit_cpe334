@@ -18,6 +18,11 @@ export type Operation =
   | 'comment:create'
   | 'note:read'
   | 'note:create'
+  | 'action:read'
+  | 'action:write'
+  | 'staffDashboard:read'
+  | 'requesterDashboard:read'
+  | 'history:read'
   | 'staffQueue:read'
   | 'user:list'
   | 'user:write'
@@ -52,6 +57,13 @@ const MATRIX: Record<Operation, Partial<Record<Role, Scope>>> = {
   'comment:create': { [R]: 'own', [S]: 'any', [A]: 'any' },
   'note:read': { [S]: 'any', [A]: 'any' },
   'note:create': { [S]: 'any', [A]: 'any' },
+  // A Requester reads the Actions on their own Tickets and never writes them (lab-04 BR-03, BR-17).
+  'action:read': { [R]: 'own', [S]: 'any', [A]: 'any' },
+  'action:write': { [S]: 'any', [A]: 'any' },
+  'staffDashboard:read': { [S]: 'any', [A]: 'any' },
+  'requesterDashboard:read': { [R]: 'own' },
+  // Staff read every event of a Ticket; a Requester reads the status changes of their own (lab-04 BR-28).
+  'history:read': { [R]: 'own', [S]: 'any', [A]: 'any' },
   'staffQueue:read': { [S]: 'any', [A]: 'any' },
   // IT Staff never gain user management: that is where the conceptual
   // separation carries security weight (§8.1, §11.8).

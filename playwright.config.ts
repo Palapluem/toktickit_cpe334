@@ -11,7 +11,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   globalSetup: './e2e/lab-02/global-setup.ts',
-  outputDir: 'artifacts/lab-03/playwright-results',
+  outputDir: 'artifacts/lab-04/playwright-results',
   reporter: [['list']],
   use: {
     baseURL: 'http://127.0.0.1:5174',
@@ -38,7 +38,7 @@ export default defineConfig({
       command: 'npm run dev -- --host 127.0.0.1 --port 5174 --strictPort',
       cwd: 'client',
       env: { ...cleanEnv, NO_COLOR: '1', VITE_API_BASE_URL: 'http://127.0.0.1:3002' },
-      url: 'http://127.0.0.1:5174/select-requester',
+      url: 'http://127.0.0.1:5174/login',
       // Reusing a local server could connect the tests to the wrong database.
       reuseExistingServer: false,
       timeout: 120_000,

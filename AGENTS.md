@@ -19,7 +19,16 @@ Structure and norms follow the Spec-Driven Development model taught in CPE334 Le
 | `docs/lab-02/diagrams.md` | Design models | Class and Activity diagrams |
 | `docs/lab-02/tests.md` | Test plan | The planned tests and AC traceability |
 
-### Lab 3 — the current sprint
+### Lab 4 — the current sprint
+
+| Path | SDD stage | What it settles |
+| :--- | :--- | :--- |
+| `docs/lab-04/specification.md` | Feature-Level SDS | Actions Taken, resolution gate, history, concurrency, dashboard metric ledger, migration, AC, Definition of Done |
+| `docs/lab-04/api-spec.md` | API design spec | Action, history and dashboard endpoints; `expectedVersion`; new 400/409 codes |
+| `docs/lab-04/ui-spec.md` | UI design spec | Only what is new or changed; Lab 2 and Lab 3 remain in force |
+| `docs/lab-04/tests.md` | Test plan | Planned tests, AC traceability and evidence for this sprint |
+
+### Lab 3 — previous sprint, still binding where Lab 4 does not change it
 
 | Path | SDD stage | What it settles |
 | :--- | :--- | :--- |
@@ -30,7 +39,7 @@ Structure and norms follow the Spec-Driven Development model taught in CPE334 Le
 
 `specification.md` for the current lab is the source of truth. `style-contract.md` and `testing-contract.md` are enforcement gates: short enough to run against a diff without re-reading the full specifications.
 
-**Lab 2's gates still bind.** `style-contract.md` STY-001…030 and `testing-contract.md` apply unchanged to Lab 3 work; they were written to outlive the sprint that produced them. Lab 2's `specification.md` remains the record of decisions §11.1–§11.26, which Lab 3 extends rather than replaces — a cross-lab reference is written explicitly, as `lab-02 BR-16`.
+**Lab 2's gates still bind.** `style-contract.md` STY-001…030 and `testing-contract.md` apply unchanged to Lab 3 and Lab 4 work; they were written to outlive the sprint that produced them. Lab 2's `specification.md` remains the record of decisions §11.1–§11.26 and Lab 3's of §11.1–§11.10; each later lab extends rather than replaces them, and a cross-lab reference is written explicitly, as `lab-03 BR-16`.
 
 ### Reading order
 
@@ -59,15 +68,15 @@ graph TD
     C -- no --> E[Write failing tests first]
     E --> F[Implement until green]
     F --> G[Audit against style-contract / testing-contract]
-    G --> H[PR into lab3-staging · link via Development panel]
+    G --> H[PR into lab4-staging · link via Development panel]
     H --> I[Peer review · reviewer merges]
     I --> J[Close Issue by hand · card to Done]
     J --> K[Sprint integration · release PR to main]
 ```
 
-**Branch flow.** `feature/<n>-<slug>` → `lab3-staging` → `main`. Never open a PR directly against `main` except the single release PR.
+**Branch flow.** `feature/<n>-<slug>` → `lab4-staging` → `main`. Never open a PR directly against `main` except the single release PR.
 
-**Two manual steps after every merge.** Because PRs target `lab3-staging` rather than the default branch, GitHub does not act on `Closes #N`. The Issue must be closed by hand and the board card moved to Done. The PR↔Issue link must likewise be made through the Development panel in the browser; the keyword alone does not create it, and no API mutation exists for it.
+**Two manual steps after every merge.** Because PRs target `lab4-staging` rather than the default branch, GitHub does not act on `Closes #N`. The Issue must be closed by hand and the board card moved to Done. The PR↔Issue link must likewise be made through the Development panel in the browser; the keyword alone does not create it, and no API mutation exists for it.
 
 ---
 
@@ -99,5 +108,7 @@ The human is the **Orchestrator**: reviews and approves, and owns the blueprint.
 **Never commit** secrets, `.env`, credentials, uploaded files, `node_modules`, build output, or course material. Database passwords must not appear in committed files or in submitted screenshots.
 
 **Comments are one or two lines.** Never a paragraph, never a multi-paragraph block, JSDoc included. Keep the identifier a construct traces to (`BR-04`, `§11.13`, `TDT-02`) and the non-obvious reason where there is one; drop anything that restates the code or re-argues a decision `docs/lab-02/` already records. Rationale in a document is read once, deliberately; in code it is read every time, and a paragraph above a three-line function makes that function harder to find. The same applies to Pull Request descriptions: a list first, long reasoning collapsed underneath.
+
+**Test runs never rewrite evidence.** Tests use only databases whose names end in `_test`, never `toktickit_dev`, and suites run one at a time. An E2E run writes screenshots only when `CAPTURE_EVIDENCE=1` is set, and then only under `artifacts/lab-04/screenshots/`; Lab 2 and Lab 3 captures are frozen. After any run, `git status -- artifacts` must show nothing but intended Lab 4 captures.
 
 **Scope discipline.** Implement the Issue in front of you. Improvements noticed along the way are recorded, not performed — an unrelated change in a diff costs the reviewer more than it saves.

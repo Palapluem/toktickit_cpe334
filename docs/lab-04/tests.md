@@ -1,0 +1,429 @@
+# Lab 4 Test Plan and Results
+
+**Version:** 1.2 — approved for implementation on 3 October 2026; results updated on 13 October 2026
+**Status:** The implementation is integrated into `lab4-staging`; the 13 October review-readiness follow-up below remains local and unmerged. Every result is tied to the candidate it actually ran against; §6 names the runs, commands and outputs. Anything not run says so.
+**Standard:** `docs/lab-02/testing-contract.md` (TC, TCS, TDT and red-phase rules) applies unchanged. Every test names the identifier it proves (TCS-01).
+
+---
+
+## 1. Test Strategy
+
+| Level | Proves | Tool | Runs against |
+|---|---|---|---|
+| Unit | Pure rules: Action lifecycle, field validation, gate-aware transitions, ordering, event payloads, metric predicates | Vitest | No database |
+| API integration | Handler + validation + Prisma + PostgreSQL over HTTP | Vitest + Supertest | `toktickit_test` |
+| Security / authorization | Every new operation called **directly** as each refused role and unauthenticated | Vitest + Supertest | `toktickit_test` |
+| Workflow | Every §5.2 edge, the gate, the cascade, history and concurrency, including genuinely parallel requests | Vitest + Supertest | `toktickit_test` |
+| Migration / recovery / seed | Lab 3-state data survives the migration; the backup restores; the seed is idempotent | Script + Vitest | Disposable `_test` databases |
+| Performance smoke | Dashboard p95 and constant query count on a local 2,000-Ticket dataset | Script | Disposable `_test` database |
+| UI component and style | Rendering, validation, states, focus and token compliance; network mocked | Vitest + Testing Library | jsdom |
+| Responsive, accessibility, E2E | Whole journeys at three viewports and the boundary widths | Playwright | `toktickit_e2e_test` |
+| Regression | Every Lab 1–3 suite, after every change | All of the above | As each suite defines |
+
+**Techniques** (testing contract §2):
+
+- equivalence partitions for roles and assignees;
+- boundary values for every length limit;
+- decision tables for the gate-aware transition matrix and dashboard predicates;
+- state transitions for both lifecycles;
+- error guessing for double submission, stale screens, concurrent resolve-versus-create and cross-Ticket identifiers.
+
+**TDD.** Each implementation Issue commits its failing tests first (`test:`), with captured assertion failures, then the implementation (`feat:`/`fix:`) and the passing run (testing contract §5). A seam needed by a test is a stub returning a neutral value, never an import error.
+
+**Isolation.**
+
+- Suites run one at a time on `_test` databases, never `toktickit_dev`.
+- **TC-025 — Test-harness transport:** test-created HTTP servers bind only to `127.0.0.1`, and each Supertest request is answered by the specific app instance passed to it, not another local process sharing a port.
+- E2E runs write evidence only when `CAPTURE_EVIDENCE=1` (ui-spec §10). After every run, `git status -- artifacts` must show only intended Lab 4 captures.
+- A UI failure, loading or empty state produced by API interception is labelled *fixture*. Backend behaviour is proved by the API tests, not by those captures.
+
+---
+
+## 2. Planned Tests
+
+### Unit
+
+| Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
+|---|---|---|---|---|---|---|
+| UNIT-01 | Unit | BR-09, BR-10 | Every Action (from, to) pair | Only §5.1 moves are allowed; terminal states allow none | `server/tests/lab-04/action-rules.unit.test.ts` | PASS (#98) |
+| UNIT-02 | Unit | BR-12–BR-16, AC-10 | Boundaries: Description 0/1/2000/2001 · Result 2000/2001 · Follow-up Note conditional, 1/2000/2001 · Reason 0/1/500/501 · Attachment Notes 500/501 · whitespace-only | Correct field error per case; stored values trimmed | `server/tests/lab-04/action-rules.unit.test.ts` | PASS (#98) |
+| UNIT-03 | Unit | BR-11, AC-07 | Effective Result at completion (stored, supplied, blank) | Completion allowed only with a non-blank effective Result | `server/tests/lab-04/action-rules.unit.test.ts` | PASS (#98) |
+| UNIT-04 | Unit | BR-20, BR-23, AC-18 | Decision table: role × Ticket status × open-Action count | `RESOLVED`/`CLOSED` omitted exactly when the count > 0; blocked list reports the count | `server/tests/lab-04/workflow-rules.unit.test.ts` | PASS (#92) |
+| UNIT-05 | Unit | BR-29, AC-24 | Ordering comparator with equal timestamps | Deterministic `(createdAt, id)` order | `server/tests/lab-04/workflow-rules.unit.test.ts` | PASS (#92) |
+| UNIT-06 | Unit | BR-30 | Event payload builder for each event type | Only identifiers, statuses, priorities and field names; no free text | `server/tests/lab-04/workflow-rules.unit.test.ts` | PASS (#92) |
+| UNIT-07 | Unit | BR-36, BR-37 | `ACTIVE` group and each metric's query object | Exactly five statuses; each query reproduces its predicate | `server/tests/lab-04/dashboard-metrics.unit.test.ts` | PASS (9/9; mutation check failed as expected when `REOPENED` was removed) |
+| UNIT-08 | Unit | BR-19–BR-22, AC-18 | The §5.2 table, read as text from `specification.md`, against `transitions.ts`, the gate in `workflowRules.ts` and `transition-oracle.ts`, for each of the eight statuses and three roles; the † and ‡ marks and the own-Ticket marker | Every cell equal in all four places; † is exactly what the gate holds back while work is open; ‡ marks every move into `CANCELLED`; the Administrator column is the IT Staff column | `server/tests/lab-04/transition-spec.unit.test.ts` | PASS (#92) |
+| UNIT-09 | Unit | AC-41, FR-26 | The audit's allowance rules: a declared response, a declared failed request, a declared console line, each with a near miss (another status, method, address, a second console line, another page error) | A declared event passes with the one browser console line it causes and nothing else; every near miss is reported | `server/tests/lab-04/audit-rules.unit.test.ts` (it tests `e2e/lab-04/audit-rules.ts`) | PASS (server suite, §6; eight injected faults each fail it) |
+
+### Test-harness transport
+
+| Test ID | Type | Requirement | What it tests | Expected result | Test file | Final |
+|---|---|---|---|---|---|---|
+| TC-025 | Infrastructure | Isolate disposable Supertest servers from other local listeners | The server binds to loopback only; 400 uniquely tagged requests each reach the app instance supplied to Supertest | The observed bind address is `127.0.0.1`; every response carries the nonce of its own app | `server/tests/lab-04/test-transport.unit.test.ts` | PASS (local review-readiness run, §6) |
+
+### API — Actions Taken
+
+| Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
+|---|---|---|---|---|---|---|
+| API-01 | API | AC-01, BR-05 | IT Staff creates a valid Action | 201; `PLANNED`; Performed by = caller; assignee as sent; server `actionAt`; verified by reading the row back | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-02 | API | AC-03, BR-02 | Staff A owns the Ticket, Staff B creates an Action assigned to Staff C; list | All fields returned; owner, performer and assignee all differ; creation order | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-03 | API | AC-04, BR-07 | Assignee inactive, a Requester, unknown, or deactivated after the list was fetched | 400 `ASSIGNEE_NOT_ELIGIBLE`; nothing stored. Also the labsheet Part 6 inactive-assignee rejection: cases "an inactive IT Staff user" and "deactivated after the list was fetched"; reassigning to an ineligible user is API-04 | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-04 | API | AC-05, BR-08 | Reassign a non-terminal Action | Assignee changed; Performed by unchanged; version +1; `ACTION_ASSIGNED` written | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-05 | API | AC-06 | `PLANNED → IN_PROGRESS → COMPLETED` with a Result | `COMPLETED`; `completedBy`/`completedAt` set by the server | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-06 | API | AC-07, BR-11 | Complete with a blank Result | 400 with a field error on `result`; status unchanged | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-07 | API | AC-08, BR-12 | Cancel with and without a reason | `CANCELLED` with reason, `cancelledBy`, `cancelledAt` / 400 | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-08 | API | AC-09, BR-10 | Edit, reassign and transition `COMPLETED` and `CANCELLED` Actions | 409 `ACTION_TERMINAL`; row unchanged | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-09 | API | AC-10, BR-14 | Follow-up required without a note; follow-up later cleared | 400 field error / stored note becomes null | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-10 | API | AC-11, BR-05 | Body supplies Performed by, `createdAt`, completion fields, `status` or `version` | 400 `VALIDATION_FAILED`; nothing stored | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-11 | API | AC-13, BR-23 | Every Action write on `RESOLVED`, `CLOSED` and `CANCELLED` Tickets | 409 `TICKET_NOT_WORKABLE` | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-12 | API | AC-14, BR-34 | Same `requestId` sent twice, sequentially and in parallel | Exactly one Action; both responses carry its id; the repeat returns 200 | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-13 | API | AC-19, BR-31 | Action edit and transition with an outdated `expectedVersion` | 409 `STALE_VERSION` with `currentVersion`; nothing changes | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-14 | API | BR-01 | An `actionId` of another Ticket used under this Ticket's path | 404; nothing changes | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-15 | API | BR-35 | Ticket `updatedAt` after Action writes and after a comment | Changed by Action writes; unchanged by the comment | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-16 | API | AC-03, BR-17 | Requester reads their own Ticket's Actions | Requester view: display names only, no ids, emails or `isActive`, including the names of who completed or cancelled | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-17 | API | BR-33 | Create an Action while another transaction holds the Ticket row, once with no change and once after the holder moved the Ticket to `RESOLVED` | The create is known to be blocked (a lock wait is visible in the database), finishes with 201 after the release, or reads the Ticket after the lock and answers 409 `TICKET_NOT_WORKABLE` | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| API-18 | API | BR-26, BR-30 | One event per Action write; an event that cannot be written | Identifiers and field names only, no free text; the Action write is rolled back | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+
+### Security / authorization — called directly, never through the UI
+
+| Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
+|---|---|---|---|---|---|---|
+| SEC-01 | Security | AC-12, BR-18 | Requester calls create, edit and status on their own Ticket's Actions | 403 `FORBIDDEN`; database unchanged | `server/tests/lab-04/actions-taken.api.test.ts` | PASS (#98) |
+| SEC-02 | Security | AC-12, AC-23 | Requester reads Actions and history of another Requester's Ticket | 404, identical to a missing Ticket | `server/tests/lab-04/actions-taken.api.test.ts` (Actions) · `server/tests/lab-04/ticket-workflow.api.test.ts` (history) | PASS (#98, #92) |
+| SEC-03 | Security | lab-03 BR-12 | Every new endpoint without a session | 401 for each | `server/tests/lab-04/actions-taken.api.test.ts` (Actions) · `server/tests/lab-04/ticket-workflow.api.test.ts` (history) · `server/tests/lab-04/staff-dashboard.api.test.ts`, `server/tests/lab-04/requester-dashboard.api.test.ts` (dashboards) | PASS (#98 Actions, #92 history and status, #93 dashboards) |
+| SEC-04 | Security | AC-30 | Requester → IT Staff dashboard; IT Staff and Administrator → Requester dashboard | 403 for each | `server/tests/lab-04/staff-dashboard.api.test.ts` | PASS (full server suite at 876511f: 771/771) |
+| SEC-05 | Security | AC-02, BR-39 | Requester dashboard with two Requesters' Tickets present | Counts and rows from the caller's Tickets only; no foreign ids | `server/tests/lab-04/requester-dashboard.api.test.ts` | PASS (full server suite at 876511f: 771/771; ownership mutation detected) |
+| SEC-06 | Security | AC-22, BR-27 | Direct SQL `UPDATE` and `DELETE` on an event row | Both rejected by the trigger; row unchanged | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| SEC-07 | Security | BR-30; testing contract §7 | Action, history and dashboard responses scanned for hashes, session ids, other users' emails | None present | `server/tests/lab-04/actions-taken.api.test.ts` (Actions) · `server/tests/lab-04/ticket-workflow.api.test.ts` (history) · `server/tests/lab-04/staff-dashboard.api.test.ts`, `server/tests/lab-04/requester-dashboard.api.test.ts` (dashboards) | PASS (#98 Actions, #92 history, #93 dashboards) |
+
+### Workflow
+
+| Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
+|---|---|---|---|---|---|---|
+| WF-01 | Workflow | AC-15, BR-20 | `RESOLVED` requested directly with a `PLANNED`, then an `IN_PROGRESS`, Action | 409 `OPEN_ACTIONS_BLOCK_RESOLUTION` with `openActionCount`; status unchanged | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-02 | Workflow | AC-15, BR-20 | `CLOSED` requested on a `RESOLVED` Ticket holding an open Action inserted directly into the database | 409; the gate holds against out-of-band data | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-03 | Workflow | AC-16 | Resolve when every Action is terminal | `RESOLVED`; `STATUS_CHANGED` written | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-04 | Workflow | AC-16, BR-21 | Resolve a zero-Action Ticket and a seeded legacy Ticket | `RESOLVED` | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-05 | Workflow | AC-17, BR-22 | Cancel a Ticket with two open and one completed Action; repeat with a failure injected after the cascade | Ticket `CANCELLED`; two Actions cancelled with the system reason and `cancelledBy`; completed one untouched / with the injected failure, nothing persisted | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-06 | Workflow | AC-18, BR-19 | Every §5.2 cell for Requester, IT Staff and Administrator, against the table transcribed in `transition-oracle.ts` | Each permitted edge succeeds; each absent edge is refused (400 or 403, as in Lab 3); a wrong edge in the code fails the test | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-07 | Workflow | AC-19, BR-31 | Status change with the version read before an owner change | 409 `STALE_VERSION`; the owner change is kept | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-08 | Workflow | AC-20, BR-33 | Create-Action and resolve sent concurrently, repeated 20 times; a status change blocked behind a held lock, with and without a change the holder commits | Never `RESOLVED` with an open Action; in each pair, one request is refused or ordered after the other; the blocked request is known to wait (a lock wait is visible in the database) and reads the version after the lock (409 `STALE_VERSION`) | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-09 | Workflow | AC-22, BR-26 | A scripted sequence of status, owner, priority and Action changes | One event per change, with the right type, actor and order | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-10 | Workflow | AC-23, BR-28 | The same history read by its Requester and by IT Staff | Requester gets `STATUS_CHANGED` only; IT Staff get every event | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-11 | Workflow | AC-24, BR-29 | Actions, comments, notes and events inserted with identical `createdAt` | Identical order across five repeated reads | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-12 | Workflow | AC-25, BR-25 | Requester resolution indication on a Ticket with open Actions | Indication recorded; status unchanged; version +1 | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-13 | Workflow | BR-32 | Owner and IT Priority changes in the Lab 3 request shape | Succeed without a version; version +1; event written. A change to what is already stored, an Action edit that changes nothing and a same-status request leave `version`, events and `updatedAt` as they were | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-14 | Workflow | AC-19, BR-31 | Status change without `expectedVersion` | 400 `VALIDATION_FAILED` | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-15 | Workflow | AC-22, BR-29 | A claim then a priority change in one millisecond; a change 5 ms into a 40-Action cancellation burst; a change after the clock went back | Events keep commit order and `createdAt` is strictly increasing, in the database and in the History response | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-16 | Workflow | BR-35, BR-38 | Every kind of change (owner, IT Priority, status, Action create, edit and move) carrying an instant earlier than the Ticket's `updatedAt`; one carrying a later instant | `updatedAt` keeps the later value; a later instant moves it forward | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+| WF-17 | Workflow | AC-25, BR-25, BR-31, BR-33, BR-35 | The Requester indication while another transaction holds the Ticket and cancels or closes it; with an earlier clock; with a later one | Waits and records (control); 409 `TICKET_CLOSED` and nothing stored once the Ticket closed; `updatedAt` never moves back and equals `requesterResolvedAt` | `server/tests/lab-04/ticket-workflow.api.test.ts` | PASS (#92) |
+
+### Dashboards and lists
+
+| Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
+|---|---|---|---|---|---|---|
+| DASH-01 | API | AC-26, BR-37 | MET-S01–S05 against independent, hand-written SQL `COUNT` queries over a fixture set, including urgent Tickets in each terminal status | Every value equal; terminal urgent Tickets excluded from the active urgent count | `server/tests/lab-04/staff-dashboard.api.test.ts` | PASS (full server suite at 876511f: 771/771) |
+| DASH-02 | API | AC-27 | Queue called with each metric's returned `query`, including an urgent Ticket in each terminal status | `totalItems` equals the count; the id set equals the SQL set and excludes terminal urgent Tickets | `server/tests/lab-04/staff-dashboard.api.test.ts` | PASS (full server suite at 876511f: 771/771) |
+| DASH-03 | API | AC-28 | 12 open Actions assigned to me, plus terminal ones and others' | Total 12; 10 items, oldest first; terminal and others' excluded | `server/tests/lab-04/staff-dashboard.api.test.ts` | PASS (full server suite at 876511f: 771/771; fixture owns all 12 open Actions) |
+| DASH-04 | API | AC-29 | Administrator with no open Actions; statuses with zero Tickets | Zeros and empty arrays; all eight statuses present; 200 | `server/tests/lab-04/staff-dashboard.api.test.ts` | PASS (full server suite at 876511f: 771/771) |
+| DASH-05 | API | BR-38 | Recently updated, including equal `updatedAt` values | Top five by `updatedAt desc, id desc` | `server/tests/lab-04/staff-dashboard.api.test.ts` | PASS (full server suite at 876511f: 771/771) |
+| DASH-06 | API | AC-40, BR-40 | Response size and query count with 50 vs 500 Tickets | Same query count; at most 5 and 10 rows | `server/tests/lab-04/staff-dashboard.api.test.ts` | PASS (full server suite at 876511f: 771/771) |
+| DASH-07 | API | AC-02, AC-26, BR-38 | MET-R01–R04 against independent SQL with `requesterId`; all eight statuses represented; recent list checked with more than five Tickets | Every value equal; only own Tickets; exactly the five newest fixture Tickets in descending `updatedAt` order | `server/tests/lab-04/requester-dashboard.api.test.ts` | PASS (full server suite at 876511f: 771/771; ownership mutation check failed as expected) |
+| DASH-08 | API | AC-27 | My Tickets called with each Requester metric's `query`; all eight statuses represented | `totalItems` equals the count and the returned id set exactly matches each metric predicate | `server/tests/lab-04/requester-dashboard.api.test.ts` | PASS (full server suite at 876511f: 771/771) |
+| DASH-09 | API | AC-29 | Requester with no Tickets | `totalTickets = 0`; all counts 0; empty list | `server/tests/lab-04/requester-dashboard.api.test.ts` | PASS (full server suite at 876511f: 771/771) |
+| DASH-10 | API | AC-33, FR-20 | `statusGroup=active` on both lists; combined with `status`; unknown value | Only `ACTIVE` Tickets / 400 / 400 | `server/tests/lab-04/requester-dashboard.api.test.ts` | PASS (full server suite at 876511f: 771/771) |
+
+### Migration, recovery, seed, performance
+
+| Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
+|---|---|---|---|---|---|---|
+| MIG-01 | Migration | AC-38, BR-41 | Disposable database at the Lab 3 state, migrated to Lab 4; counts per table and FK checks | Identical counts for every pre-existing table; no orphaned reference | `server/scripts/verify-migration.mjs` (output retained) | PASS (#98) |
+| MIG-02 | Recovery | AC-38 | `pg_dump -Fc` before migrating, then `pg_restore` into a new disposable database | Restored counts equal the pre-migration counts | `server/scripts/verify-migration.mjs` | PASS (#98) |
+| MIG-03 | Migration | AC-38, BR-21 | Legacy Tickets after migration | Status unchanged; zero Actions; `version = 1` | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
+| MIG-04 | Seed | AC-39, BR-42 | Seed run twice | No duplicates, every Action column unchanged by the second run; Tickets with 0, 1 and several Actions exist | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
+| MIG-05 | Migration | BR-27 | Direct SQL `UPDATE` and `DELETE` on an event row; then `TRUNCATE` | Both rejected by the trigger and the row is unchanged; the reset by `TRUNCATE` still works | `server/tests/lab-04/migration-seed.api.test.ts` | PASS (#98) |
+| LOCK-01 | Test helper | BR-33 | The helper the lock tests wait on, with a waiter on the Ticket and with a waiter on another table | Settles for the first, and refuses the second with a clear message, so a lock test cannot pass because of an unrelated wait | `server/tests/lab-04/lock-helpers.api.test.ts` | PASS (#92) |
+| PERF-01 | Performance | AC-40 | 2,000 Tickets / 6,000 Actions; each dashboard endpoint called 20 times | p95 ≤ 300 ms; machine, dataset and command recorded | `server/scripts/perf-smoke.mjs` | PASS — Darwin 27.0.0, Apple M5, Node v26.7.0; 2,000 synthetic Tickets / 6,000 Actions + seeded baseline; p95 staff 4.50 ms, requester 1.86 ms on 5 Oct; 3.8 ms and 1.59 ms on 12 Oct (§6) (`server`: `./node_modules/.bin/tsx scripts/perf-smoke.mjs`; disposable `toktickit_codex93_test`) |
+| PERF-02 | Performance | AC-40, BR-40 | Query count at 200 vs 2,000 Tickets | Equal | `server/scripts/perf-smoke.mjs` | PASS — staff 7→7, requester 2→2 queries/request (`./node_modules/.bin/tsx scripts/perf-smoke.mjs`; disposable `toktickit_codex93_test`) |
+
+### UI component
+
+| Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
+|---|---|---|---|---|---|---|
+| UI-01 | UI | AC-03 | Actions list | Every field rendered in creation order; "(inactive)" marker; table ≥ 992 px, cards below | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-02 | UI | AC-10, BR-13–BR-15 | Create form: required, conditional and boundary inputs | Field messages; API not called while invalid; note hidden and cleared when unticked | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-03 | UI | BR-06, BR-07 | Assignee control | Defaults to the current user; options are `assignableOwners` only | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-04 | UI | AC-07 | Complete without a Result | Field error under Result, focus moved there; no request | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-05 | UI | AC-08, AC-35 | Cancel dialog | Reason required; focus trapped; Escape closes; focus returns to the trigger | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-06 | UI | AC-09 | Terminal Action | Read-only, with no Edit or status buttons | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-07 | UI | AC-13 | Ticket not workable | Banner replaces Add Action; no edit controls | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-08 | UI | AC-12, BR-17 | Requester view | Read-only; no controls; display names only | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-09 | UI | FR-24, AC-14 | Busy state, double click and retry | Save disabled while in flight; one request per click burst; retry reuses `requestId` | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-10 | UI | AC-36 | Save failure and `STALE_VERSION` | Entered values kept; conflict or failure message; save possible again | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-11 | UI | AC-18, AC-21 | Status control | Only permitted transitions; blocked helper text shows the open count | `client/tests/lab-04/TicketWorkflow.test.tsx` | PASS (#92) |
+| UI-12 | UI | AC-21 | Status outcomes | Success refreshes badge and controls and announces; 409 open-Actions and stale messages keep the previous status | `client/tests/lab-04/TicketWorkflow.test.tsx` | PASS (#92) |
+| UI-13 | UI | AC-23 | History | IT Staff see every type; Requester sees status changes only; empty state | `client/tests/lab-04/TicketWorkflow.test.tsx` | PASS (#92) |
+| UI-14 | UI | AC-27, AC-28 | Staff dashboard content | Cards link with the returned `query`; open-Actions list and "10 oldest" footer | `client/tests/lab-04/StaffDashboard.test.tsx` | PASS (included in client suite: 328/328) |
+| UI-15 | UI | AC-29, AC-31 | Staff dashboard states | Loading; failure → Try again → recovered; forbidden; zero values | `client/tests/lab-04/StaffDashboard.test.tsx` | PASS (included in client suite: 328/328) |
+| UI-16 | UI | AC-02, AC-29 | Requester dashboard content | Cards and links; attention cue as text; first-use empty state | `client/tests/lab-04/RequesterDashboard.test.tsx` | PASS (included in client suite: 328/328) |
+| UI-17 | UI | AC-31 | Requester dashboard states | Loading; failure → Try again; forbidden | `client/tests/lab-04/RequesterDashboard.test.tsx` | PASS (included in client suite: 328/328) |
+| UI-18 | UI | AC-32, FR-21 | Navigation per role | Dashboard first and active; post-login redirect lands on it | `client/tests/lab-04/AppNavigation.test.tsx` | PASS (all 3 roles: E2E sign-in route + active first navigation link; included in client suite 328/328) |
+| UI-19 | UI | api-spec §1, BR-38 | History and Actions times and the formatter on devices set to UTC, America/Los_Angeles, Asia/Bangkok and Pacific/Kiritimati | 03:12 UTC reads 10:12 and the date moves exactly at 17:00 UTC | `client/tests/lab-04/dateTime.test.ts`, `client/tests/lab-04/TicketWorkflow.test.tsx`, `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#92, #91) |
+| UI-20 | UI | AC-10, ui-spec §9 | An invalid create, edit, server-refused and cancel-dialog submission | The first invalid field in display order has the focus, once the controls are enabled again | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-21 | UI | ui-spec §9 | Close the details, cancel and save the create form, discard and save the edit form, cancel an Action | The focus returns to View, Add Action or Edit; after a cancellation it lands on the details heading, not on the page | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-22 | UI | AC-35 | Tab and Shift+Tab in the cancel dialog while its save is in flight and after it fails | The dialog takes the focus when its last control is disabled, and the focus never leaves it | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-23 | UI | AC-14, AC-36, BR-34 | A create whose answer is lost, entries changed, then Try again; the update failing; no change; a refused first attempt | The first entries are resent under their key, then the changes are saved as an update; one Action; the update alone is retried | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-24 | UI | AC-13, BR-22, BR-23 | The Ticket becomes Resolved or Cancelled while the create form, the edit form or the cancel dialog is open; a status change | The forms are read-only with their text kept and no Save; the dialog closes; the Actions are loaded again | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-25 | UI | AC-12, BR-17 | A Requester opens a Planned and an In progress Action | Only Close; no Edit, Start, Complete, Cancel Action or textbox | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| UI-26 | UI | api-spec §1, BR-38 | Staff and Requester Ticket Detail, the staff queue, comments, attachments, My Tickets (a date alone) and the Create Ticket confirmation on devices set to UTC and America/Los_Angeles | Each shows the Bangkok time or date, including a date that falls on the next day | `client/tests/lab-04/BangkokTime.test.tsx` | PASS (#92) |
+| UI-27 | UI | AC-28, AC-41 | The dashboard's open-Action link, and an address that names an Action, the section, or something else, once the list has loaded and again after it is reloaded | The link ends `#action-<actionId>`; the named row (or the section) is scrolled to once; any other address is left to the browser | `client/tests/lab-04/StaffDashboard.test.tsx`, `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (client suite, §6; four injected faults each fail it: no once-guard, never scrolling, scrolling for any address, the old `#actions` link) |
+| UI-28 | UI | AC-31, ui-spec §11 row 10 | Press Refresh on the staff dashboard while the request is held | A polite live region says "Refreshing dashboard." and is empty again afterwards | `client/tests/lab-04/StaffDashboard.test.tsx` | PASS (client suite, §6; four injected faults each fail it) |
+
+### UI style
+
+| Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
+|---|---|---|---|---|---|---|
+| STYLE-01 | UI style | STY-001–STY-003 | Colour literals and Bootstrap colour utilities across all of `client/src` | Literals only in the `:root` token block; no colour utilities | `client/tests/lab-03/StyleContract.test.tsx` (existing; already scans every `client/src` file) | PASS (client suite, §6) |
+| STYLE-02 | UI style | STY-018, STY-019 | Action status badges | Text label for each of the four values, from the single badge mapping | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| STYLE-03 | UI style | STY-026 | Every new input | A programmatically associated label | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| STYLE-04 | UI style | STY-012 | Validation placement | Message below its field, error token, input text not red | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+| STYLE-05 | UI style | STY-009, STY-010 | System fields | Rendered on the read-only surface, never as inputs | `client/tests/lab-04/ActionsTaken.test.tsx` | PASS (#91) |
+
+### Responsive, accessibility and E2E
+
+| Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
+|---|---|---|---|---|---|---|
+| E2E-01 | E2E | AC-01–AC-10, AC-12, BR-02 | Daniel owns the Ticket; Olivia creates several Actions, assigns Patricia, edits, starts, completes, cancels; inactive Thomas is refused; the Requester sees everything read-only | Each step visible and persisted; captured in `actions-taken/` | `e2e/lab-04/actions-taken-flow.spec.ts` | PASS (#91) |
+| E2E-02 | E2E | AC-13, AC-15–AC-17, AC-21–AC-23 | Resolve blocked → work completed → resolved; cancel with cascade; history for IT Staff vs Requester | Each state visible; status refreshes; each state captured at 1280, 834 and 390 px in `ticket-workflow/`, with no horizontal scroll | `e2e/lab-04/ticket-resolution.spec.ts` | PASS (#92) |
+| E2E-03 | E2E | AC-19, AC-36 | Two browser sessions change the same Action and the same Ticket status | Conflict message; entered values kept; save succeeds after review | `e2e/lab-04/ticket-resolution.spec.ts` | PASS (#92, #91) |
+| E2E-04 | E2E | AC-26–AC-29, AC-32, AC-34 | Both dashboards: values equal the API and SQL; metric queries reproduce the lists; Requester needs-attention opens filtered My Tickets with matching rows; every visible dashboard link is measured at 390 px | Matching values and filtered rows; every visible dashboard link is at least 44 px; current captures show the filtered Requester list | `e2e/lab-04/dashboards.spec.ts` | PASS (focused mobile-target check 2/2; full E2E 64/64; every visible Staff and Requester dashboard link measures ≥44 px at 390 px) |
+| E2E-05 | E2E | AC-30, AC-31 | Cross-role dashboard routes; load failure by interception (*fixture*) and retry | Forbidden state; failure then recovery | `e2e/lab-04/dashboards.spec.ts` | PASS (2 tests; failure/empty captures explicitly named `fixture`) |
+| RESP-01 | Responsive | AC-34 | Dashboards and Ticket Detail with Actions at 1280, 834 and 390 px; widths 767/768/991/992; 2000-character content; every visible dashboard link measured at 390 px | No clipping or overlap; no horizontal page scroll; every visible dashboard link is at least 44 px high | `e2e/lab-04/dashboards.spec.ts`, `e2e/lab-04/actions-taken-flow.spec.ts` | PASS: full E2E 64/64; every visible link on both dashboards measures ≥44 px at 390 px; Ticket Detail and dashboards pass listed widths |
+| A11Y-01 | Accessibility | AC-35 | Keyboard-only: Action form, cancel dialog, status control, dashboard drill-downs | Every control reachable; focus visible; dialog focus trap and return | `e2e/lab-04/actions-taken-flow.spec.ts` | PASS (#91: Action form and cancel dialog; #93: dashboard drill-down reachable by Tab with visible `:focus-visible`); WebKit Tab order is a known limit (§7); no screen reader used |
+| E2E-06 | E2E | AC-41, FR-26 | Console errors, failed requests and broken links collected across every Lab 4 journey, plus a walk that follows every link on every screen a signed-out visitor, a Requester, an IT Staff member and an Administrator can reach | No console error, page error, failed request or undeclared error response; no link that leads nowhere; no anchor without its element; no placeholder text | `e2e/lab-04/audit.ts` (the fixture every Lab 4 spec runs under), `e2e/lab-04/audit.spec.ts` | PASS (all 24 tests of the six `e2e/lab-04` specs run under the audit, four of them are the link walks of `audit.spec.ts`; the audit found a broken anchor, fixed under UI-27; a console error, placeholder text and an empty link each fail it; a control that does nothing is not detected, §7) |
+| E2E-07 | E2E | AC-14, AC-36 | The server commits a create and its answer is lost (real response aborted); the Description is changed; Try again | One Action, with the changed text, created once and updated once | `e2e/lab-04/actions-taken-recovery.spec.ts` | PASS (#91) |
+| E2E-08 | E2E | AC-13, BR-23 | The Ticket is resolved from the same page while Add Action is open | The form keeps its text, is disabled, has no Save, and nothing is stored | `e2e/lab-04/actions-taken-recovery.spec.ts` | PASS (#91) |
+| E2E-09 | E2E | api-spec §1 | A device set to America/Los_Angeles opens a Ticket with an Action | Every time in the list and the History equals the Asia/Bangkok rendering of the API's value | `e2e/lab-04/actions-taken-recovery.spec.ts` | PASS (#91) |
+| E2E-10 | E2E | AC-34, AC-35, AC-10, AC-12 | One Ticket with a Planned, an In progress, a Completed and a Cancelled Action, at 1280, 834 and 390 px: the list (button and badge stay on one line in the table), the Add form, an empty save, the edit panel, and the Requester's read-only view | No horizontal page scroll; the error beside Description with the focus on it; no control for the Requester; captured in `actions-taken/` | `e2e/lab-04/actions-taken-flow.spec.ts` | PASS (#91) |
+| A11Y-02 | Accessibility | AC-35, ui-spec §9 | Real Chromium: invalid follow-up note; close the details; Tab inside a busy cancel dialog | The note has the focus; View has it back; Tab and Shift+Tab never leave the dialog; the heading has the focus after the cancellation | `e2e/lab-04/actions-taken-recovery.spec.ts` | PASS (#91) |
+
+### Regression
+
+| Test ID | Type | Requirement / BR / AC | What it tests | Expected result | Test file | Final |
+|---|---|---|---|---|---|---|
+| REG-01 | Regression | AC-37 | Full Lab 1–3 server suites. The only planned edit is the status request body gaining `expectedVersion` (specification §11.9) | All pass; nothing skipped | `server/tests/lab-01`, `lab-02`, `lab-03` | PASS (full server suite, §6; it runs `lab-01` to `lab-04` with nothing skipped) |
+| REG-02 | Regression | AC-37 | Full Lab 2–3 client suites | All pass | `client/tests/lab-02`, `lab-03` | PASS (full client suite, §6) |
+| REG-03 | Regression | AC-32, AC-37, FR-21 | Lab 2–3 E2E specs and Lab 3 sign-in/password-change flows. Besides AUTH-03, the three affected legacy landing assertions (ADMIN-04, Login, Change Password) now expect Dashboard, as required by Lab 4's role home; `/tickets` remains the plain My Tickets route. | All pass with capture disabled; no tracked screenshot modified | `e2e/lab-02`, `e2e/lab-03`, `client/tests/lab-03/Login.test.tsx`, `client/tests/lab-03/ChangePassword.test.tsx` | PASS (full E2E 59/59 with #98, #100 and #101 merged in; client suite 325/325) |
+| REG-04 | Regression | FR-22 | Representative Part 8 journeys: sign-in through the screen, My Tickets, Ticket Detail with attachments and a comment, the Queue, an Internal Note (hidden from the Requester), a missing Ticket and another Requester's Ticket, User Management | Each journey succeeds; no horizontal scroll at 1280, 834 and 390 px; captured in `regression/` | `e2e/lab-04/regression.spec.ts` | PASS (one journey, 8 states at 3 widths = 24 captures in `regression/`) |
+
+---
+
+## 3. Acceptance-Criterion Traceability
+
+Every criterion maps to at least one planned test and, where the rubric asks for visible proof, to a planned capture (`artifacts/lab-04/screenshots/…`).
+
+Checked on 8 October 2026 for the dashboard criteria (AC-02, AC-26 to AC-33, AC-40): every test listed has a row in §2, its file exists, and the file contains the test ID (SEC-04 and SEC-05 are inside the `SEC-03/04` and `SEC-03/05/07` blocks).
+
+Twelve tests prove a business or style rule rather than a criterion, and are traced through their Requirement column instead:
+
+- business rules: UNIT-01 (BR-09/10), UNIT-06 (BR-30), UNIT-07 (BR-36/37), API-14 (BR-01), API-15 (BR-35), DASH-05 (BR-38), WF-13 (BR-32), UI-03 (BR-06/07);
+- requirements: REG-04 (FR-22);
+- style rules: STYLE-01, STYLE-03 and STYLE-04 (STY rules).
+
+| AC | Planned tests | Planned visible evidence |
+|---|---|---|
+| AC-01 | API-01, E2E-01, E2E-10 | `actions-taken/create-form-{desktop,tablet,mobile}`, `list-{desktop,tablet,mobile}` |
+| AC-02 | SEC-05, DASH-07, UI-16 | `requester-dashboard/desktop` |
+| AC-03 | API-02, API-16, UI-01, E2E-01 | `actions-taken/list-{desktop,tablet,mobile}`, `requester-read-only-{desktop,tablet,mobile}` |
+| AC-04 | API-03, E2E-01 | `actions-taken/inactive-assignee-refused` |
+| AC-05 | API-04, E2E-01 | `actions-taken/edit-reassign-{desktop,tablet,mobile}` |
+| AC-06 | API-05, E2E-01 | `actions-taken/started`, `completed` |
+| AC-07 | API-06, UNIT-03, UI-04 | `actions-taken/complete-result-required` |
+| AC-08 | API-07, UI-05, E2E-01 | `actions-taken/cancel-dialog`, `cancelled` |
+| AC-09 | API-08, UI-06 | `actions-taken/completed` (no controls) |
+| AC-10 | API-09, UNIT-02, UI-02, E2E-01, E2E-10 | `actions-taken/follow-up-required`, `description-required-{desktop,tablet,mobile}` |
+| AC-11 | API-10 | API test output |
+| AC-12 | SEC-01, SEC-02, UI-08, E2E-01 | `actions-taken/requester-read-only-{desktop,tablet,mobile}`; API test output |
+| AC-13 | API-11, UI-07, E2E-02 | `actions-taken/ticket-not-workable` |
+| AC-14 | API-12, UI-09 | API test output |
+| AC-15 | WF-01, WF-02, E2E-02 | `ticket-workflow/resolve-blocked-{desktop,tablet,mobile}` |
+| AC-16 | WF-03, WF-04, E2E-02 | `ticket-workflow/resolved-after-work-complete-{desktop,tablet,mobile}` |
+| AC-17 | WF-05, E2E-02 | `ticket-workflow/cancel-cascade-{desktop,tablet,mobile}` |
+| AC-18 | UNIT-04, WF-06, UI-11 | `ticket-workflow/resolve-blocked-{desktop,tablet,mobile}` |
+| AC-19 | API-13, WF-07, WF-14, E2E-03 | `ticket-workflow/stale-status-{desktop,tablet,mobile}`, `actions-taken/conflict` |
+| AC-20 | WF-08 | API test output (concurrent runs) |
+| AC-21 | UI-12, E2E-02 | `ticket-workflow/resolved-after-work-complete-{desktop,tablet,mobile}` |
+| AC-22 | WF-09, SEC-06, MIG-05, E2E-02 | `ticket-workflow/history-staff-{desktop,tablet,mobile}`; trigger test output |
+| AC-23 | WF-10, SEC-02, UI-13, E2E-02 | `ticket-workflow/history-requester-{desktop,tablet,mobile}` |
+| AC-24 | UNIT-05, WF-11 | API test output |
+| AC-25 | WF-12 | API test output |
+| AC-26 | DASH-01, DASH-07, E2E-04 | Dashboard capture beside the SQL count output |
+| AC-27 | DASH-02, DASH-08, UI-14, E2E-04 | `staff-dashboard/drilldown-unassigned`, `requester-dashboard/drilldown-open` |
+| AC-28 | DASH-03, UI-14, UI-27, E2E-04 | `staff-dashboard/desktop` |
+| AC-29 | DASH-04, DASH-09, UI-15, UI-16, E2E-04 | `staff-dashboard/admin-no-open-actions`, `requester-dashboard/first-use-empty-fixture` |
+| AC-30 | SEC-04, E2E-05 | `staff-dashboard/forbidden-requester` |
+| AC-31 | UI-15, UI-17, E2E-05 | `staff-dashboard/failure-fixture`, `requester-dashboard/failure-fixture` |
+| AC-32 | UI-18, E2E-04 | Dashboard captures show the active navigation item |
+| AC-33 | DASH-10 | API test output |
+| AC-34 | RESP-01, E2E-10 | Desktop, tablet and mobile captures of every new screen: `actions-taken/`, `staff-dashboard/`, `requester-dashboard/`, `ticket-workflow/`, `regression/` |
+| AC-35 | UI-05, A11Y-01 | Focus-ring capture; keyboard-walk notes in the checklist |
+| AC-36 | UI-10, E2E-03 | `actions-taken/conflict`, `save-failure-fixture` |
+| AC-37 | REG-01, REG-02, REG-03 | Full runner output of the release candidate (§6) |
+| AC-38 | MIG-01, MIG-02, MIG-03 | Script output: counts before, after and restored |
+| AC-39 | MIG-04 | Seed-twice test output |
+| AC-40 | PERF-01, PERF-02, DASH-06 | Performance-smoke output with machine and dataset |
+| AC-41 | E2E-06, UNIT-09 | Console and link audit output (§6); a no-op control is covered only where a journey uses the control (§7) |
+
+## 4. Coverage of the labsheet's named files
+
+| Labsheet path (§12) | Planned tests |
+|---|---|
+| `server/tests/lab-04/actions-taken.api.test.ts` | API-01–API-18, SEC-01, and the Actions part of SEC-02, SEC-03 and SEC-07 |
+| `server/tests/lab-04/ticket-workflow.api.test.ts` | WF-01–WF-17, SEC-02, SEC-03, SEC-06, SEC-07 |
+| `server/tests/lab-04/requester-dashboard.api.test.ts` | DASH-07–DASH-10, SEC-05 |
+| `server/tests/lab-04/staff-dashboard.api.test.ts` | DASH-01–DASH-06, SEC-04 |
+| `client/tests/lab-04/StaffDashboard.test.tsx` | UI-14, UI-15, UI-27 (the link), UI-28 |
+| `client/tests/lab-04/RequesterDashboard.test.tsx` | UI-16, UI-17 |
+| `client/tests/lab-04/ActionsTaken.test.tsx` | UI-01–UI-10, UI-19–UI-25, UI-27 (the scroll), STYLE-02–STYLE-05 |
+| `client/tests/lab-04/TicketWorkflow.test.tsx` | UI-11–UI-13, UI-19 |
+| `client/tests/lab-04/dateTime.test.ts` | UI-19 |
+| `client/tests/lab-04/BangkokTime.test.tsx` | UI-26 |
+| `e2e/lab-04/actions-taken-flow.spec.ts` | E2E-01, E2E-03 (Actions), RESP-01 (Ticket Detail with Actions), E2E-10, A11Y-01 |
+| `e2e/lab-04/ticket-resolution.spec.ts` | E2E-02, E2E-03 |
+| `e2e/lab-04/dashboards.spec.ts` | E2E-04, E2E-05, RESP-01 |
+
+Supporting files beyond the minimum:
+
+- `server/tests/lab-04/transition-oracle.ts` (the status table of §5.2, shared by UNIT-04 and WF-06);
+- `server/tests/lab-04/lock-helpers.api.test.ts` (LOCK-01, the lock-wait helper behind API-17, WF-08 and WF-17);
+- `e2e/lab-04/actions-taken-recovery.spec.ts` (E2E-07–E2E-09, A11Y-02);
+- `server/tests/lab-04/action-rules.unit.test.ts`, `workflow-rules.unit.test.ts`, `transition-spec.unit.test.ts`, `audit-rules.unit.test.ts`, `dashboard-metrics.unit.test.ts` and `migration-seed.api.test.ts` (MIG-03–MIG-05);
+- `server/tests/lab-04/test-transport.unit.test.ts` (TC-025; the loopback and request-routing guard behind the #96 suite-stability fix);
+- `client/tests/lab-04/AppNavigation.test.tsx`;
+- `e2e/lab-04/audit.ts`, `e2e/lab-04/audit-rules.ts` (UNIT-09) and `e2e/lab-04/audit.spec.ts` (E2E-06), and `e2e/lab-04/regression.spec.ts` (REG-04);
+- `server/scripts/verify-migration.mjs` (MIG-01, MIG-02) and `server/scripts/perf-smoke.mjs` (PERF-01, PERF-02);
+- `client/tests/lab-03/StyleContract.test.tsx` (STYLE-01, existing).
+
+Every path above exists on `lab4-staging`.
+
+## 5. Test Commands and Isolation
+
+These commands exist today (verified on `a429f29`):
+
+```bash
+cd server && npm test        # migrate deploy + seed toktickit_test, then Vitest in one worker
+cd server && npm run test:only
+cd client && npm test
+npm run test:e2e             # repository root; migrates and seeds toktickit_e2e_test; API :3002, client :5174
+cd server && npm run build
+cd client && npm run build
+cd client && npm run lint    # oxlint
+node scripts/row-counts.mjs .env.test   # from server/; prints table counts, never the connection string
+```
+
+Added by the contract increment (#89) and verified on 3 October 2026:
+
+```bash
+CAPTURE_EVIDENCE=1 npm run test:e2e   # writes Lab 4 captures under artifacts/lab-04/screenshots/ only
+TEST_DATABASE_URL=… npm test          # from server/; a fresh database whose name ends in _test, or the run is refused
+```
+
+- A default `npm run test:e2e` writes nothing tracked: 40 passed with and without `CAPTURE_EVIDENCE=1`, and `git status -- artifacts` stayed clean both times. Lab 2 and Lab 3 captures are frozen.
+- Runner output moved to the ignored `artifacts/lab-04/playwright-results/`.
+
+Cross-browser run (Chromium is the only project in `playwright.config.ts`; browsers installed once with `npx playwright install firefox webkit`). A throwaway config, not committed, next to it:
+
+```ts
+// playwright.cross-browser.config.ts
+import { devices } from '@playwright/test'
+import base from './playwright.config'
+export default {
+  ...base,
+  projects: [
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    { name: 'msedge', use: { ...devices['Desktop Edge'], channel: 'msedge' } }, // the installed Microsoft Edge, with Playwright's own temporary profile
+  ],
+}
+```
+
+```bash
+npx playwright test -c playwright.cross-browser.config.ts e2e/lab-04   # under the E2E lock
+```
+
+Both scripts the plan listed now exist: `server/scripts/verify-migration.mjs` (#90, run as `node scripts/verify-migration.mjs` from `server/`) and `server/scripts/perf-smoke.mjs` (#93, needs its own disposable database).
+
+For evidence, the E2E runner is pointed at a freshly created database ending in `_test` (`E2E_DATABASE_URL`), so a screenshot shows the seed and nothing left by earlier runs; the database is dropped afterwards.
+
+Suites always run sequentially. `toktickit_dev` is never a target.
+
+## 6. Final Results
+
+Both runs were made on the student's Mac (macOS Darwin 27.0.0, Apple M5, Node v26.7.0, PostgreSQL 18.6), on freshly created databases whose names end in `_test`, one run at a time, with `/tmp/toktickit-e2e.lock` held for every E2E run. The runner output is kept in the private working record (`_private/lab-04/WORK-RECORD.md`), which is not part of the repository.
+
+**1. The integrated staging candidate, `lab4-staging` `b5d75ed` (the five feature Pull Requests merged), 12 October 2026.**
+
+| Check | Result |
+|---|---|
+| Server suite, default order and `--sequence.shuffle --sequence.seed=33` | 758/758 both times |
+| Client suite | 34 files, 325/325 |
+| Server and client production builds | both pass |
+| Client lint | 3 known warnings (an unused `REQUESTER_B` in a Lab 2 test; two react-refresh warnings in `SessionContext.tsx`), 0 errors |
+| `node scripts/verify-migration.mjs` | all 11 checks (MIG-01, MIG-02) |
+| Chromium E2E, whole repository | 59/59; `git status -- artifacts` clean |
+| `e2e/lab-04` on Firefox, WebKit and Microsoft Edge 154 | 55 of 57 (as it then stood); the two failures are A11Y-01 on WebKit (§7) |
+
+**2. The release-candidate code tree: `feature/94-final-hardening-and-release` at `5685095`, 12 October 2026 (re-run after the review of #102 changed the audit; the run at `2fa4b97` gave the same results except 758 server tests).** Its product-code tree is the one now integrated into `lab4-staging` at `876511f`. PR #102's final head `ab53f8a` and merge changed documentation only relative to code head `5685095`.
+
+| Check | Command | Result |
+|---|---|---|
+| Server suite, default order | recreate `toktickit_test`, then `cd server && npm test` | 771/771 (758 plus the 13 cases of UNIT-09) |
+| Server suite, shuffled | the same with `--sequence.shuffle --sequence.seed=33` | 771/771 |
+| Client suite | `cd client && npm test` | 34 files, 328/328 |
+| Builds | `cd server && npm run build`, `cd client && npm run build` | both pass |
+| Lint | `cd client && npm run lint` | the same 3 known warnings, 0 errors |
+| Migration and recovery | `cd server && node scripts/verify-migration.mjs` | all 11 checks |
+| E2E, Lab 2 to Lab 4, Chromium | `E2E_DATABASE_URL` → a fresh database, `npx playwright test` | 64/64 in 2.9 min; `git status -- artifacts` clean |
+| `e2e/lab-04` on Firefox, WebKit and Microsoft Edge | the throwaway config of §5, a fresh database | 70 of 72; the two failures are A11Y-01's Tab walks on WebKit (§7) |
+| Performance smoke | `cd server && ./node_modules/.bin/tsx scripts/perf-smoke.mjs`, its own database | 2,000 Tickets and 6,000 Actions: p95 3.8 ms (staff) and 1.59 ms (Requester). The query counts of PERF-02 (7 and 2 per request, the same at 200 and at 2,000 Tickets) are those measured on 5 October. A local measurement (specification §11.14) |
+
+Nothing was skipped, focused or disabled. Not run: a screen reader (§7).
+
+**3. Local review-readiness candidate, branch `fix/lab4-review-readiness`, product-code/dependency head `0ba3abc`, based on `lab4-staging@876511f` (13 October 2026).** This branch is not merged and is not part of PR #103. Its follow-up changes broaden the dashboard mobile link-size assertions, fix the two dashboard footer links to meet 44 px, refresh audited dependency versions, and correct the stale test-harness identifier. This section's documentation is a later docs-only commit; the tested product tree is `0ba3abc`.
+
+| Check | Command | Result |
+|---|---|---|
+| Server suite, default and shuffled | `cd server && npm test`; then the same with `--sequence.shuffle --sequence.seed=33` | 771/771 on each run; server code was unchanged after these runs |
+| Client suite | `cd client && npm test` | 34 files, 328/328 on Vite 8.3.4 and Vitest 4.1.11 |
+| Builds | `cd server && npm run build`; `cd client && npm run build` | both pass; the client build was repeated on Vite 8.3.4 |
+| Lint | `cd client && npm run lint` | exit 0; the same 3 existing warnings, 0 errors |
+| Migration / recovery | `cd server && node scripts/verify-migration.mjs` | all 11 checks pass |
+| Transport guard | `cd server && npx vitest run tests/lab-04/test-transport.unit.test.ts` | 2/2 pass (TC-025) |
+| Chromium E2E, whole repository | `npm run test:e2e` with `E2E_DATABASE_URL` naming a newly created dedicated `_test` database and `CAPTURE_EVIDENCE=0` | 64/64; tracked artifacts clean; database dropped and verified absent |
+| Cross-browser, Lab 4 | `npm run test:e2e -- -c playwright.cross-browser.config.ts e2e/lab-04` using a throwaway config and a new dedicated `_test` database | Firefox 24/24; Microsoft Edge 154 24/24; WebKit 22/24. The only failures are the two known A11Y-01 Tab walks on WebKit (§7); the database was dropped and verified absent |
+| Dependency audit | `npm audit --audit-level=low` and `npm audit --omit=dev --audit-level=low`, in both `server/` and `client/` | 0 vulnerabilities in all four scans |
+| Prisma toolchain | `npx prisma validate`; `npm run prisma:generate` | schema validation and client generation pass with the scoped `@prisma/config` override |
+
+**Dependency versions in this candidate:** Multer 2.4.0; Vite 8.3.4 (manifest floor `^8.2.4`); Vitest 4.1.11; Prisma 7.9.1's scoped `deepmerge-ts` override 8.0.2 and `mysql2` override 3.24.5. The overrides are limited to Prisma's dependency branches; the app uses PostgreSQL.
+
+**Observed warning, not a test failure:** the PostgreSQL `pg@8.22.0` client emitted a deprecation warning about calling `client.query()` while another query is executing, through the Prisma PostgreSQL adapter. It appeared during server/E2E runs and was not traced to a specific application operation; it was not suppressed or represented as fixed.
+
+**4. The exact final `main` commit.** PENDING-MAIN while PR #103 is open. After it is merged, run the full release gate against that exact `main` SHA and record the results in the report; a local candidate is not a substitute.
+
+## 7. Known Limitations
+
+- **Cross-browser coverage is ad hoc.** The suite runs on Chromium. A run of `e2e/lab-04` on the #91 head also passed on Firefox (12 of 12), on the student's everyday browser Microsoft Edge 154 (12 of 12, run twice, the second time by an independent audit), and on WebKit except A11Y-01's Tab walk: WebKit's default Tab order skips checkboxes and buttons (Safari's "Press Tab to highlight each item" setting), so that walk is Chromium and Firefox only. The dialog and focus tests of A11Y-02 pass on WebKit. No screen reader has been used: the labsheet does not ask for one, and ui-spec §11 row 21 rests on the accessibility-tree assertions named there.
+- **A very long name in the page header is not covered.** A person whose own display name is 120 characters with no break widens the shell header (Lab 3's shell, found while testing RESP-01); the Actions area wraps such a name. Recorded, not changed.
+- The performance smoke result is a local measurement on one Mac, not production capacity (specification §11.14).
+- Dashboard and Action failure, loading and empty captures that need a broken server are produced by API interception and labelled *fixture*. The API tests prove the backend behaviour.
+- History begins with Lab 4. Seeded and legacy Tickets have no events for earlier changes (specification §7).
+- **Server-suite instability, found and fixed in #96 (PR #97).** Before that fix, full runs of the unchanged Lab 1–3 server suite on fresh `_test` databases failed intermittently: in default order 4 of 5 runs failed, with 1 to 22 tests each time and a different test every time. The cause was test transport, not shared state. Supertest's throwaway servers listened on every interface but were called on `127.0.0.1`, so a local program holding the same loopback port could answer. Statuses 401, 403 and 404 from other programs, and socket errors, were observed. The fix is merged in `lab4-staging` (#97); TC-025 guards the loopback binding and verifies that each disposable server answers its own requests.
+- **A11Y-01's Tab walks fail on WebKit, twice.** WebKit's default Tab order skips checkboxes and buttons, so the Action form's walk and the dashboard drill-down walk cannot reach them by Tab (Safari's "Press Tab to highlight each item" changes this). Firefox, Microsoft Edge and Chromium pass both. The dashboard walk was first run on WebKit on 12 October.
+- **A cancellation cascade stamps each Action's own `updatedAt` with the request's instant,** without the never-backwards rule that BR-35 applies to the Ticket (reviewer's note on #100, 11 October). Nothing reads an Action's `updatedAt` for ordering.
+- **The dashboard's counts and lists are separate queries, not one snapshot** (specification §11.19, item 5).
+- **A signed-out visit logs a 401 in the browser console.** Asking who is signed in is answered 401 by the Lab 3 contract; the audit declares it (specification §11.19, item 2).
+- **`/system-check` and `/style-guide` are kept** (specification §11.19, item 3).
+- **A "not found" state has no heading of its own** (specification §11.19, item 4).
+- **No screen reader was used.** The accessibility evidence is keyboard operation, visible focus and assertions on names, roles and states (ui-spec §11, rows 8 to 10 and 21). An automated check does not say whether the speech is understandable.
+- **Evidence images were opened, not all read.** 86 captures exist; an image of every kind of screen was opened at phone width, and the width and overflow assertions cover the rest (ui-spec §11, row 11).
+- **The audit does not detect a no-op control** (reviewer's note on #102, 12 October). E2E-06 finds console and network errors, empty links, missing anchors and placeholder text; it does not click every button. A control that does nothing is caught only where a journey uses it and asserts what it does (the Actions Taken, workflow, dashboard and regression journeys do so for their own controls). AC-41's "no-op control" is therefore proved in part.

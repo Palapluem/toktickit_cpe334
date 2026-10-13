@@ -9,11 +9,16 @@ export type Destination = { label: string; path: string }
 
 const NAVIGATION: Record<Role, Destination[]> = {
   REQUESTER: [
+    { label: 'Dashboard', path: '/dashboard' },
     { label: 'My Tickets', path: '/tickets' },
     { label: 'Create Ticket', path: '/tickets/new' },
   ],
-  IT_STAFF: [{ label: 'Ticket Queue', path: '/staff/tickets' }],
+  IT_STAFF: [
+    { label: 'Dashboard', path: '/staff/dashboard' },
+    { label: 'Ticket Queue', path: '/staff/tickets' },
+  ],
   ADMINISTRATOR: [
+    { label: 'Dashboard', path: '/staff/dashboard' },
     { label: 'Ticket Queue', path: '/staff/tickets' },
     { label: 'User Management', path: '/admin/users' },
   ],

@@ -2,7 +2,11 @@
 // viewports AC-34 names, and the refusal capture ui-spec §12 names explicitly
 // — a happy-path capture session will not produce it.
 import { expect, test } from '../lab-02/fixtures'
-import { DEVELOPMENT_PASSWORD, captureLab3Screenshot } from '../lab-02/helpers'
+import {
+  DEVELOPMENT_PASSWORD,
+  captureLab3Screenshot,
+  evidenceCaptureEnabled,
+} from '../lab-02/helpers'
 
 const DESKTOP = { width: 1280, height: 900 }
 const TABLET = { width: 834, height: 1112 }
@@ -53,19 +57,21 @@ test('AUTH-02 refuses wrong, unknown, and inactive accounts with one safe messag
   await expect(page.getByRole('alert')).toHaveText('Invalid email or password.')
 })
 
-test('AUTH-03 signs in and reaches My Tickets', async ({ page }) => {
+test('AUTH-03 signs in and reaches Dashboard', async ({ page }) => {
   await page.setViewportSize(DESKTOP)
   await signInThroughTheScreen(page, 'jennifer.anderson@example.ac.th')
 
-  await expect(page.getByRole('heading', { name: 'My Tickets', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible()
   await expect(page.getByText('Jennifer Anderson')).toBeVisible()
   // exact: the status filter offers WAITING_FOR_REQUESTER, which contains it.
   await expect(page.getByText('REQUESTER', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible()
-  // AC-01: keep the authenticated Requester identity proof focused on the shell.
-  await page.locator('.zen-shell__header').screenshot({
-    path: 'artifacts/lab-03/screenshots/authentication/authenticated-shell.png',
-  })
+  // AC-01: shell identity proof; Lab 3 evidence is frozen, so this writes only if the policy allows.
+  if (evidenceCaptureEnabled('lab-03')) {
+    await page.locator('.zen-shell__header').screenshot({
+      path: 'artifacts/lab-03/screenshots/authentication/authenticated-shell.png',
+    })
+  }
 })
 
 test('AUTH-04 · AC-34 captures the mandatory Change Password screen', async ({ page }) => {
