@@ -1874,8 +1874,13 @@ body {
   padding: var(--zen-space-2) 0;
 }
 
-.zen-dashboard__status-list a,
+.zen-dashboard__status-list a {
+  min-height: 44px;
+}
+
 .zen-dashboard__footer a {
+  align-items: center;
+  display: inline-flex;
   min-height: 44px;
 }
 

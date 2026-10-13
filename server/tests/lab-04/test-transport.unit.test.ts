@@ -1,10 +1,10 @@
-// #96 · TCS-03/TCS-05: a request must reach the app under test, not a local service that shares its port.
+// TC-025: test-created HTTP servers bind to loopback and requests are answered by the app under test.
 import { describe, expect, it } from 'vitest'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import request from 'supertest'
 
-describe('#96 · throwaway test servers listen on loopback only', () => {
-  it('binds the server supertest creates to 127.0.0.1, not to every interface', async () => {
+describe('TC-025 · test-harness transport isolation', () => {
+  it('TC-025 binds the throwaway server to 127.0.0.1 only', async () => {
     let boundTo = ''
     const app = (req: IncomingMessage, res: ServerResponse) => {
       boundTo = req.socket.localAddress ?? ''
@@ -17,7 +17,7 @@ describe('#96 · throwaway test servers listen on loopback only', () => {
     expect(boundTo).toBe('127.0.0.1')
   })
 
-  it('answers each of 400 requests from the app that was called', async () => {
+  it('TC-025 routes each of 400 requests to the app instance that was called', async () => {
     const wrong: string[] = []
     for (let i = 0; i < 400; i++) {
       const nonce = `n-${i}-${Math.random().toString(36).slice(2)}`
