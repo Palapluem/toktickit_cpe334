@@ -1,7 +1,7 @@
 # Lab 4 Test Plan and Results
 
-**Version:** 1.2 — approved for implementation on 3 October 2026; results updated on 13 October 2026
-**Status:** The implementation is integrated into `lab4-staging`; the 13 October review-readiness follow-up below remains local and unmerged. Every result is tied to the candidate it actually ran against; §6 names the runs, commands and outputs. Anything not run says so.
+**Version:** 1.3 — approved for implementation on 3 October 2026; results updated on 14 October 2026
+**Status:** The implementation was released to `main` by PR #103 (merge commit `d07fefe`, 13 October 2026), including the review-readiness follow-up of PR #104. The full gate was run on that exact `main` commit on 14 October (§6.4). Every result is tied to the candidate it actually ran against; §6 names the runs, commands and outputs. Anything not run says so.
 **Standard:** `docs/lab-02/testing-contract.md` (TC, TCS, TDT and red-phase rules) applies unchanged. Every test names the identifier it proves (TCS-01).
 
 ---
@@ -389,7 +389,7 @@ Both runs were made on the student's Mac (macOS Darwin 27.0.0, Apple M5, Node v2
 
 Nothing was skipped, focused or disabled. Not run: a screen reader (§7).
 
-**3. Local review-readiness candidate, branch `fix/lab4-review-readiness`, product-code/dependency head `0ba3abc`, based on `lab4-staging@876511f` (13 October 2026).** This branch is not merged and is not part of PR #103. Its follow-up changes broaden the dashboard mobile link-size assertions, fix the two dashboard footer links to meet 44 px, refresh audited dependency versions, and correct the stale test-harness identifier. This section's documentation is a later docs-only commit; the tested product tree is `0ba3abc`.
+**3. Review-readiness follow-up, branch `fix/lab4-review-readiness`, product-code/dependency head `0ba3abc`, based on `lab4-staging@876511f` (13 October 2026).** It was approved and merged as PR #104 into `lab4-staging` (`1141738`) before the release PR #103 was merged, so it is part of the release. Its follow-up changes broaden the dashboard mobile link-size assertions, fix the two dashboard footer links to meet 44 px, refresh audited dependency versions, and correct the stale test-harness identifier. This section's documentation is a later docs-only commit; the tested product tree is `0ba3abc`.
 
 | Check | Command | Result |
 |---|---|---|
@@ -408,11 +408,27 @@ Nothing was skipped, focused or disabled. Not run: a screen reader (§7).
 
 **Observed warning, not a test failure:** the PostgreSQL `pg@8.22.0` client emitted a deprecation warning about calling `client.query()` while another query is executing, through the Prisma PostgreSQL adapter. It appeared during server/E2E runs and was not traced to a specific application operation; it was not suppressed or represented as fixed.
 
-**4. The exact final `main` commit.** PENDING-MAIN while PR #103 is open. After it is merged, run the full release gate against that exact `main` SHA and record the results in the report; a local candidate is not a substitute.
+**4. The exact final `main` commit `d07fefe` (tree `91a8f1a`), 14 October 2026.** PR #103 was merged into `main` on 13 October at 12:47 UTC. The full gate was then run on that commit itself: a detached worktree at `d07fefe23dffafd7dd8257d125c97ffbed4c7250`, a clean `npm ci` in the root, `server/` and `client/`, `npx prisma generate`, a newly created `_test` database for every suite (dropped afterwards), one run at a time, the E2E lock held. Its tree is identical to `lab4-staging` at `1141738` (`git rev-parse` of both gives `91a8f1a`), the commit on which the reviewer ran the same gate before approving #103.
+
+| Check | Command | Result |
+|---|---|---|
+| Server suite, default order | a new `_test` database, `cd server && npm test` | 40 files, 771/771 |
+| Server suite, shuffled | the same with `--sequence.shuffle --sequence.seed=33` | 771/771 |
+| Client suite | `cd client && npm test` | 34 files, 328/328 |
+| Builds | `cd server && npm run build`, `cd client && npm run build` | both pass |
+| Lint | `cd client && npm run lint` | exit 0; the same 3 known warnings, 0 errors |
+| Migration and recovery | `cd server && node scripts/verify-migration.mjs` | all 11 checks passed |
+| E2E, Lab 2 to Lab 4, Chromium | `E2E_DATABASE_URL` → a new `_test` database, `npx playwright test` | 64/64 in 2.1 min; `git status -- artifacts` clean |
+| `e2e/lab-04` on Firefox, WebKit and Microsoft Edge | the throwaway config of §5, a new database | 70 of 72 in 4.5 min; the two failures are A11Y-01's Tab walks on WebKit (§7); Firefox and Edge: none |
+| Performance smoke | `perf-smoke.mjs` on its own database, run alone on the machine | p95 3.26 ms (staff) and 1.39 ms (Requester); a local measurement (specification §11.14) |
+| Dependency audit | `npm audit --audit-level=low` in `server/` and in `client/` | 0 vulnerabilities in each |
+
+Nothing was skipped, focused or disabled. Not run: a screen reader (§7). The documentation pull request that records this run changes documentation only, so it does not alter the tree this section ran on.
 
 ## 7. Known Limitations
 
 - **Cross-browser coverage is ad hoc.** The suite runs on Chromium. A run of `e2e/lab-04` on the #91 head also passed on Firefox (12 of 12), on the student's everyday browser Microsoft Edge 154 (12 of 12, run twice, the second time by an independent audit), and on WebKit except A11Y-01's Tab walk: WebKit's default Tab order skips checkboxes and buttons (Safari's "Press Tab to highlight each item" setting), so that walk is Chromium and Firefox only. The dialog and focus tests of A11Y-02 pass on WebKit. No screen reader has been used: the labsheet does not ask for one, and ui-spec §11 row 21 rests on the accessibility-tree assertions named there.
+- **The My Tickets table scrolls sideways inside its card when a row is wide.** Since Lab 2 the list sits in a container that scrolls horizontally (`.my-tickets__table-container`). A row whose status is `WAITING_FOR_REQUESTER` makes the table 1219 to 1231 px wide (measured on `d07fefe`) in a card 1150 px wide at 1280 and 1600 px, so the Last Updated column is reached by scrolling the table; the same holds at 1024 and 834 px (ui-spec §11 row 11). The two Requester drill-down captures (`drilldown-open` and `drilldown-needs-attention`, 1600 × 1000) therefore cut that column at the card's edge: they show the filter and the rows, not the last column. The page itself does not scroll sideways at the three widths of REG-04. Recorded, not changed.
 - **A very long name in the page header is not covered.** A person whose own display name is 120 characters with no break widens the shell header (Lab 3's shell, found while testing RESP-01); the Actions area wraps such a name. Recorded, not changed.
 - The performance smoke result is a local measurement on one Mac, not production capacity (specification §11.14).
 - Dashboard and Action failure, loading and empty captures that need a broken server are produced by API interception and labelled *fixture*. The API tests prove the backend behaviour.
